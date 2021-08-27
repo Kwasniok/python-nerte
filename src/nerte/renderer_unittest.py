@@ -10,6 +10,8 @@ from nerte.renderer import ImageRenderer
 
 
 class RendererTest(unittest.TestCase):
+    # not tested: ImageRenderer.show, ImageRenderer.save
+
     def test(self):
         # object
         p0 = Coordinates(1.0, 0.0, 0.0)
@@ -27,10 +29,8 @@ class RendererTest(unittest.TestCase):
         cam = Camera(
             location=loc,
             direction=direction,
-            canvas_width=dim,
-            canvas_height=dim,
-            width_vector=wv,
-            height_vector=hv,
+            canvas_dimensions=(dim, dim),
+            detector_manifold=(wv, hv),
         )
         # scene
         sc = Scene(camera=cam)

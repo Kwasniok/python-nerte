@@ -11,13 +11,11 @@ class CameraTest(unittest.TestCase):
         width_vector = Vector(1.0, 0.0, 0.0)
         height_vector = Vector(0.0, 1.0, 0.0)
         dim = 100
-        camera = Camera(
+        Camera(
             location=location,
             direction=direction,
-            canvas_width=dim,
-            canvas_height=dim,
-            width_vector=width_vector,
-            height_vector=height_vector,
+            canvas_dimensions=(dim, dim),
+            detector_manifold=(width_vector, height_vector),
         )
 
 

@@ -8,6 +8,14 @@ from nerte.vector import Vector
 equiv = lambda x, y: abs(x - y) < 𝜀
 vec_equiv = lambda x, y: all(equiv(i, j) for i, j in zip(x, y))
 
+orth_norm_basis = (
+    Vector(1.0, 0.0, 0.0),
+    Vector(0.0, 1.0, 0.0),
+    Vector(0.0, 0.0, 1.0),
+)
+
+scalar_factors = (0.0, 1.2345, -0.98765)
+
 
 class VectorTest(unittest.TestCase):
 
@@ -16,13 +24,17 @@ class VectorTest(unittest.TestCase):
         try:
             self.assertTrue(equiv(x, y))
         except AssertionError as ae:
-            raise AssertionError("Scalar {} is not equivalent to {}.".format(x, y))
+            raise AssertionError(
+                "Scalar {} is not equivalent to {}.".format(x, y)
+            ) from ae
 
     def assertVectorEquiv(self, x, y):
         try:
             self.assertTrue(vec_equiv(x, y))
         except AssertionError as ae:
-            raise AssertionError("Vector {} is not equivalent to {}.".format(x, y))
+            raise AssertionError(
+                "Vector {} is not equivalent to {}.".format(x, y)
+            ) from ae
 
     def test_item(self):
         cs = (1.0, 2.0, 3.0)
@@ -56,22 +68,15 @@ class VectorTest(unittest.TestCase):
         w = Vector(7.0, 7.0, 7.0)
         self.assertVectorEquiv(w.normalized(), n)
 
-    def test_math_dot(self):
-        orth_norm_basis = (
-            Vector(1.0, 0.0, 0.0),
-            Vector(0.0, 1.0, 0.0),
-            Vector(0.0, 0.0, 1.0),
-        )
-        scalar_factors = (0.0, 1.2345, -0.98765)
-
-        # orthonormality
+    def test_math_dot_orthonormality(self):
         for v in orth_norm_basis:
             for w in orth_norm_basis:
                 if v is w:
                     self.assertEquiv(v.dot(w), 1.0)
                 else:
                     self.assertEquiv(v.dot(w), 0.0)
-        # linearity in 1st argument
+
+    def test_math_dot_linearity_left(self):
         for u in orth_norm_basis:
             for v in orth_norm_basis:
                 for w in orth_norm_basis:
@@ -81,7 +86,8 @@ class VectorTest(unittest.TestCase):
                                 ((v * a) + (w * b)).dot(u),
                                 v.dot(u) * a + w.dot(u) * b,
                             )
-        # linearity in 2nd argument
+
+    def test_math_dot_linearity_right(self):
         for u in orth_norm_basis:
             for v in orth_norm_basis:
                 for w in orth_norm_basis:
@@ -92,18 +98,12 @@ class VectorTest(unittest.TestCase):
                                 u.dot(v) * a + u.dot(w) * b,
                             )
 
-    def test_math_cross(self):
-        orth_norm_basis = (
-            Vector(1.0, 0.0, 0.0),
-            Vector(0.0, 1.0, 0.0),
-            Vector(0.0, 0.0, 1.0),
-        )
-        scalar_factors = (0.0, 1.2345, -0.98765)
-        # antisymmetry
+    def test_math_cross_orthonormality(self):
         for v in orth_norm_basis:
             for w in orth_norm_basis:
                 self.assertVectorEquiv(v.cross(w), -w.cross(v))
-        # linearity in 1st argument
+
+    def test_math_cross_linearity_left(self):
         for u in orth_norm_basis:
             for v in orth_norm_basis:
                 for w in orth_norm_basis:
@@ -113,7 +113,8 @@ class VectorTest(unittest.TestCase):
                                 ((v * a) + (w * b)).cross(u),
                                 v.cross(u) * a + w.cross(u) * b,
                             )
-        # linearity in 2nd argument
+
+    def test_math_cross_linearity_right(self):
         for u in orth_norm_basis:
             for v in orth_norm_basis:
                 for w in orth_norm_basis:

@@ -11,9 +11,9 @@ class FaceTest(unittest.TestCase):
         cs = (c0, c1, c2)
         f = Face(c0, c1, c2)
 
-        self.assertEquals(f[0], c0)
-        self.assertEquals(f[1], c1)
-        self.assertEquals(f[2], c2)
+        self.assertTrue(f[0] is c0)
+        self.assertTrue(f[1] is c1)
+        self.assertTrue(f[2] is c2)
 
         for x, i in zip(iter(f), range(3)):
             self.assertEqual(x, f[i])

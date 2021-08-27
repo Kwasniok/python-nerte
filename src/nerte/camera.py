@@ -7,17 +7,10 @@ class Camera:
         self,
         location: Coordinates,
         direction: Vector,
-        width_vector: Vector,
-        height_vector: Vector,
-        canvas_width: int,
-        canvas_height: int,
+        detector_manifold: (Vector, Vector),  # TODO: must be generalized!
+        canvas_dimensions: (int, int),
     ):
         self.location = location
         self.direction = direction
-        self.width_vector = width_vector
-        self.height_vector = height_vector
-        self.canvas_width = canvas_width
-        self.canvas_height = canvas_height
-
-    def canvas_size(self):
-        return self.canvas_width, self.canvas_height
+        self.detector_manifold = detector_manifold
+        self.canvas_dimensions = canvas_dimensions

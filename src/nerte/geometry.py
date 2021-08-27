@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from math import sqrt
+
 from nerte.coordinates import Coordinates
 from nerte.vector import Vector
 from nerte.face import Face
@@ -18,22 +18,24 @@ class Geometry(ABC):
 
 class EuclideanGeometry(Geometry):
     def __init__(self):
-        # precision
+        # precision of floating point representations
         self.𝜀 = 1e-8
 
     def is_valid_coordinate(self, coordinates: Coordinates) -> bool:
         return True
 
-    def coordinates_to_vector(self, coordinates: Coordinates) -> Vector:
+    @classmethod
+    def coordinates_to_vector(cls, coordinates: Coordinates) -> Vector:
         return Vector(*(coordinates[i] for i in range(3)))
 
-    def vector_to_coordinates(self, vector: Vector) -> Coordinates:
+    @classmethod
+    def vector_to_coordinates(cls, vector: Vector) -> Coordinates:
         return Coordinates(*(vector[i] for i in range(3)))
 
     def intersects(self, ray: Ray, face: Face) -> bool:
 
         # (tivially) convert face coordinates to vectors
-        v0, v1, v2 = (self.coordinates_to_vector(c) for c in face)
+        v0, v1, v2 = (EuclideanGeometry.coordinates_to_vector(c) for c in face)
         ## plane parameters:
         # basis vector spanning the plane
         b1 = v1 - v0
@@ -45,7 +47,7 @@ class EuclideanGeometry(Geometry):
         # (x,y,z) in plane <=> (x,y,z) . n = l
 
         ## ray parameters
-        s = self.coordinates_to_vector(ray.start)
+        s = EuclideanGeometry.coordinates_to_vector(ray.start)
         u = ray.direction
         # (x,y,z) in line <=> ∃t: s + t*u = (x,y,z)
 

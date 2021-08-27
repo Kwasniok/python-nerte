@@ -25,10 +25,8 @@ class SceneTest(unittest.TestCase):
         cam = Camera(
             location=loc,
             direction=direction,
-            canvas_width=dim,
-            canvas_height=dim,
-            width_vector=wv,
-            height_vector=hv,
+            canvas_dimensions=(dim, dim),
+            detector_manifold=(wv, hv),
         )
         # scene
         s = Scene(camera=cam)

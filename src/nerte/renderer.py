@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-import random
 
 from nerte.scene import Scene
 from nerte.geometry import Geometry
@@ -9,9 +8,11 @@ from nerte.camera import Camera
 from nerte.coordinates import Coordinates  # TODO: remove
 from nerte.vector import Vector  # TODO: remove
 
+from nerte.random_color_dispender import RandomColorDispenser
+
 from PIL import Image
 
-
+# pylint: disable=R0903
 class Renderer(ABC):
     @abstractmethod
     def render(self, scene: Scene, geometry: Geometry) -> None:
@@ -27,20 +28,11 @@ class ImageRenderer(Renderer):
         self.mode = mode
         self._last_image = None
 
-    def render_pixel(
-        self,
-        camera: Camera,
-        geometry: Geometry,
-        objects,
-        x: int,
-        y: int,
-    ):
-        # calculate light ray
+    def ray_for_pixel(self, camera: Camera, x: int, y: int) -> Ray:
         s = camera.location
         u = camera.direction
-        width, height = camera.canvas_size()
-        wv = camera.width_vector
-        hv = camera.height_vector
+        width, height = camera.canvas_dimensions
+        wv, hv = camera.detector_manifold
         # orthographic
         if self.mode is ImageRenderer.Mode.ORTHOGRAPHIC:
             # TODO: not acceptable for non euclidean geometry
@@ -58,24 +50,26 @@ class ImageRenderer(Renderer):
                 "Cannot render pixel. Mode {} is not defined.".format(self.mode)
             )
         ray = Ray(start=s, direction=u)
+        return ray
 
-        # detect intersections with objects
-        # make object randomly colored
-        random.seed(0)  # TODO: remove (part of random colors)
-        for obj in objects:
-            # TODO: remove
-            # random colors
-            r = random.randint(128, 255)
-            g = random.randint(128, 255)
-            b = random.randint(128, 255)
-            color = (r, g, b)
+    def render_pixel(
+        self,
+        camera: Camera,
+        geometry: Geometry,
+        objects,
+        pixel_location: (int, int),
+    ):
+        # calculate light ray
+        ray = self.ray_for_pixel(camera, *pixel_location)
+        # detect intersections with objects and make object randomly colored
+        for obj, color in zip(objects, RandomColorDispenser()):
             for face in obj.faces():
                 if geometry.intersects(ray, face):
                     return color
         return (0, 0, 0)
 
     def render(self, scene: Scene, geometry: Geometry) -> None:
-        width, height = scene.camera.canvas_size()
+        width, height = scene.camera.canvas_dimensions
         img = Image.new(mode="RGB", size=(width, height), color=(255, 0, 255))
         for x in range(width):
             for y in range(height):
@@ -83,8 +77,7 @@ class ImageRenderer(Renderer):
                     scene.camera,
                     geometry,
                     scene.objects(),
-                    x,
-                    y,
+                    (x, y),
                 )
                 img.putpixel((x, y), pix)
         self._last_image = img

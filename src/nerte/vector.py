@@ -1,3 +1,5 @@
+# pylint: disable=W0212
+
 import numpy as np
 
 
@@ -7,9 +9,9 @@ class Vector:
 
     @classmethod
     def __from_numpy(cls, np_array) -> "Vector":
-        v = Vector.__new__(Vector)
-        v._v = np_array
-        return v
+        vec = Vector.__new__(Vector)
+        vec._v = np_array
+        return vec
 
     def __repr__(self):
         return "V(" + (",".join(repr(x) for x in self._v)) + ")"
