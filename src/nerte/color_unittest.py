@@ -1,10 +1,17 @@
 import unittest
 import itertools
 
-from nerte.random_color_dispender import RandomColorDispenser
+from nerte.color import Color, GRAY, RandomColorDispenser
 
 
-class RandomColorDispenserTest(unittest.TestCase):
+class ColorTest(unittest.TestCase):
+    def test(self):
+        c = Color(1, 2, 3)
+        self.assertTrue(c.rgb == (1, 2, 3))
+
+    def test_colors(self):
+        self.assertTrue(GRAY.rgb == (128, 128, 128))
+
     def test_colors_dispensed_consistently(self):
         # RandomColorDispenser with identical seeds must behave identical
 
@@ -16,7 +23,7 @@ class RandomColorDispenserTest(unittest.TestCase):
             ),
             10,
         ):
-            self.assertTrue(color1 == color2)
+            self.assertTrue(color1.rgb == color2.rgb)
 
         # explicit seed
         seeds = (0, 1234)
@@ -28,7 +35,7 @@ class RandomColorDispenserTest(unittest.TestCase):
                 ),
                 10,
             ):
-                self.assertTrue(color1 == color2)
+                self.assertTrue(color1.rgb == color2.rgb)
 
 
 if __name__ == "__main__":

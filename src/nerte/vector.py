@@ -35,13 +35,31 @@ class Vector:
         return self._v[i]
 
     def dot(self, other: "Vector") -> "Vector":
-        return np.dot(self._v, other._v)
+        # NOTE: SMALL performance improvments with hardcoded version!
+        return (
+            self._v[0] * other._v[0]
+            + self._v[1] * other._v[1]
+            + self._v[2] * other._v[2]
+        )
+        # NOTE: DON'T use this:
+        # return np.dot(self._v, other._v)
 
     def cross(self, other: "Vector") -> "Vector":
-        return Vector.__from_numpy(np.cross(self._v, other._v))
+        # NOTE: MASSIVE performance improvments with hardcoded version!
+        return Vector(
+            self._v[1] * other._v[2] - self._v[2] * other._v[1],
+            self._v[2] * other._v[0] - self._v[0] * other._v[2],
+            self._v[0] * other._v[1] - self._v[1] * other._v[0],
+        )
+        # NOTE: DON'T use this:
+        # return Vector.__from_numpy(np.cross(self._v, other._v))
 
     def length(self) -> float:
         return np.linalg.norm(self._v)
 
     def normalized(self) -> "Vector":
-        return Vector.__from_numpy((1 / np.linalg.norm(self._v)) * self._v)
+        # NOTE: VERY SMALL performance improvments with hardcoded version!
+        l = self.dot(self) ** -0.5
+        return Vector.__from_numpy(self._v * l)
+        # NOTE: DON'T use this:
+        # return Vector.__from_numpy((1 / np.linalg.norm(self._v)) * self._v)

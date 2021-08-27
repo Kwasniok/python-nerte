@@ -26,16 +26,21 @@ class EuclideanGeometry(Geometry):
 
     @classmethod
     def coordinates_to_vector(cls, coordinates: Coordinates) -> Vector:
-        return Vector(*(coordinates[i] for i in range(3)))
+        # NOTE: is optimized for speed
+        return Vector(coordinates[0], coordinates[1], coordinates[2])
 
     @classmethod
     def vector_to_coordinates(cls, vector: Vector) -> Coordinates:
-        return Coordinates(*(vector[i] for i in range(3)))
+        # NOTE: is optimized for speed
+        return Coordinates(vector[0], vector[1], vector[2])
 
     def intersects(self, ray: Ray, face: Face) -> bool:
 
         # (tivially) convert face coordinates to vectors
-        v0, v1, v2 = (EuclideanGeometry.coordinates_to_vector(c) for c in face)
+        # NOTE: is optimized for speed
+        v0 = EuclideanGeometry.coordinates_to_vector(face[0])
+        v1 = EuclideanGeometry.coordinates_to_vector(face[1])
+        v2 = EuclideanGeometry.coordinates_to_vector(face[2])
         ## plane parameters:
         # basis vector spanning the plane
         b1 = v1 - v0

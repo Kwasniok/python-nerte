@@ -7,8 +7,7 @@ from nerte.ray import Ray
 from nerte.camera import Camera
 from nerte.coordinates import Coordinates  # TODO: remove
 from nerte.vector import Vector  # TODO: remove
-
-from nerte.random_color_dispender import RandomColorDispenser
+from nerte.color import Color, BLACK
 
 from PIL import Image
 
@@ -58,28 +57,28 @@ class ImageRenderer(Renderer):
         geometry: Geometry,
         objects,
         pixel_location: (int, int),
-    ):
+    ) -> Color:
         # calculate light ray
         ray = self.ray_for_pixel(camera, *pixel_location)
         # detect intersections with objects and make object randomly colored
-        for obj, color in zip(objects, RandomColorDispenser()):
+        for obj in objects:
             for face in obj.faces():
                 if geometry.intersects(ray, face):
-                    return color
-        return (0, 0, 0)
+                    return obj.color
+        return BLACK
 
     def render(self, scene: Scene, geometry: Geometry) -> None:
         width, height = scene.camera.canvas_dimensions
         img = Image.new(mode="RGB", size=(width, height), color=(255, 0, 255))
         for x in range(width):
             for y in range(height):
-                pix = self.render_pixel(
+                pixel_color = self.render_pixel(
                     scene.camera,
                     geometry,
                     scene.objects(),
                     (x, y),
                 )
-                img.putpixel((x, y), pix)
+                img.putpixel((x, y), pixel_color.rgb)
         self._last_image = img
 
     def save(self, path: str):
