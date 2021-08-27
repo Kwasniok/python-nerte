@@ -1,3 +1,5 @@
+# pylint: disable=R0801
+
 import unittest
 from nerte.coordinates import Coordinates
 from nerte.face import Face

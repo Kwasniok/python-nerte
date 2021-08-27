@@ -1,3 +1,5 @@
+# pylint: disable=R0801
+
 import unittest
 import math
 from nerte.vector import Vector
