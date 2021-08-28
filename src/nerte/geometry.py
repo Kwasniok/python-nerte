@@ -139,7 +139,10 @@ class DummyNonEuclideanGeometry(Geometry):
         v = ray.direction
         # new
         t = Coordinates(s[0] + v[0], s[1] + v[1], s[2] + v[2])
-        w = v + Vector(s[0], s[1], s[2]) * (self.bend_factor * self.ray_segment_length)
+        # bend
+        # w = v + Vector(s[0], s[1], s[2]) * (self.bend_factor * self.ray_segment_length)
+        # swirl
+        w = v + v.cross(Vector(s[0], s[1], s[2])) * self.bend_factor
         w = w.normalized() * self.ray_segment_length
         return Ray(start=t, direction=w)
 
