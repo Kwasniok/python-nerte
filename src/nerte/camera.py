@@ -1,8 +1,16 @@
+""""Module for representing a camera."""
+
 from nerte.coordinates import Coordinates
 from nerte.vector import Vector
 
 
 class Camera:
+    # pylint: disable=R0903
+    """Represenation of a camera.
+    Each camera defines its properties in the world via its detector and on the
+    screen via its canvas.
+    """
+
     def __init__(
         self,
         location: Coordinates,

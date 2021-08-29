@@ -1,7 +1,11 @@
+"""Module for representing faces."""
+
 from nerte.coordinates import Coordinates
 
 
 class Face:
+    """"Represenation of a face as a triple of coordinates."""
+
     def __init__(
         self,
         c0: Coordinates,

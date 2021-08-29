@@ -1,4 +1,12 @@
+"""Module for Coordinate representation."""
+
+
 class Coordinates:
+    """
+    Represenation of a coordinate as a triple of real numbers.
+    NOTE: Coordinates aren't vectors in the general case.
+    """
+
     def __init__(self, x1, x2, x3):
         self._x = (x1, x2, x3)
 

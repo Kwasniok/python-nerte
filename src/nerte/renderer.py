@@ -1,5 +1,9 @@
+"""Module for rendering a scene with respect to a geometry."""
+
 from abc import ABC, abstractmethod
 from enum import Enum
+
+from PIL import Image
 
 from nerte.scene import Scene
 from nerte.geometry import Geometry
@@ -7,49 +11,80 @@ from nerte.ray import Ray
 from nerte.camera import Camera
 from nerte.coordinates import Coordinates  # TODO: remove
 from nerte.vector import Vector  # TODO: remove
-from nerte.color import Color, BLACK
+from nerte.color import Color, Colors
 
-from PIL import Image
 
 # pylint: disable=R0903
 class Renderer(ABC):
+    """Interface for renderers."""
+
+    # pylint: disable=W0107
     @abstractmethod
     def render(self, scene: Scene, geometry: Geometry) -> None:
+        """Renders a scene with the given geometry."""
         pass
 
 
+# TODO: not acceptable for non-euclidean geometry
+# auxiliar trivial conversions
+coords_to_vec = lambda c: Vector(c[0], c[1], c[2])
+vec_to_coords = lambda v: Coordinates(v[0], v[1], v[2])
+
+
+def orthographic_ray_for_pixel(
+    camera: Camera, pixel_x: int, pixel_y: int
+) -> Ray:
+    """
+    Returns the initial ray leaving the cameras detector for a given pixel on
+    the canvas in orthographic projection.
+    NOTE: All initial rays are parallel.
+    """
+    width, height = camera.canvas_dimensions
+    width_vec, height_vec = camera.detector_manifold
+    start = vec_to_coords(
+        coords_to_vec(camera.location)
+        + (width_vec * (pixel_x / width - 0.5))
+        + (height_vec * (0.5 - pixel_y / height))
+    )
+    return Ray(start=start, direction=camera.direction)
+
+
+def perspective_ray_for_pixel(
+    camera: Camera, pixel_x: int, pixel_y: int
+) -> Ray:
+    """
+    Returns the initial ray leaving the cameras detector for a given pixel on
+    the canvas in perspective projection.
+    NOTE: All initial rays converge in one point.
+    """
+    width, height = camera.canvas_dimensions
+    width_vec, height_vec = camera.detector_manifold
+    direction = (
+        camera.direction
+        + (width_vec * (pixel_x / width - 0.5))
+        + (height_vec * (0.5 - pixel_y / height))
+    )
+    return Ray(start=camera.start, direction=direction)
+
+
 class ImageRenderer(Renderer):
+    """Renderer which stores the result in an image."""
+
     class Mode(Enum):
-        PERSPECTIVE = "PERSPECTIVE"
+        """Projection modes of nerte.ImageRenderer."""
+
         ORTHOGRAPHIC = "ORTHOGRAPHIC"
+        PERSPECTIVE = "PERSPECTIVE"
+
+    # selects initial ray generator based on projection mode
+    ray_for_pixel = {
+        Mode.ORTHOGRAPHIC: orthographic_ray_for_pixel,
+        Mode.PERSPECTIVE: perspective_ray_for_pixel,
+    }
 
     def __init__(self, mode: "ImageRenderer.Mode"):
         self.mode = mode
         self._last_image = None
-
-    def ray_for_pixel(self, camera: Camera, x: int, y: int) -> Ray:
-        s = camera.location
-        u = camera.direction
-        width, height = camera.canvas_dimensions
-        wv, hv = camera.detector_manifold
-        # orthographic
-        if self.mode is ImageRenderer.Mode.ORTHOGRAPHIC:
-            # TODO: not acceptable for non euclidean geometry
-            coords_to_vec = lambda c: Vector(*iter(c))
-            vec_to_coords = lambda v: Coordinates(*iter(v))
-            s = vec_to_coords(
-                coords_to_vec(s) + (wv * (x / width - 0.5)) + (hv * (0.5 - y / height))
-            )
-        # perspective
-        elif self.mode is ImageRenderer.Mode.PERSPECTIVE:
-            u = u + (wv * (x / width - 0.5)) + (hv * (0.5 - y / height))
-        else:
-            # undefined mode
-            raise ValueError(
-                "Cannot render pixel. Mode {} is not defined.".format(self.mode)
-            )
-        ray = Ray(start=s, direction=u)
-        return ray
 
     def render_pixel(
         self,
@@ -58,33 +93,39 @@ class ImageRenderer(Renderer):
         objects,
         pixel_location: (int, int),
     ) -> Color:
+        """Returns the color of the pixel."""
+
         # calculate light ray
-        ray = self.ray_for_pixel(camera, *pixel_location)
+        ray = ImageRenderer.ray_for_pixel[self.mode](camera, *pixel_location)
         # detect intersections with objects and make object randomly colored
         for obj in objects:
             for face in obj.faces():
                 if geometry.intersects(ray, face):
                     return obj.color
-        return BLACK
+        return Colors.BLACK
 
     def render(self, scene: Scene, geometry: Geometry) -> None:
         width, height = scene.camera.canvas_dimensions
-        img = Image.new(mode="RGB", size=(width, height), color=(255, 0, 255))
-        for x in range(width):
-            for y in range(height):
+        # initialize image with pink background
+        image = Image.new(mode="RGB", size=(width, height), color=(255, 0, 255))
+        # paint in pixels
+        for pixel_x in range(width):
+            for pixel_y in range(height):
                 pixel_color = self.render_pixel(
                     scene.camera,
                     geometry,
                     scene.objects(),
-                    (x, y),
+                    (pixel_x, pixel_y),
                 )
-                img.putpixel((x, y), pixel_color.rgb)
-        self._last_image = img
+                image.putpixel((pixel_x, pixel_y), pixel_color.rgb)
+        self._last_image = image
 
     def save(self, path: str):
+        """Saves the last image rendered if it exists."""
         if self._last_image is not None:
             self._last_image.save(path)
 
     def show(self):
+        """Shows the last image rendered on screen if it exists."""
         if self._last_image is not None:
             self._last_image.show()

@@ -1,17 +1,28 @@
+"""Module for representation and management of colors."""
+
 import random
-from enum import Enum
 
 
 class Color:
+    # pylint: disable=R0903
+    """Represenation of a color."""
+
     def __init__(self, r, g, b):
         self.rgb = (r, g, b)
 
 
-BLACK = Color(0, 0, 0)
-GRAY = Color(128, 128, 128)
+class Colors:
+    # pylint: disable=R0903
+    """Bundle of color constants."""
+
+    BLACK = Color(0, 0, 0)
+    GRAY = Color(128, 128, 128)
+    WHITE = Color(255, 255, 255)
 
 
-class RandomColorDispenser:
+class RandomColorGenerator:
+    """Generator for random colors."""
+
     def __init__(self, seed=0):
         self._seed = seed
         self._last_random_state = None

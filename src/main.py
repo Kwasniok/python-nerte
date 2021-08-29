@@ -1,4 +1,4 @@
-import nerte
+"""Main script."""
 
 if __name__ == "__main__":
     pass

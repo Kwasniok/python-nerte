@@ -1,8 +1,13 @@
+"""Module for representing rays."""
+
 from nerte.coordinates import Coordinates
 from nerte.vector import Vector
 
 
 class Ray:
+    # pylint: disable=R0903
+    """Representation of a ray."""
+
     def __init__(self, start: Coordinates, direction: Vector):
         self.start = start
         self.direction = direction

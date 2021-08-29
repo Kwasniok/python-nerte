@@ -8,13 +8,13 @@ from nerte.face import Face
 from nerte.object import Object
 from nerte.camera import Camera
 from nerte.scene import Scene
-from nerte.color import RandomColorDispenser
+from nerte.color import RandomColorGenerator
 from nerte.geometry import Geometry, DummyNonEuclideanGeometry
 from nerte.renderer import ImageRenderer
 
 
 class Axis(IntEnum):
-    """represents an axis"""
+    """Representation of an axis."""
 
     X = 0
     Y = 1
@@ -22,25 +22,25 @@ class Axis(IntEnum):
 
 
 class Side(IntEnum):
-    """represents a half (triangle) of a square"""
+    """Representation of one half of a square (trinagle)."""
 
     THIS = -1
     THAT = +1
 
 
 class Distance(IntEnum):
-    """represents the negative or positive range of an axis"""
+    """Representation of the negative or positive range of an axis."""
 
     NEAR = -1
     FAR = +1
 
 
 # pseudo-random color generator
-COLOR = RandomColorDispenser()
+COLOR = RandomColorGenerator()
 
 
 def make_camera(canvas_dimension: int) -> Camera:
-    """creates a camera with preset values"""
+    """Creates a camera with preset values."""
 
     location = Coordinates(0.0, 0.0, -2.0)
     direction = Vector(0.0, 0.0, 1.0)
@@ -56,7 +56,10 @@ def make_camera(canvas_dimension: int) -> Camera:
 
 
 def make_triangle_object(fix: Axis, distance: Distance, side: Side) -> Object:
-    """creates a section of a cube (triangle) where each section gets assigned a random color"""
+    """
+    Creates a section of a cube (triangle) where each section gets assigned
+    a random color.
+    """
 
     # intermediate matrix for coordinate coefficients
     coords = [[None for _ in range(3)] for _ in range(3)]
@@ -82,7 +85,9 @@ def make_triangle_object(fix: Axis, distance: Distance, side: Side) -> Object:
 
 
 def make_scene(canvas_dimension: int) -> Scene:
-    """creates a scene with a camera pointing inside a cube with no front face"""
+    """
+    Creates a scene with a camera pointing inside a cube with no front face.
+    """
 
     camera = make_camera(canvas_dimension)
     scene = Scene(camera=camera)
@@ -132,8 +137,10 @@ def render(
     file_prefix: str,
     show: bool,
 ):
-    """renders a preset scene with non-euclidean geometry in orthographic and
-    perspective projection"""
+    """
+    Renders a preset scene with non-euclidean geometry in orthographic and
+    perspective projection.
+    """
 
     print("rendering orthographic projection ...")
     image_renderer = ImageRenderer(
@@ -155,7 +162,7 @@ def render(
 
 
 def main():
-    """creates and renders the demo scene"""
+    """Creates and renders the demo scene."""
 
     # NOTE: Increase the canvas dimension to improve the image quality.
     #       This will also increase rendering time!
