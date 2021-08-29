@@ -28,8 +28,8 @@ class Geometry(ABC):
 
 
 # auxiliar trivial conversions
-coords_to_vec = lambda c: AbstractVector(c[0], c[1], c[2])
-vec_to_coords = lambda v: Coordinates(v[0], v[1], v[2])
+_coords_to_vec = lambda c: AbstractVector(c[0], c[1], c[2])
+_vec_to_coords = lambda v: Coordinates(v[0], v[1], v[2])
 
 
 def _in_triange(
@@ -82,9 +82,9 @@ class EuclideanGeometry(Geometry):
         # pylint: disable=C0103
 
         # (tivially) convert face coordinates to vectors
-        v0 = coords_to_vec(face[0])
-        v1 = coords_to_vec(face[1])
-        v2 = coords_to_vec(face[2])
+        v0 = _coords_to_vec(face[0])
+        v1 = _coords_to_vec(face[1])
+        v2 = _coords_to_vec(face[2])
         ## plane parameters:
         # basis vector spanning the plane
         b1 = v1 - v0
@@ -96,7 +96,7 @@ class EuclideanGeometry(Geometry):
         # (x,y,z) in plane <=> (x,y,z) . n = l
 
         ## ray parameters
-        s = coords_to_vec(ray.start)
+        s = _coords_to_vec(ray.start)
         u = ray.direction
         # (x,y,z) in line <=> ∃t: s + t*u = (x,y,z)
 
@@ -140,9 +140,9 @@ def intersects_segment(ray: Ray, face: Face) -> bool:
     # pylint: disable=C0103
 
     # (tivially) convert face coordinates to vectors
-    v0 = coords_to_vec(face[0])
-    v1 = coords_to_vec(face[1])
-    v2 = coords_to_vec(face[2])
+    v0 = _coords_to_vec(face[0])
+    v1 = _coords_to_vec(face[1])
+    v2 = _coords_to_vec(face[2])
     ## plane parameters:
     # basis vector spanning the plane
     b1 = v1 - v0
@@ -154,7 +154,7 @@ def intersects_segment(ray: Ray, face: Face) -> bool:
     # (x,y,z) in plane <=> (x,y,z) . n = l
 
     ## ray parameters
-    s = coords_to_vec(ray.start)
+    s = _coords_to_vec(ray.start)
     u = ray.direction
     # (x,y,z) in line <=> ∃t: s + t*u = (x,y,z)
 

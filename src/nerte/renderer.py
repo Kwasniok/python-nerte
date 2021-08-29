@@ -27,8 +27,8 @@ class Renderer(ABC):
 
 # TODO: not acceptable for non-euclidean geometry
 # auxiliar trivial conversions
-coords_to_vec = lambda c: AbstractVector(c[0], c[1], c[2])
-vec_to_coords = lambda v: Coordinates(v[0], v[1], v[2])
+_coords_to_vec = lambda c: AbstractVector(c[0], c[1], c[2])
+_vec_to_coords = lambda v: Coordinates(v[0], v[1], v[2])
 
 
 def orthographic_ray_for_pixel(
@@ -41,8 +41,8 @@ def orthographic_ray_for_pixel(
     """
     width, height = camera.canvas_dimensions
     width_vec, height_vec = camera.detector_manifold
-    start = vec_to_coords(
-        coords_to_vec(camera.location)
+    start = _vec_to_coords(
+        _coords_to_vec(camera.location)
         + (width_vec * (pixel_x / width - 0.5))
         + (height_vec * (0.5 - pixel_y / height))
     )
