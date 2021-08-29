@@ -64,7 +64,7 @@ def perspective_ray_for_pixel(
         + (width_vec * (pixel_x / width - 0.5))
         + (height_vec * (0.5 - pixel_y / height))
     )
-    return Ray(start=camera.start, direction=direction)
+    return Ray(start=camera.location, direction=direction)
 
 
 class ImageRenderer(Renderer):

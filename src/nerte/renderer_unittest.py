@@ -45,11 +45,20 @@ class RendererTest(unittest.TestCase):
         self.geometry = EuclideanGeometry()
 
     # TODO: improve test
-    def test_render(self):
+    def test_render_orthographic(self):
         """Tests if render methods accepts the input."""
         # renderer
         r = ImageRenderer(
             mode=ImageRenderer.Mode.ORTHOGRAPHIC,
+        )
+        r.render(scene=self.scene, geometry=self.geometry)
+
+    # TODO: improve test
+    def test_render_perspective(self):
+        """Tests if render methods accepts the input."""
+        # renderer
+        r = ImageRenderer(
+            mode=ImageRenderer.Mode.PERSPECTIVE,
         )
         r.render(scene=self.scene, geometry=self.geometry)
 
