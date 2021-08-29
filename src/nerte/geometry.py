@@ -32,6 +32,39 @@ coords_to_vec = lambda c: Vector(c[0], c[1], c[2])
 vec_to_coords = lambda v: Coordinates(v[0], v[1], v[2])
 
 
+def _in_triange(b1: Vector, b2: Vector, x: Vector) -> bool:
+    # pylint: disable=C0103
+    """
+    Returns True, if x denotes a point within the triangle spanned by b1 and b2.
+    ASSERTION: It was previously checked that x lies in the plane spanned by
+               b1 and b2. Otherwise this test is meaningless.
+    """
+    # solve:
+    #   x = f1 * v1 + f2 * v2
+    # <=>
+    #   v1 . x = f1 * v1 . v1 + f2 * v1 . v2
+    #   v2 . x = f1 * v2 . v1 + f2 * v2 . v2
+    # <=>
+    #   B = A * F where
+    #       B = ⎛v1 . x⎞
+    #           ⎝v2 . x⎠
+    #       A = ⎛v1 . v1    v1 . v2⎞
+    #           ⎝v2 . v1    v2 . v2⎠
+    #       F = ⎛f1⎞
+    #           ⎝f2⎠
+    b1b1 = b1.dot(b1)
+    b1b2 = b1.dot(b2)
+    b2b2 = b2.dot(b2)
+    D = b1b1 * b2b2 - b1b2 * b1b2
+    b1x = x.dot(b1)
+    b2x = x.dot(b2)
+    f1 = (b1b1 * b2x - b1b2 * b1x) / D
+    f2 = (b2b2 * b1x - b1b2 * b2x) / D
+
+    # test if x is inside the triangle
+    return f1 >= 0 and f2 >= 0 and f1 + f2 < 1
+
+
 class EuclideanGeometry(Geometry):
     """Represenation of the euclidean geometry in Carthesian coordinates."""
 
@@ -47,7 +80,6 @@ class EuclideanGeometry(Geometry):
         # pylint: disable=C0103
 
         # (tivially) convert face coordinates to vectors
-        # NOTE: is optimized for speed
         v0 = coords_to_vec(face[0])
         v1 = coords_to_vec(face[1])
         v2 = coords_to_vec(face[2])
@@ -92,30 +124,9 @@ class EuclideanGeometry(Geometry):
 
         # intersection point with respect to the triangles origin
         x = (s + u * t) - v0
-        # solve:
-        #   x = f1 * v1 + f2 * v2
-        # <=>
-        #   v1 . x = f1 * v1 . v1 + f2 * v1 . v2
-        #   v2 . x = f1 * v2 . v1 + f2 * v2 . v2
-        # <=>
-        #   B = A * F where
-        #       B = ⎛v1 . x⎞
-        #           ⎝v2 . x⎠
-        #       A = ⎛v1 . v1    v1 . v2⎞
-        #           ⎝v2 . v1    v2 . v2⎠
-        #       F = ⎛f1⎞
-        #           ⎝f2⎠
-        b1b1 = b1.dot(b1)
-        b1b2 = b1.dot(b2)
-        b2b2 = b2.dot(b2)
-        D = b1b1 * b2b2 - b1b2 * b1b2
-        b1x = x.dot(b1)
-        b2x = x.dot(b2)
-        f1 = (b1b1 * b2x - b1b2 * b1x) / D
-        f2 = (b2b2 * b1x - b1b2 * b2x) / D
 
-        # test if x is inside the triangle
-        return f1 >= 0 and f2 >= 0 and f1 + f2 < 1
+        # return if x lies in the triangle spanned by b1 and b2
+        return _in_triange(b1, b2, x)
 
 
 def intersects_segment(ray: Ray, face: Face) -> bool:
@@ -127,7 +138,6 @@ def intersects_segment(ray: Ray, face: Face) -> bool:
     # pylint: disable=C0103
 
     # (tivially) convert face coordinates to vectors
-    # NOTE: is optimized for speed
     v0 = coords_to_vec(face[0])
     v1 = coords_to_vec(face[1])
     v2 = coords_to_vec(face[2])
@@ -176,34 +186,53 @@ def intersects_segment(ray: Ray, face: Face) -> bool:
 
     # intersection point with respect to the triangles origin
     x = (s + u * t) - v0
-    # solve:
-    #   x = f1 * v1 + f2 * v2
-    # <=>
-    #   v1 . x = f1 * v1 . v1 + f2 * v1 . v2
-    #   v2 . x = f1 * v2 . v1 + f2 * v2 . v2
-    # <=>
-    #   B = A * F where
-    #       B = ⎛v1 . x⎞
-    #           ⎝v2 . x⎠
-    #       A = ⎛v1 . v1    v1 . v2⎞
-    #           ⎝v2 . v1    v2 . v2⎠
-    #       F = ⎛f1⎞
-    #           ⎝f2⎠
-    b1b1 = b1.dot(b1)
-    b1b2 = b1.dot(b2)
-    b2b2 = b2.dot(b2)
-    D = b1b1 * b2b2 - b1b2 * b1b2
-    b1x = x.dot(b1)
-    b2x = x.dot(b2)
-    f1 = (b1b1 * b2x - b1b2 * b1x) / D
-    f2 = (b2b2 * b1x - b1b2 * b2x) / D
 
-    # test if x is inside the triangle
-    return f1 >= 0 and f2 >= 0 and f1 + f2 < 1
+    # return if x lies in the triangle spanned by b1 and b2
+    return _in_triange(b1, b2, x)
+
+
+class SegmentedRayGeometry(Geometry):
+    """
+    Represenation of a non-euclidean geometry where rays are bend in space
+    ans approximated with staright short ray segments.
+    """
+
+    def __init__(self, max_steps: int, max_ray_length: float):
+        # precision of floating point representations
+        # pylint: disable=C0103,C0144
+        self.𝜀 = 1e-8
+        self.max_steps = max_steps
+        self.max_ray_length = max_ray_length
+
+    @abstractmethod
+    def next_ray_segment(self, ray: Ray) -> Ray:
+        # pylint: disable=W0107
+        """
+        Returns the next ray segment (straight approximation of the geodesic
+        segment).
+        """
+        pass
+
+    @abstractmethod
+    def normalize_initial_ray(self, ray: Ray) -> Ray:
+        # pylint: disable=W0107
+        """
+        Returns the first ray segment (straight approximation of the geodesic
+        segment) based on a given ray.
+        """
+        pass
+
+    def intersects(self, ray: Ray, face: Face) -> bool:
+        current_ray_segment = self.normalize_initial_ray(ray)
+        for _ in range(self.max_steps):
+            if intersects_segment(current_ray_segment, face):
+                return True
+            current_ray_segment = self.next_ray_segment(current_ray_segment)
+        return False
 
 
 # TODO: remove?
-class DummyNonEuclideanGeometry(Geometry):
+class DummyNonEuclideanGeometry(SegmentedRayGeometry):
     """
     Represenation of a non-euclidean geometry similar to the euclidean geometry
     but 'bends' light rays slightly.
@@ -212,11 +241,7 @@ class DummyNonEuclideanGeometry(Geometry):
     def __init__(
         self, max_steps: int, max_ray_length: float, bend_factor: float
     ):
-        # precision of floating point representations
-        # pylint: disable=C0103,C0144
-        self.𝜀 = 1e-8
-        self.max_steps = max_steps
-        self.max_ray_length = max_ray_length
+        SegmentedRayGeometry.__init__(self, max_steps, max_ray_length)
         self.ray_segment_length = max_ray_length / max_steps
         self.bend_factor = bend_factor
 
@@ -224,16 +249,12 @@ class DummyNonEuclideanGeometry(Geometry):
         return True
 
     def next_ray_segment(self, ray: Ray) -> Ray:
-        """
-        Returns the next segment (straight approximation) of the geodesic.
-        """
-
         # pylint: disable=C0103
 
-        # old
+        # old segment
         s = ray.start
         v = ray.direction
-        # new
+        # new segment
         t = Coordinates(s[0] + v[0], s[1] + v[1], s[2] + v[2])
         # bend
         # w = v + Vector(s[0], s[1], s[2]) * (self.bend_factor * self.ray_segment_length)
@@ -242,13 +263,8 @@ class DummyNonEuclideanGeometry(Geometry):
         w = w.normalized() * self.ray_segment_length
         return Ray(start=t, direction=w)
 
-    def intersects(self, ray: Ray, face: Face) -> bool:
-        current_ray_segment = Ray(
+    def normalize_initial_ray(self, ray: Ray) -> Ray:
+        return Ray(
             start=ray.start,
             direction=ray.direction.normalized() * self.ray_segment_length,
         )
-        for _ in range(self.max_steps):
-            if intersects_segment(current_ray_segment, face):
-                return True
-            current_ray_segment = self.next_ray_segment(current_ray_segment)
-        return False
