@@ -1,7 +1,7 @@
 """"Module for representing a camera."""
 
 from nerte.geometry.coordinates import Coordinates
-from nerte.geometry.vector import Vector
+from nerte.geometry.vector import AbstractVector
 
 
 class Camera:
@@ -14,8 +14,11 @@ class Camera:
     def __init__(
         self,
         location: Coordinates,
-        direction: Vector,
-        detector_manifold: (Vector, Vector),  # TODO: must be generalized!
+        direction: AbstractVector,
+        detector_manifold: (
+            AbstractVector,
+            AbstractVector,
+        ),  # TODO: must be generalized!
         canvas_dimensions: (int, int),
     ):
         self.location = location

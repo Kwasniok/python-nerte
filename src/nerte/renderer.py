@@ -8,7 +8,7 @@ from PIL import Image
 from nerte.scene import Scene
 from nerte.geometry.ray import Ray
 from nerte.geometry.coordinates import Coordinates  # TODO: remove
-from nerte.geometry.vector import Vector  # TODO: remove
+from nerte.geometry.vector import AbstractVector  # TODO: remove
 from nerte.geometry.geometry import Geometry
 from nerte.camera import Camera
 from nerte.color import Color, Colors
@@ -27,7 +27,7 @@ class Renderer(ABC):
 
 # TODO: not acceptable for non-euclidean geometry
 # auxiliar trivial conversions
-coords_to_vec = lambda c: Vector(c[0], c[1], c[2])
+coords_to_vec = lambda c: AbstractVector(c[0], c[1], c[2])
 vec_to_coords = lambda v: Coordinates(v[0], v[1], v[2])
 
 

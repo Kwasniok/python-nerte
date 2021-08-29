@@ -3,7 +3,7 @@
 from enum import IntEnum
 
 from nerte.geometry.coordinates import Coordinates
-from nerte.geometry.vector import Vector
+from nerte.geometry.vector import AbstractVector
 from nerte.geometry.face import Face
 from nerte.geometry.geometry import Geometry, DummyNonEuclideanGeometry
 from nerte.object import Object
@@ -43,9 +43,9 @@ def make_camera(canvas_dimension: int) -> Camera:
     """Creates a camera with preset values."""
 
     location = Coordinates(0.0, 0.0, -2.0)
-    direction = Vector(0.0, 0.0, 1.0)
-    width_vec = Vector(1.0, 0.0, 0.0)
-    height_vec = Vector(0.0, 1.0, 0.0)
+    direction = AbstractVector(0.0, 0.0, 1.0)
+    width_vec = AbstractVector(1.0, 0.0, 0.0)
+    height_vec = AbstractVector(0.0, 1.0, 0.0)
     camera = Camera(
         location=location,
         direction=direction,

@@ -8,10 +8,11 @@ import unittest
 from itertools import permutations
 
 from nerte.geometry.coordinates import Coordinates
-from nerte.geometry.vector import Vector
+from nerte.geometry.vector import AbstractVector
 from nerte.geometry.ray import Ray
 from nerte.geometry.face import Face
 from nerte.geometry.geometry import EuclideanGeometry
+from nerte.geometry.geometry import DummyNonEuclideanGeometry
 
 
 # no test for abstract class/interface Geometry
@@ -33,7 +34,7 @@ class EuclideanGeometryIntersectsTest1(unittest.TestCase):
         s2 = Coordinates(0.0, 0.3, 0.0)  # one third of p2
         s3 = Coordinates(0.0, 0.0, 0.3)  # one third of p3
         ss = (s0, s1, s2, s3)
-        v = Vector(1.0, 1.0, 1.0)
+        v = AbstractVector(1.0, 1.0, 1.0)
         self.intersecting_rays = list(Ray(start=s, direction=v) for s in ss)
 
     def test_euclidean_intersects_1(self):
@@ -63,7 +64,7 @@ class EuclideanGeometryIntersectsTest2(unittest.TestCase):
         s2 = Coordinates(0.0, 0.3, 0.0)  # one third of p2
         s3 = Coordinates(0.0, 0.0, 0.3)  # one third of p3
         ss = (s0, s1, s2, s3)
-        v = Vector(1.0, 1.0, 1.0)
+        v = AbstractVector(1.0, 1.0, 1.0)
         self.non_intersecting_rays = list(
             Ray(start=s, direction=-v) for s in ss
         )
@@ -94,7 +95,7 @@ class EuclideanGeometryIntersectsTest3(unittest.TestCase):
         s2 = Coordinates(0.6, 0.0, 0.6)  # 'complement' of p2
         s3 = Coordinates(0.6, 0.6, 0.0)  # 'complement' of p3
         ss = (s1, s2, s3)
-        v = Vector(1.0, 1.0, 1.0)
+        v = AbstractVector(1.0, 1.0, 1.0)
         self.non_intersecting_rays = list(Ray(start=s, direction=v) for s in ss)
 
     def test_euclidean_intersects_3(self):
@@ -123,7 +124,7 @@ class EuclideanGeometryIntersectsTest4(unittest.TestCase):
         s2 = Coordinates(0.6, 0.0, 0.6)  # 'complement' of p2
         s3 = Coordinates(0.6, 0.6, 0.0)  # 'complement' of p3
         ss = (s1, s2, s3)
-        v = Vector(1.0, 1.0, 1.0)
+        v = AbstractVector(1.0, 1.0, 1.0)
         self.non_intersecting_rays = list(
             Ray(start=s, direction=-v) for s in ss
         )

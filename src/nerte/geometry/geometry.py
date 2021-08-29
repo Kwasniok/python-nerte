@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 
 from nerte.geometry.coordinates import Coordinates
-from nerte.geometry.vector import Vector
+from nerte.geometry.vector import AbstractVector, dot, cross, length, normalized
 from nerte.geometry.face import Face
 from nerte.geometry.ray import Ray
 
@@ -28,11 +28,13 @@ class Geometry(ABC):
 
 
 # auxiliar trivial conversions
-coords_to_vec = lambda c: Vector(c[0], c[1], c[2])
+coords_to_vec = lambda c: AbstractVector(c[0], c[1], c[2])
 vec_to_coords = lambda v: Coordinates(v[0], v[1], v[2])
 
 
-def _in_triange(b1: Vector, b2: Vector, x: Vector) -> bool:
+def _in_triange(
+    b1: AbstractVector, b2: AbstractVector, x: AbstractVector
+) -> bool:
     # pylint: disable=C0103
     """
     Returns True, if x denotes a point within the triangle spanned by b1 and b2.
@@ -52,12 +54,12 @@ def _in_triange(b1: Vector, b2: Vector, x: Vector) -> bool:
     #           ⎝v2 . v1    v2 . v2⎠
     #       F = ⎛f1⎞
     #           ⎝f2⎠
-    b1b1 = b1.dot(b1)
-    b1b2 = b1.dot(b2)
-    b2b2 = b2.dot(b2)
+    b1b1 = dot(b1, b1)
+    b1b2 = dot(b1, b2)
+    b2b2 = dot(b2, b2)
     D = b1b1 * b2b2 - b1b2 * b1b2
-    b1x = x.dot(b1)
-    b2x = x.dot(b2)
+    b1x = dot(x, b1)
+    b2x = dot(x, b2)
     f1 = (b1b1 * b2x - b1b2 * b1x) / D
     f2 = (b2b2 * b1x - b1b2 * b2x) / D
 
@@ -88,9 +90,9 @@ class EuclideanGeometry(Geometry):
         b1 = v1 - v0
         b2 = v2 - v0
         # normal vector of plane
-        n = (b1.cross(b2)).normalized()
+        n = normalized(cross(b1, b2))
         # level parameter (distance for plane to origin)
-        l = n.dot(v0)
+        l = dot(n, v0)
         # (x,y,z) in plane <=> (x,y,z) . n = l
 
         ## ray parameters
@@ -105,8 +107,8 @@ class EuclideanGeometry(Geometry):
 
         ## intersection of line and plane
         # true if b≠0 or (b=0 and a=0)
-        a = l - s.dot(n)
-        b = u.dot(n)
+        a = l - dot(s, n)
+        b = dot(u, n)
 
         if b == 0:
             if a != 0:
@@ -146,9 +148,9 @@ def intersects_segment(ray: Ray, face: Face) -> bool:
     b1 = v1 - v0
     b2 = v2 - v0
     # normal vector of plane
-    n = (b1.cross(b2)).normalized()
+    n = normalized(cross(b1, b2))
     # level parameter (distance for plane to origin)
-    l = n.dot(v0)
+    l = dot(n, v0)
     # (x,y,z) in plane <=> (x,y,z) . n = l
 
     ## ray parameters
@@ -163,8 +165,8 @@ def intersects_segment(ray: Ray, face: Face) -> bool:
 
     ## intersection of line and plane
     # true if b≠0 or (b=0 and a=0)
-    a = l - s.dot(n)
-    b = u.dot(n)
+    a = l - dot(s, n)
+    b = dot(u, n)
 
     if b == 0:
         if a != 0:
@@ -259,12 +261,12 @@ class DummyNonEuclideanGeometry(SegmentedRayGeometry):
         # bend
         # w = v + Vector(s[0], s[1], s[2]) * (self.bend_factor * self.ray_segment_length)
         # swirl
-        w = v + v.cross(Vector(s[0], s[1], s[2])) * self.bend_factor
-        w = w.normalized() * self.ray_segment_length
+        w = v + cross(v, AbstractVector(s[0], s[1], s[2])) * self.bend_factor
+        w = normalized(w) * self.ray_segment_length
         return Ray(start=t, direction=w)
 
     def normalize_initial_ray(self, ray: Ray) -> Ray:
         return Ray(
             start=ray.start,
-            direction=ray.direction.normalized() * self.ray_segment_length,
+            direction=normalized(ray.direction) * self.ray_segment_length,
         )

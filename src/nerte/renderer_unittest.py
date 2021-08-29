@@ -6,7 +6,7 @@
 
 import unittest
 from nerte.geometry.coordinates import Coordinates
-from nerte.geometry.vector import Vector
+from nerte.geometry.vector import AbstractVector
 from nerte.geometry.face import Face
 from nerte.object import Object
 from nerte.camera import Camera
@@ -28,10 +28,10 @@ class RendererTest(unittest.TestCase):
         obj.add_face(f)
         # camera
         loc = Coordinates(-10.0, 0.0, 0.0)
-        direction = Vector(1.0, 0.0, 0.0)
+        direction = AbstractVector(1.0, 0.0, 0.0)
         dim = 25
-        wv = Vector(1.0, 0.0, 0.0)
-        hv = Vector(0.0, 1.0, 0.0)
+        wv = AbstractVector(1.0, 0.0, 0.0)
+        hv = AbstractVector(0.0, 1.0, 0.0)
         cam = Camera(
             location=loc,
             direction=direction,

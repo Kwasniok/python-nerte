@@ -6,14 +6,14 @@
 
 import unittest
 from nerte.geometry.coordinates import Coordinates
-from nerte.geometry.vector import Vector
+from nerte.geometry.vector import AbstractVector
 from nerte.geometry.ray import Ray
 
 
 class RayTest(unittest.TestCase):
     def setUp(self):
         self.start = Coordinates(0.0, 0.0, 0.0)
-        self.direction = Vector(1.0, 0.0, 0.0)
+        self.direction = AbstractVector(1.0, 0.0, 0.0)
 
     def test(self):
         """Tests the constructor."""
