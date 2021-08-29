@@ -5,9 +5,9 @@
 # pylint: disable=C0144
 
 import unittest
-from nerte.coordinates import Coordinates
-from nerte.vector import Vector
-from nerte.ray import Ray
+from nerte.geometry.coordinates import Coordinates
+from nerte.geometry.vector import Vector
+from nerte.geometry.ray import Ray
 
 
 class RayTest(unittest.TestCase):

@@ -7,7 +7,7 @@
 
 import unittest
 import math
-from nerte.vector import Vector
+from nerte.geometry.vector import Vector
 
 
 # equivalence of floating point representations with finite precision

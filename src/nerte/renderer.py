@@ -6,11 +6,11 @@ from enum import Enum
 from PIL import Image
 
 from nerte.scene import Scene
-from nerte.geometry import Geometry
-from nerte.ray import Ray
+from nerte.geometry.ray import Ray
+from nerte.geometry.coordinates import Coordinates  # TODO: remove
+from nerte.geometry.vector import Vector  # TODO: remove
+from nerte.geometry.geometry import Geometry
 from nerte.camera import Camera
-from nerte.coordinates import Coordinates  # TODO: remove
-from nerte.vector import Vector  # TODO: remove
 from nerte.color import Color, Colors
 
 

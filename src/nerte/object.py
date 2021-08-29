@@ -1,6 +1,6 @@
 """Module for representing an object."""
 
-from nerte.face import Face
+from nerte.geometry.face import Face
 from nerte.color import Color, Colors
 
 

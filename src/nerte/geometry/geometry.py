@@ -2,10 +2,10 @@
 
 from abc import ABC, abstractmethod
 
-from nerte.coordinates import Coordinates
-from nerte.vector import Vector
-from nerte.face import Face
-from nerte.ray import Ray
+from nerte.geometry.coordinates import Coordinates
+from nerte.geometry.vector import Vector
+from nerte.geometry.face import Face
+from nerte.geometry.ray import Ray
 
 
 class Geometry(ABC):

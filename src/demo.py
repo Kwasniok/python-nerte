@@ -2,14 +2,14 @@
 
 from enum import IntEnum
 
-from nerte.coordinates import Coordinates
-from nerte.vector import Vector
-from nerte.face import Face
+from nerte.geometry.coordinates import Coordinates
+from nerte.geometry.vector import Vector
+from nerte.geometry.face import Face
+from nerte.geometry.geometry import Geometry, DummyNonEuclideanGeometry
 from nerte.object import Object
 from nerte.camera import Camera
 from nerte.scene import Scene
 from nerte.color import RandomColorGenerator
-from nerte.geometry import Geometry, DummyNonEuclideanGeometry
 from nerte.renderer import ImageRenderer
 
 

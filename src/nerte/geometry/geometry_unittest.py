@@ -7,11 +7,11 @@
 import unittest
 from itertools import permutations
 
-from nerte.coordinates import Coordinates
-from nerte.vector import Vector
-from nerte.ray import Ray
-from nerte.face import Face
-from nerte.geometry import EuclideanGeometry
+from nerte.geometry.coordinates import Coordinates
+from nerte.geometry.vector import Vector
+from nerte.geometry.ray import Ray
+from nerte.geometry.face import Face
+from nerte.geometry.geometry import EuclideanGeometry
 
 
 # no test for abstract class/interface Geometry

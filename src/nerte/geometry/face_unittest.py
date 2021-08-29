@@ -5,8 +5,8 @@
 # pylint: disable=C0144
 
 import unittest
-from nerte.coordinates import Coordinates
-from nerte.face import Face
+from nerte.geometry.coordinates import Coordinates
+from nerte.geometry.face import Face
 
 
 class FaceTest(unittest.TestCase):

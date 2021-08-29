@@ -1,7 +1,7 @@
 """Module for representing rays."""
 
-from nerte.coordinates import Coordinates
-from nerte.vector import Vector
+from nerte.geometry.coordinates import Coordinates
+from nerte.geometry.vector import Vector
 
 
 class Ray:

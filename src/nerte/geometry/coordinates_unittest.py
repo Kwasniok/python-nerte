@@ -5,7 +5,7 @@
 # pylint: disable=C0144
 
 import unittest
-from nerte.coordinates import Coordinates
+from nerte.geometry.coordinates import Coordinates
 
 
 class CoordinatesTest(unittest.TestCase):

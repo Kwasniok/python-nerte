@@ -1,6 +1,6 @@
 """Module for representing faces."""
 
-from nerte.coordinates import Coordinates
+from nerte.geometry.coordinates import Coordinates
 
 
 class Face:
