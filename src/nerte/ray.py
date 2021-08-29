@@ -6,7 +6,12 @@ from nerte.vector import Vector
 
 class Ray:
     # pylint: disable=R0903
-    """Representation of a ray."""
+    """
+    Representation of a ray.
+    A ray has a starting point (coordinate) and a direction (vector).
+    NOTE: The length of the directional vector may be important or irrelevant
+    depending on the usecase.
+    """
 
     def __init__(self, start: Coordinates, direction: Vector):
         self.start = start
