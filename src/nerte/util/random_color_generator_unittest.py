@@ -7,7 +7,7 @@
 import unittest
 import itertools
 
-from nerte.random_color_generator import RandomColorGenerator
+from nerte.util.random_color_generator import RandomColorGenerator
 
 
 class RandomColorGeneratorTest(unittest.TestCase):
