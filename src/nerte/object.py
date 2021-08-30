@@ -2,8 +2,8 @@
 
 from typing import Optional
 
-from nerte.geometry.face import Face
-from nerte.color import Color, Colors
+from nerte.values.face import Face
+from nerte.values.color import Color, Colors
 
 
 class Object:

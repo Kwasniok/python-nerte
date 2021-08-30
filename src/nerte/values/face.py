@@ -2,7 +2,7 @@
 
 from collections.abc import Iterator
 
-from nerte.geometry.coordinates import Coordinates
+from nerte.values.coordinates import Coordinates
 
 
 class Face:

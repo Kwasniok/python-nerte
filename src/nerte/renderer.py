@@ -7,14 +7,14 @@ from enum import Enum
 
 from PIL import Image
 
-from nerte.scene import Scene
-from nerte.geometry.ray import Ray
-from nerte.geometry.coordinates import Coordinates  # TODO: remove
-from nerte.geometry.vector import AbstractVector  # TODO: remove
-from nerte.geometry.geometry import Geometry
+from nerte.values.ray import Ray
+from nerte.values.coordinates import Coordinates  # TODO: remove
+from nerte.values.vector import AbstractVector  # TODO: remove
+from nerte.values.color import Color, Colors
 from nerte.camera import Camera
 from nerte.object import Object
-from nerte.color import Color, Colors
+from nerte.scene import Scene
+from nerte.geometry.geometry import Geometry
 
 
 # pylint: disable=R0903

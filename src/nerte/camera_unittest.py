@@ -5,8 +5,8 @@
 # pylint: disable=C0144
 
 import unittest
-from nerte.geometry.coordinates import Coordinates
-from nerte.geometry.vector import AbstractVector
+from nerte.values.coordinates import Coordinates
+from nerte.values.vector import AbstractVector
 from nerte.camera import Camera
 
 

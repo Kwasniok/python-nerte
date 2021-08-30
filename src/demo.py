@@ -2,15 +2,15 @@
 
 from enum import IntEnum
 
-from nerte.geometry.coordinates import Coordinates
-from nerte.geometry.vector import AbstractVector
-from nerte.geometry.face import Face
-from nerte.geometry.geometry import Geometry
-from nerte.geometry.swirl_geometry import SwirlGeometry
+from nerte.values.coordinates import Coordinates
+from nerte.values.vector import AbstractVector
+from nerte.values.face import Face
+from nerte.random_color_generator import RandomColorGenerator
 from nerte.object import Object
 from nerte.camera import Camera
 from nerte.scene import Scene
-from nerte.color import RandomColorGenerator
+from nerte.geometry.geometry import Geometry
+from nerte.geometry.swirl_geometry import SwirlGeometry
 from nerte.renderer import ImageRenderer
 
 

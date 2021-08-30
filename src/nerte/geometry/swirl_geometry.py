@@ -1,8 +1,8 @@
 """Module for representing a dummy geometry."""
 
-from nerte.geometry.coordinates import Coordinates
-from nerte.geometry.ray import Ray
-from nerte.geometry.vector import AbstractVector, cross, normalized
+from nerte.values.coordinates import Coordinates
+from nerte.values.ray import Ray
+from nerte.values.vector import AbstractVector, cross, normalized
 from nerte.geometry.geometry import SegmentedRayGeometry
 
 
