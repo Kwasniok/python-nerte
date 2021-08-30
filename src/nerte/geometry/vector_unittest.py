@@ -13,9 +13,14 @@ from nerte.geometry.vector import AbstractVector, dot, cross, length, normalized
 # equivalence of floating point representations with finite precision
 𝜀 = 1e-8
 # True, iff two floats agree up to the (absolute) precision 𝜀
-equiv = lambda x, y: abs(x - y) < 𝜀
+def equiv(x: float, y: float) -> bool:
+    return abs(x - y) < 𝜀
+
+
 # True, iff two vectors component-wise agree up to the (absolute) precision 𝜀
-vec_equiv = lambda x, y: all(equiv(i, j) for i, j in zip(x, y))
+def vec_equiv(x: AbstractVector, y: AbstractVector) -> bool:
+    return equiv(x[0], y[0]) and equiv(x[1], y[1]) and equiv(x[2], y[2])
+
 
 # standart Carthesian basis
 orth_norm_basis = (
@@ -29,7 +34,7 @@ scalar_factors = (0.0, 1.2345, -0.98765)
 
 
 class VectorTest(unittest.TestCase):
-    def assertEquiv(self, x, y):
+    def assertEquiv(self, x: float, y: float) -> None:
         """
         Asserts the equivalence of two floats.
         Note: This replaces assertTrue(x == y) for float.
@@ -41,7 +46,7 @@ class VectorTest(unittest.TestCase):
                 "Scalar {} is not equivalent to {}.".format(x, y)
             ) from ae
 
-    def assertVectorEquiv(self, x, y):
+    def assertVectorEquiv(self, x: AbstractVector, y: AbstractVector) -> None:
         """
         Asserts ths equivalence of two vectors.
         Note: This replaces assertTrue(x == y) for nerte.Vector.
@@ -53,16 +58,14 @@ class VectorTest(unittest.TestCase):
                 "Vector {} is not equivalent to {}.".format(x, y)
             ) from ae
 
-    def test_item(self):
+    def test_item(self) -> None:
         """Tests item related operations."""
         cs = (1.0, 2.0, 3.0)
         v = AbstractVector(*cs)
-        for x, i in zip(iter(v), range(3)):
-            self.assertEquiv(x, v[i])
-        for x, y in zip(iter(v), cs):
-            self.assertEquiv(x, y)
+        for i, c in zip(range(3), cs):
+            self.assertEquiv(v[i], c)
 
-    def test_math_linear(self):
+    def test_math_linear(self) -> None:
         """Tests linear operations on vectors."""
         v1 = AbstractVector(1.1, 2.2, 3.3)
         v2 = AbstractVector(4.4, 5.5, 6.6)
@@ -75,7 +78,7 @@ class VectorTest(unittest.TestCase):
         self.assertVectorEquiv(v2 - v1, v5)
         self.assertVectorEquiv(v5 / 3.3, v4)
 
-    def test_math_length(self):
+    def test_math_length(self) -> None:
         """Tests vector length."""
         v0 = AbstractVector(0.0, 0.0, 0.0)
         v1 = AbstractVector(1.0, 2.0, -3.0)
@@ -83,13 +86,13 @@ class VectorTest(unittest.TestCase):
         self.assertEquiv(length(v0), 0.0)
         self.assertEquiv(length(v1) ** 2, 14.0)
 
-    def test_math_normalized(self):
+    def test_math_normalized(self) -> None:
         """Tests vector normalization."""
         n = AbstractVector(1.0, 1.0, 1.0) / math.sqrt(3)
         w = AbstractVector(7.0, 7.0, 7.0)
         self.assertVectorEquiv(normalized(w), n)
 
-    def test_math_dot_orthonormality(self):
+    def test_math_dot_orthonormality(self) -> None:
         """Tests dot product acting on orthonormal basis."""
         for v in orth_norm_basis:
             for w in orth_norm_basis:
@@ -98,7 +101,7 @@ class VectorTest(unittest.TestCase):
                 else:
                     self.assertEquiv(dot(v, w), 0.0)
 
-    def test_math_dot_linearity_left(self):
+    def test_math_dot_linearity_left(self) -> None:
         """Tests dot product's linearity in the left argument."""
         for u in orth_norm_basis:
             for v in orth_norm_basis:
@@ -110,7 +113,7 @@ class VectorTest(unittest.TestCase):
                                 dot(v, u) * a + dot(w, u) * b,
                             )
 
-    def test_math_dot_linearity_right(self):
+    def test_math_dot_linearity_right(self) -> None:
         """Tests dot product's linearity in the right argument."""
         for u in orth_norm_basis:
             for v in orth_norm_basis:
@@ -122,13 +125,13 @@ class VectorTest(unittest.TestCase):
                                 dot(u, v) * a + dot(u, w) * b,
                             )
 
-    def test_math_cross_orthonormality(self):
+    def test_math_cross_orthonormality(self) -> None:
         """Tests cross product acting on orthonormal basis."""
         for v in orth_norm_basis:
             for w in orth_norm_basis:
                 self.assertVectorEquiv(cross(v, w), -cross(w, v))
 
-    def test_math_cross_linearity_left(self):
+    def test_math_cross_linearity_left(self) -> None:
         """Tests cross product's linearity in the left argument."""
         for u in orth_norm_basis:
             for v in orth_norm_basis:
@@ -140,7 +143,7 @@ class VectorTest(unittest.TestCase):
                                 cross(v, u) * a + cross(w, u) * b,
                             )
 
-    def test_math_cross_linearity_right(self):
+    def test_math_cross_linearity_right(self) -> None:
         """Tests cross product's linearity in the right argument."""
         for u in orth_norm_basis:
             for v in orth_norm_basis:

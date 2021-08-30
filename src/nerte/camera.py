@@ -15,12 +15,12 @@ class Camera:
         self,
         location: Coordinates,
         direction: AbstractVector,
-        detector_manifold: (
+        detector_manifold: tuple[
             AbstractVector,
             AbstractVector,
-        ),  # TODO: must be generalized!
-        canvas_dimensions: (int, int),
-    ):
+        ],  # TODO: must be generalized!
+        canvas_dimensions: tuple[int, int],
+    ) -> None:
         self.location = location
         self.direction = direction
         self.detector_manifold = detector_manifold

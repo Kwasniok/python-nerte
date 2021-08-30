@@ -1,5 +1,7 @@
 """Module for rendering a scene with respect to a geometry."""
 
+from typing import Optional
+
 from abc import ABC, abstractmethod
 from enum import Enum
 
@@ -11,6 +13,7 @@ from nerte.geometry.coordinates import Coordinates  # TODO: remove
 from nerte.geometry.vector import AbstractVector  # TODO: remove
 from nerte.geometry.geometry import Geometry
 from nerte.camera import Camera
+from nerte.object import Object
 from nerte.color import Color, Colors
 
 
@@ -27,8 +30,12 @@ class Renderer(ABC):
 
 # TODO: not acceptable for non-euclidean geometry
 # auxiliar trivial conversions
-_coords_to_vec = lambda c: AbstractVector(c[0], c[1], c[2])
-_vec_to_coords = lambda v: Coordinates(v[0], v[1], v[2])
+def _coords_to_vec(coords: Coordinates) -> AbstractVector:
+    return AbstractVector(coords[0], coords[1], coords[2])
+
+
+def _vec_to_coords(vec: AbstractVector) -> Coordinates:
+    return Coordinates(vec[0], vec[1], vec[2])
 
 
 def orthographic_ray_for_pixel(
@@ -84,14 +91,14 @@ class ImageRenderer(Renderer):
 
     def __init__(self, mode: "ImageRenderer.Mode"):
         self.mode = mode
-        self._last_image = None
+        self._last_image: Optional[Image] = None
 
     def render_pixel(
         self,
         camera: Camera,
         geometry: Geometry,
-        objects,
-        pixel_location: (int, int),
+        objects: list[Object],
+        pixel_location: tuple[int, int],
     ) -> Color:
         """Returns the color of the pixel."""
 
@@ -120,12 +127,12 @@ class ImageRenderer(Renderer):
                 image.putpixel((pixel_x, pixel_y), pixel_color.rgb)
         self._last_image = image
 
-    def save(self, path: str):
+    def save(self, path: str) -> None:
         """Saves the last image rendered if it exists."""
         if self._last_image is not None:
             self._last_image.save(path)
 
-    def show(self):
+    def show(self) -> None:
         """Shows the last image rendered on screen if it exists."""
         if self._last_image is not None:
             self._last_image.show()

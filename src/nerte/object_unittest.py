@@ -12,7 +12,7 @@ from nerte.object import Object
 
 
 class ObjectTest(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         # face
         p0 = Coordinates(1.0, 0.0, 0.0)
         p1 = Coordinates(0.0, 1.0, 0.0)
@@ -21,14 +21,14 @@ class ObjectTest(unittest.TestCase):
         # color
         self.color = Color(1, 2, 3)
 
-    def test_faces(self):
+    def test_faces(self) -> None:
         """Tests face management."""
         obj = Object()
         self.assertFalse(self.face in obj.faces())
         obj.add_face(self.face)
         self.assertTrue(self.face in obj.faces())
 
-    def test_color(self):
+    def test_color(self) -> None:
         """Tests color attribute."""
         obj = Object()
         self.assertTrue(obj.color == Colors.GRAY)  # default color

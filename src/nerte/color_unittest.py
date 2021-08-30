@@ -11,14 +11,14 @@ from nerte.color import Color, Colors, RandomColorGenerator
 
 
 class ColorTest(unittest.TestCase):
-    def test_color(self):
+    def test_color(self) -> None:
         """Tests color rgb attribute."""
         c = Color(1, 2, 3)
         self.assertTrue(c.rgb == (1, 2, 3))
 
 
 class ColorsTest(unittest.TestCase):
-    def test_colors(self):
+    def test_colors(self) -> None:
         """Tests color constants."""
         self.assertTrue(Colors.BLACK.rgb == (0, 0, 0))
         self.assertTrue(Colors.GRAY.rgb == (128, 128, 128))
@@ -26,7 +26,7 @@ class ColorsTest(unittest.TestCase):
 
 
 class RandomColorGeneratorTest(unittest.TestCase):
-    def test_colors_generated_consistently(self):
+    def test_colors_generated_consistently(self) -> None:
         """Tests (pseudo-)random color generator for consistency."""
         # RandomColorGenerator with identical seeds must behave identical
 

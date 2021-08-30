@@ -1,5 +1,7 @@
 """Module for representation and management of colors."""
 
+from typing import Optional
+
 import random
 
 
@@ -7,8 +9,8 @@ class Color:
     # pylint: disable=R0903
     """Represenation of a color."""
 
-    def __init__(self, r, g, b):
-        self.rgb = (r, g, b)
+    def __init__(self, r: int, g: int, b: int) -> None:
+        self.rgb: tuple[int, int, int] = (r, g, b)
 
 
 class Colors:
@@ -23,12 +25,12 @@ class Colors:
 class RandomColorGenerator:
     """Generator for random colors."""
 
-    def __init__(self, seed=0):
+    def __init__(self, seed: int = 0) -> None:
         self._seed = seed
-        self._last_random_state = None
+        self._last_random_state: Optional[object] = None
         self.__reset()
 
-    def __reset(self):
+    def __reset(self) -> None:
         random.seed(self._seed)
         self._last_random_state = random.getstate()
 
@@ -41,5 +43,5 @@ class RandomColorGenerator:
         self._last_random_state = random.getstate()
         return color
 
-    def __iter__(self):
+    def __iter__(self) -> "RandomColorGenerator":
         return self

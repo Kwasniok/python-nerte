@@ -11,14 +11,14 @@ from nerte.camera import Camera
 
 
 class CameraTest(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.location = Coordinates(1.1, 2.2, 3.3)
         self.direction = AbstractVector(0.0, 0.0, 1.0)
         self.width_vector = AbstractVector(1.0, 0.0, 0.0)
         self.height_vector = AbstractVector(0.0, 1.0, 0.0)
         self.dim = 100
 
-    def test(self):
+    def test(self) -> None:
         """Tests camera attributes."""
         camera = Camera(
             location=self.location,

@@ -12,10 +12,10 @@ class AbstractVector:
           the vector is used in.
     """
 
-    def __init__(self, v1: float, v2: float, v3: float):
+    def __init__(self, v1: float, v2: float, v3: float) -> None:
         self._v = np.array([v1, v2, v3])
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "V(" + (",".join(repr(x) for x in self._v)) + ")"
 
     def __add__(self, other: "AbstractVector") -> "AbstractVector":
@@ -37,7 +37,7 @@ class AbstractVector:
         return self._v[i]
 
 
-def _abstract_vector_from_numpy(np_array) -> AbstractVector:
+def _abstract_vector_from_numpy(np_array: np.ndarray) -> AbstractVector:
     """
     Auxiliar function to wrap an np.array into a vetor.
     Note: For internal usage only! The input is trusted to be valid and no

@@ -16,7 +16,7 @@ def do_tests() -> unittest.TestResult:
     return test_runner.run(test_suite)
 
 
-def do_exit(results: unittest.TestResult):
+def do_exit(results: unittest.TestResult) -> None:
     """
     Exit the script with an exit code equals to the total amount of unsuccessful
     tests.
@@ -27,7 +27,7 @@ def do_exit(results: unittest.TestResult):
     sys.exit(exit_code)
 
 
-def main():
+def main() -> None:
     """
     Executes all unittests and exits with an code equals to the total amount of
     unsuccessful tests.

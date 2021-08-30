@@ -13,9 +13,9 @@ class Ray:
     depending on the usecase.
     """
 
-    def __init__(self, start: Coordinates, direction: AbstractVector):
+    def __init__(self, start: Coordinates, direction: AbstractVector) -> None:
         self.start = start
         self.direction = direction
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "Ray({}, {})".format(repr(self.start), repr(self.direction))

@@ -1,5 +1,7 @@
 """Module for representing faces."""
 
+from collections.abc import Iterator
+
 from nerte.geometry.coordinates import Coordinates
 
 
@@ -11,14 +13,18 @@ class Face:
         c0: Coordinates,
         c1: Coordinates,
         c2: Coordinates,
-    ):
-        self._coords = (c0, c1, c2)
+    ) -> None:
+        self._coords: tuple[Coordinates, Coordinates, Coordinates] = (
+            c0,
+            c1,
+            c2,
+        )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "F" + repr(self._coords)
 
     def __getitem__(self, i: int) -> Coordinates:
         return self._coords[i]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Coordinates]:
         return iter(self._coords)

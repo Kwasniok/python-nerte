@@ -10,13 +10,13 @@ from nerte.geometry.face import Face
 
 
 class FaceTest(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         c0 = Coordinates(1.0, 0.0, 0.0)
         c1 = Coordinates(0.0, 1.0, 0.0)
         c2 = Coordinates(0.0, 0.0, 1.0)
         self.coords = (c0, c1, c2)
 
-    def test_item(self):
+    def test_item(self) -> None:
         """Tests all item related operations."""
         f = Face(*self.coords)
 

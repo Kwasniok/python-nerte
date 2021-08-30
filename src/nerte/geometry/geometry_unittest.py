@@ -19,7 +19,7 @@ from nerte.geometry.geometry import DummyNonEuclideanGeometry
 
 
 class EuclideanGeometryIntersectsTest1(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
         p1 = Coordinates(1.0, 0.0, 0.0)
@@ -37,7 +37,7 @@ class EuclideanGeometryIntersectsTest1(unittest.TestCase):
         v = AbstractVector(1.0, 1.0, 1.0)
         self.intersecting_rays = list(Ray(start=s, direction=v) for s in ss)
 
-    def test_euclidean_intersects_1(self):
+    def test_euclidean_intersects_1(self) -> None:
         """
         Tests if rays intersect as expected.
         Each ray points 'forwards' towards the face and is parallel to face's
@@ -49,7 +49,7 @@ class EuclideanGeometryIntersectsTest1(unittest.TestCase):
 
 
 class EuclideanGeometryIntersectsTest2(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
         p1 = Coordinates(1.0, 0.0, 0.0)
@@ -69,7 +69,7 @@ class EuclideanGeometryIntersectsTest2(unittest.TestCase):
             Ray(start=s, direction=-v) for s in ss
         )
 
-    def test_euclidean_intersects_2(self):
+    def test_euclidean_intersects_2(self) -> None:
         """
         Tests if rays do not intersect as expected.
         Each ray points 'backwards' away from the face and is parallel to face's
@@ -81,7 +81,7 @@ class EuclideanGeometryIntersectsTest2(unittest.TestCase):
 
 
 class EuclideanGeometryIntersectsTest3(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
         p1 = Coordinates(1.0, 0.0, 0.0)
@@ -98,7 +98,7 @@ class EuclideanGeometryIntersectsTest3(unittest.TestCase):
         v = AbstractVector(1.0, 1.0, 1.0)
         self.non_intersecting_rays = list(Ray(start=s, direction=v) for s in ss)
 
-    def test_euclidean_intersects_3(self):
+    def test_euclidean_intersects_3(self) -> None:
         """
         Tests if rays do not intersect as expected.
         Each ray misses the face and is parallel to face's normal.
@@ -109,7 +109,7 @@ class EuclideanGeometryIntersectsTest3(unittest.TestCase):
 
 
 class EuclideanGeometryIntersectsTest4(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
         p1 = Coordinates(1.0, 0.0, 0.0)
@@ -129,7 +129,7 @@ class EuclideanGeometryIntersectsTest4(unittest.TestCase):
             Ray(start=s, direction=-v) for s in ss
         )
 
-    def test_euclidean_intersects_4(self):
+    def test_euclidean_intersects_4(self) -> None:
         """
         Tests if rays do not intersect as expected.
         Each ray completely misses the face and is parallel to face's normal.
@@ -141,7 +141,7 @@ class EuclideanGeometryIntersectsTest4(unittest.TestCase):
 
 # TODO: remove with original dummy
 class DummyGeometryTest(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
         p1 = Coordinates(1.0, 0.0, 0.0)
@@ -161,7 +161,7 @@ class DummyGeometryTest(unittest.TestCase):
         v = AbstractVector(1.0, 1.0, 1.0)
         self.intersecting_rays = list(Ray(start=s, direction=v) for s in ss)
 
-    def test_dummy_geometry_intersects(self):
+    def test_dummy_geometry_intersects(self) -> None:
         """
         Tests if rays intersect as expected.
         Each ray points 'forwards' towards the face and is parallel to face's

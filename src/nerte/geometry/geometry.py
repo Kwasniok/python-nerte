@@ -28,8 +28,12 @@ class Geometry(ABC):
 
 
 # auxiliar trivial conversions
-_coords_to_vec = lambda c: AbstractVector(c[0], c[1], c[2])
-_vec_to_coords = lambda v: Coordinates(v[0], v[1], v[2])
+def _coords_to_vec(coords: Coordinates) -> AbstractVector:
+    return AbstractVector(coords[0], coords[1], coords[2])
+
+
+def _vec_to_coords(vec: AbstractVector) -> Coordinates:
+    return Coordinates(vec[0], vec[1], vec[2])
 
 
 def _in_triange(
@@ -70,10 +74,10 @@ def _in_triange(
 class EuclideanGeometry(Geometry):
     """Represenation of the euclidean geometry in Carthesian coordinates."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # precision of floating point representations
         # pylint: disable=C0103,C0144
-        self.𝜀 = 1e-8
+        self.𝜀: float = 1e-8
 
     def is_valid_coordinate(self, coordinates: Coordinates) -> bool:
         return True

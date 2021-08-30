@@ -14,7 +14,7 @@ from nerte.scene import Scene
 
 
 class SceneTest(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         # object
         p0 = Coordinates(1.0, 0.0, 0.0)
         p1 = Coordinates(0.0, 1.0, 0.0)
@@ -36,12 +36,12 @@ class SceneTest(unittest.TestCase):
             detector_manifold=(wv, hv),
         )
 
-    def test_camera(self):
+    def test_camera(self) -> None:
         """Tests camera attribute."""
         scene = Scene(camera=self.camera)
         self.assertTrue(scene.camera == self.camera)
 
-    def test_objects(self):
+    def test_objects(self) -> None:
         """Tests object management."""
         scene = Scene(camera=self.camera)
         self.assertFalse(self.obj in scene.objects())

@@ -18,7 +18,7 @@ from nerte.renderer import ImageRenderer
 class RendererTest(unittest.TestCase):
     # not tested: ImageRenderer.show, ImageRenderer.save
 
-    def setUp(self):
+    def setUp(self) -> None:
         # object
         p0 = Coordinates(1.0, 0.0, 0.0)
         p1 = Coordinates(0.0, 1.0, 0.0)
@@ -45,7 +45,7 @@ class RendererTest(unittest.TestCase):
         self.geometry = EuclideanGeometry()
 
     # TODO: improve test
-    def test_render_orthographic(self):
+    def test_render_orthographic(self) -> None:
         """Tests if render methods accepts the input."""
         # renderer
         r = ImageRenderer(
@@ -54,7 +54,7 @@ class RendererTest(unittest.TestCase):
         r.render(scene=self.scene, geometry=self.geometry)
 
     # TODO: improve test
-    def test_render_perspective(self):
+    def test_render_perspective(self) -> None:
         """Tests if render methods accepts the input."""
         # renderer
         r = ImageRenderer(

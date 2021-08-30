@@ -9,10 +9,10 @@ from nerte.geometry.coordinates import Coordinates
 
 
 class CoordinatesTest(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.coeffs = (1.1, 2.2, 3.3)
 
-    def test_item(self):
+    def test_item(self) -> None:
         """Tests all item related operations."""
         c = Coordinates(*self.coeffs)
 

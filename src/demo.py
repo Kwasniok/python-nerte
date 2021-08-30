@@ -62,7 +62,7 @@ def make_triangle_object(fix: Axis, distance: Distance, side: Side) -> Object:
     """
 
     # intermediate matrix for coordinate coefficients
-    coords = [[None for _ in range(3)] for _ in range(3)]
+    coords = [[0.0 for _ in range(3)] for _ in range(3)]
     # create the coefficients based on the parameters
     for coord in coords:
         coord[fix.value] = 1.0 * distance.value
@@ -136,7 +136,7 @@ def render(
     output_path: str,
     file_prefix: str,
     show: bool,
-):
+) -> None:
     """
     Renders a preset scene with non-euclidean geometry in orthographic and
     perspective projection.
@@ -161,7 +161,7 @@ def render(
         image_renderer.show()
 
 
-def main():
+def main() -> None:
     """Creates and renders the demo scene."""
 
     # NOTE: Increase the canvas dimension to improve the image quality.

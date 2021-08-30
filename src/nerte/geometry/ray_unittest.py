@@ -11,11 +11,11 @@ from nerte.geometry.ray import Ray
 
 
 class RayTest(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.start = Coordinates(0.0, 0.0, 0.0)
         self.direction = AbstractVector(1.0, 0.0, 0.0)
 
-    def test(self):
+    def test(self) -> None:
         """Tests the constructor."""
         ray = Ray(start=self.start, direction=self.direction)
         self.assertTrue(ray.start == self.start)
