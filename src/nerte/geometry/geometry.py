@@ -36,7 +36,7 @@ def _vec_to_coords(vec: AbstractVector) -> Coordinates:
     return Coordinates(vec[0], vec[1], vec[2])
 
 
-def _in_triange(
+def _in_triangle(
     b1: AbstractVector, b2: AbstractVector, x: AbstractVector
 ) -> bool:
     # pylint: disable=C0103
@@ -132,7 +132,7 @@ class CarthesianGeometry(Geometry):
         x = (s + u * t) - v0
 
         # return if x lies in the triangle spanned by b1 and b2
-        return _in_triange(b1, b2, x)
+        return _in_triangle(b1, b2, x)
 
 
 def intersects_segment(ray: Ray, face: Face) -> bool:
@@ -194,7 +194,7 @@ def intersects_segment(ray: Ray, face: Face) -> bool:
     x = (s + u * t) - v0
 
     # return if x lies in the triangle spanned by b1 and b2
-    return _in_triange(b1, b2, x)
+    return _in_triangle(b1, b2, x)
 
 
 class SegmentedRayGeometry(Geometry):
