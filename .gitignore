@@ -1,3 +1,6 @@
+# General
+*~
+
 # Python
 __pycache__/
 *.pyc
@@ -5,6 +8,5 @@ __pycache__/
 
 # Project
 playground/
-uml-diagrams/
 images/
 videos/
