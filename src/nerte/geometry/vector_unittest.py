@@ -13,13 +13,13 @@ from nerte.geometry.vector import AbstractVector, dot, cross, length, normalized
 # equivalence of floating point representations with finite precision
 𝜀 = 1e-8
 # True, iff two floats agree up to the (absolute) precision 𝜀
-def equiv(x: float, y: float) -> bool:
+def _equiv(x: float, y: float) -> bool:
     return abs(x - y) < 𝜀
 
 
 # True, iff two vectors component-wise agree up to the (absolute) precision 𝜀
-def vec_equiv(x: AbstractVector, y: AbstractVector) -> bool:
-    return equiv(x[0], y[0]) and equiv(x[1], y[1]) and equiv(x[2], y[2])
+def _vec_equiv(x: AbstractVector, y: AbstractVector) -> bool:
+    return _equiv(x[0], y[0]) and _equiv(x[1], y[1]) and _equiv(x[2], y[2])
 
 
 # standart Carthesian basis
@@ -40,7 +40,7 @@ class VectorTest(unittest.TestCase):
         Note: This replaces assertTrue(x == y) for float.
         """
         try:
-            self.assertTrue(equiv(x, y))
+            self.assertTrue(_equiv(x, y))
         except AssertionError as ae:
             raise AssertionError(
                 "Scalar {} is not equivalent to {}.".format(x, y)
@@ -52,7 +52,7 @@ class VectorTest(unittest.TestCase):
         Note: This replaces assertTrue(x == y) for nerte.Vector.
         """
         try:
-            self.assertTrue(vec_equiv(x, y))
+            self.assertTrue(_vec_equiv(x, y))
         except AssertionError as ae:
             raise AssertionError(
                 "Vector {} is not equivalent to {}.".format(x, y)
