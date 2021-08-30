@@ -5,7 +5,8 @@ from enum import IntEnum
 from nerte.geometry.coordinates import Coordinates
 from nerte.geometry.vector import AbstractVector
 from nerte.geometry.face import Face
-from nerte.geometry.geometry import Geometry, DummyNonEuclideanGeometry
+from nerte.geometry.geometry import Geometry
+from nerte.geometry.swirl_geometry import SwirlGeometry
 from nerte.object import Object
 from nerte.camera import Camera
 from nerte.scene import Scene
@@ -171,9 +172,7 @@ def main() -> None:
     # NOTE: max_steps controlls the accuracy of the approximation
     # NOTE: Increase the bend_factor to increase the 'swirl' effect.
     #       bend_factor=0.0 results in euclidean geometry.
-    geo = DummyNonEuclideanGeometry(
-        max_steps=16, max_ray_length=10.0, bend_factor=0.4
-    )
+    geo = SwirlGeometry(max_steps=16, max_ray_length=10.0, bend_factor=0.4)
 
     # NOTE: Set show to False if images cannot be displayed.
     render(
