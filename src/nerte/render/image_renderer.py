@@ -79,7 +79,7 @@ class ImageRenderer(Renderer):
 
     def __init__(self, mode: "ImageRenderer.Mode"):
         self.mode = mode
-        self._last_image: Optional[Image] = None
+        self._last_image: Optional[Image.Image] = None
 
     def render_pixel(
         self,
