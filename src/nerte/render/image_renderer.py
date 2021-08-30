@@ -115,12 +115,6 @@ class ImageRenderer(Renderer):
                 image.putpixel((pixel_x, pixel_y), pixel_color.rgb)
         self._last_image = image
 
-    def save(self, path: str) -> None:
-        """Saves the last image rendered if it exists."""
-        if self._last_image is not None:
-            self._last_image.save(path)
-
-    def show(self) -> None:
-        """Shows the last image rendered on screen if it exists."""
-        if self._last_image is not None:
-            self._last_image.show()
+    def last_image(self) -> Optional[Image.Image]:
+        """Returns the last image rendered iff it exists or else None."""
+        return self._last_image

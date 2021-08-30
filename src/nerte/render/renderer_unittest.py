@@ -11,24 +11,23 @@ from nerte.values.face import Face
 from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
-from nerte.geometry.geometry import CarthesianGeometry
+from nerte.geometry.geometry import Geometry, CarthesianGeometry
 from nerte.render.renderer import Renderer
 
 
 class RendererTest(unittest.TestCase):
-    # not tested: ImageRenderer.show, ImageRenderer.save
-
     def setUp(self) -> None:
         # object
-        p0 = Coordinates(1.0, 0.0, 0.0)
-        p1 = Coordinates(0.0, 1.0, 0.0)
-        p2 = Coordinates(0.0, 0.0, 1.0)
-        f = Face(p0, p1, p2)
+        p0 = Coordinates(-1.0, -1.0, 0.0)
+        p1 = Coordinates(-1.0, +1.0, 0.0)
+        p2 = Coordinates(+1.0, -1.0, 0.0)
+        p3 = Coordinates(+1.0, +1.0, 0.0)
         obj = Object()
-        obj.add_face(f)
+        obj.add_face(Face(p0, p1, p3))
+        obj.add_face(Face(p0, p2, p3))
         # camera
-        loc = Coordinates(-10.0, 0.0, 0.0)
-        direction = AbstractVector(1.0, 0.0, 0.0)
+        loc = Coordinates(0.0, 0.0, -10.0)
+        direction = AbstractVector(0.0, 0.0, 1.0)
         dim = 25
         wv = AbstractVector(1.0, 0.0, 0.0)
         hv = AbstractVector(0.0, 1.0, 0.0)
@@ -44,9 +43,16 @@ class RendererTest(unittest.TestCase):
         # geometry
         self.geometry = CarthesianGeometry()
 
-    # TODO: improve test
-    def test_render(self) -> None:
-        pass
+    def test_render_implementation(self) -> None:
+        """Tests Render implementation."""
+
+        class DummyRenderer(Renderer):
+            # pylint: disable=R0903
+            def render(self, scene: Scene, geometry: Geometry) -> None:
+                pass
+
+        r = DummyRenderer()
+        r.render(scene=self.scene, geometry=self.geometry)
 
 
 if __name__ == "__main__":
