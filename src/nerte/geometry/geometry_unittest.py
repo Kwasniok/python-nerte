@@ -11,13 +11,13 @@ from nerte.geometry.coordinates import Coordinates
 from nerte.geometry.vector import AbstractVector
 from nerte.geometry.ray import Ray
 from nerte.geometry.face import Face
-from nerte.geometry.geometry import EuclideanGeometry
+from nerte.geometry.geometry import CarthesianGeometry
 
 
 # no test for abstract class/interface Geometry
 
 
-class EuclideanGeometryIntersectsTest1(unittest.TestCase):
+class CarthesianGeometryIntersectsTest1(unittest.TestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -26,7 +26,7 @@ class EuclideanGeometryIntersectsTest1(unittest.TestCase):
         p3 = Coordinates(0.0, 0.0, 1.0)
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry
-        self.geo = EuclideanGeometry()
+        self.geo = CarthesianGeometry()
         # rays pointing 'forwards' towards faces and parallel to face normal
         s0 = Coordinates(0.0, 0.0, 0.0)
         s1 = Coordinates(0.3, 0.0, 0.0)  # one third of p1
@@ -47,7 +47,7 @@ class EuclideanGeometryIntersectsTest1(unittest.TestCase):
                 self.assertTrue(self.geo.intersects(r, f))
 
 
-class EuclideanGeometryIntersectsTest2(unittest.TestCase):
+class CarthesianGeometryIntersectsTest2(unittest.TestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -56,7 +56,7 @@ class EuclideanGeometryIntersectsTest2(unittest.TestCase):
         p3 = Coordinates(0.0, 0.0, 1.0)
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry
-        self.geo = EuclideanGeometry()
+        self.geo = CarthesianGeometry()
         # rays pointing 'backwards' and are parallel to face's normal
         s0 = Coordinates(0.0, 0.0, 0.0)
         s1 = Coordinates(0.3, 0.0, 0.0)  # one third of p1
@@ -79,7 +79,7 @@ class EuclideanGeometryIntersectsTest2(unittest.TestCase):
                 self.assertFalse(self.geo.intersects(r, f))
 
 
-class EuclideanGeometryIntersectsTest3(unittest.TestCase):
+class CarthesianGeometryIntersectsTest3(unittest.TestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -88,7 +88,7 @@ class EuclideanGeometryIntersectsTest3(unittest.TestCase):
         p3 = Coordinates(0.0, 0.0, 1.0)
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry
-        self.geo = EuclideanGeometry()
+        self.geo = CarthesianGeometry()
         # rays miss the face and are parallel to face's normal
         s1 = Coordinates(0.0, 0.6, 0.6)  # 'complement' of p1
         s2 = Coordinates(0.6, 0.0, 0.6)  # 'complement' of p2
@@ -107,7 +107,7 @@ class EuclideanGeometryIntersectsTest3(unittest.TestCase):
                 self.assertFalse(self.geo.intersects(r, f))
 
 
-class EuclideanGeometryIntersectsTest4(unittest.TestCase):
+class CarthesianGeometryIntersectsTest4(unittest.TestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -116,7 +116,7 @@ class EuclideanGeometryIntersectsTest4(unittest.TestCase):
         p3 = Coordinates(0.0, 0.0, 1.0)
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry
-        self.geo = EuclideanGeometry()
+        self.geo = CarthesianGeometry()
         # rays completely miss the face by pointing away from it
         # and are parallel to face's normal
         s1 = Coordinates(0.0, 0.6, 0.6)  # 'complement' of p1

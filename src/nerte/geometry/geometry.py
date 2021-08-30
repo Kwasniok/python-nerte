@@ -71,7 +71,7 @@ def _in_triange(
     return f1 >= 0 and f2 >= 0 and f1 + f2 < 1
 
 
-class EuclideanGeometry(Geometry):
+class CarthesianGeometry(Geometry):
     """Represenation of the euclidean geometry in Carthesian coordinates."""
 
     def __init__(self) -> None:
@@ -229,6 +229,7 @@ class SegmentedRayGeometry(Geometry):
         pass
 
     def intersects(self, ray: Ray, face: Face) -> bool:
+        # TODO: test for coordinate validity
         current_ray_segment = self.normalize_initial_ray(ray)
         for _ in range(self.max_steps):
             if intersects_segment(current_ray_segment, face):

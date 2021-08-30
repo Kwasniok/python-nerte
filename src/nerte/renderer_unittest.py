@@ -11,7 +11,7 @@ from nerte.geometry.face import Face
 from nerte.object import Object
 from nerte.camera import Camera
 from nerte.scene import Scene
-from nerte.geometry.geometry import EuclideanGeometry
+from nerte.geometry.geometry import CarthesianGeometry
 from nerte.renderer import ImageRenderer
 
 
@@ -42,7 +42,7 @@ class RendererTest(unittest.TestCase):
         self.scene = Scene(camera=cam)
         self.scene.add_object(obj)
         # geometry
-        self.geometry = EuclideanGeometry()
+        self.geometry = CarthesianGeometry()
 
     # TODO: improve test
     def test_render_orthographic(self) -> None:
