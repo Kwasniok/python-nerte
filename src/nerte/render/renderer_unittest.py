@@ -12,7 +12,7 @@ from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
 from nerte.geometry.geometry import CarthesianGeometry
-from nerte.renderer import ImageRenderer
+from nerte.render.renderer import Renderer
 
 
 class RendererTest(unittest.TestCase):
@@ -45,22 +45,8 @@ class RendererTest(unittest.TestCase):
         self.geometry = CarthesianGeometry()
 
     # TODO: improve test
-    def test_render_orthographic(self) -> None:
-        """Tests if render methods accepts the input."""
-        # renderer
-        r = ImageRenderer(
-            mode=ImageRenderer.Mode.ORTHOGRAPHIC,
-        )
-        r.render(scene=self.scene, geometry=self.geometry)
-
-    # TODO: improve test
-    def test_render_perspective(self) -> None:
-        """Tests if render methods accepts the input."""
-        # renderer
-        r = ImageRenderer(
-            mode=ImageRenderer.Mode.PERSPECTIVE,
-        )
-        r.render(scene=self.scene, geometry=self.geometry)
+    def test_render(self) -> None:
+        pass
 
 
 if __name__ == "__main__":

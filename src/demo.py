@@ -11,7 +11,7 @@ from nerte.world.camera import Camera
 from nerte.world.scene import Scene
 from nerte.geometry.geometry import Geometry
 from nerte.geometry.swirl_geometry import SwirlGeometry
-from nerte.renderer import ImageRenderer
+from nerte.render.image_renderer import ImageRenderer
 
 
 class Axis(IntEnum):
