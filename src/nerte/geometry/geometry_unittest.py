@@ -8,7 +8,7 @@ import unittest
 from itertools import permutations
 
 from nerte.values.coordinates import Coordinates
-from nerte.values.vector import AbstractVector
+from nerte.values.linalg import AbstractVector
 from nerte.values.ray import Ray
 from nerte.values.face import Face
 from nerte.geometry.geometry import CarthesianGeometry

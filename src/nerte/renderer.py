@@ -9,7 +9,7 @@ from PIL import Image
 
 from nerte.values.ray import Ray
 from nerte.values.coordinates import Coordinates  # TODO: remove
-from nerte.values.vector import AbstractVector  # TODO: remove
+from nerte.values.linalg import AbstractVector  # TODO: remove
 from nerte.values.color import Color, Colors
 from nerte.camera import Camera
 from nerte.object import Object

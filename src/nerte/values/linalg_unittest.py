@@ -7,7 +7,7 @@
 
 import unittest
 import math
-from nerte.values.vector import (
+from nerte.values.linalg import (
     AbstractVector,
     AbstractMatrix,
     Metric,

@@ -2,7 +2,7 @@
 
 from nerte.values.coordinates import Coordinates
 from nerte.values.ray import Ray
-from nerte.values.vector import AbstractVector, cross, normalized
+from nerte.values.linalg import AbstractVector, cross, normalized
 from nerte.geometry.geometry import SegmentedRayGeometry
 
 

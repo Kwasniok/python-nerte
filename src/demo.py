@@ -3,7 +3,7 @@
 from enum import IntEnum
 
 from nerte.values.coordinates import Coordinates
-from nerte.values.vector import AbstractVector
+from nerte.values.linalg import AbstractVector
 from nerte.values.face import Face
 from nerte.random_color_generator import RandomColorGenerator
 from nerte.object import Object

@@ -1,7 +1,7 @@
 """Module for representing rays."""
 
 from nerte.values.coordinates import Coordinates
-from nerte.values.vector import AbstractVector
+from nerte.values.linalg import AbstractVector
 
 
 class Ray:

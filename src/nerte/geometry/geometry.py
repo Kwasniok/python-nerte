@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 
 from nerte.values.coordinates import Coordinates
-from nerte.values.vector import AbstractVector, dot, cross, normalized
+from nerte.values.linalg import AbstractVector, dot, cross, normalized
 from nerte.values.face import Face
 from nerte.values.ray import Ray
 
