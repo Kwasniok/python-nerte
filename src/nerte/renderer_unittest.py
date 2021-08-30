@@ -8,9 +8,9 @@ import unittest
 from nerte.values.coordinates import Coordinates
 from nerte.values.linalg import AbstractVector
 from nerte.values.face import Face
-from nerte.object import Object
-from nerte.camera import Camera
-from nerte.scene import Scene
+from nerte.world.object import Object
+from nerte.world.camera import Camera
+from nerte.world.scene import Scene
 from nerte.geometry.geometry import CarthesianGeometry
 from nerte.renderer import ImageRenderer
 

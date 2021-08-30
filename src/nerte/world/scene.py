@@ -1,7 +1,7 @@
 """Module for representing a scene"""
 
-from nerte.camera import Camera
-from nerte.object import Object
+from nerte.world.camera import Camera
+from nerte.world.object import Object
 
 # TODO: complete operations
 class Scene:

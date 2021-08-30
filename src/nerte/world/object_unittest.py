@@ -8,7 +8,7 @@ import unittest
 from nerte.values.coordinates import Coordinates
 from nerte.values.face import Face
 from nerte.values.color import Color, Colors
-from nerte.object import Object
+from nerte.world.object import Object
 
 
 class ObjectTest(unittest.TestCase):

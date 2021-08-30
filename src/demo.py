@@ -6,9 +6,9 @@ from nerte.values.coordinates import Coordinates
 from nerte.values.linalg import AbstractVector
 from nerte.values.face import Face
 from nerte.random_color_generator import RandomColorGenerator
-from nerte.object import Object
-from nerte.camera import Camera
-from nerte.scene import Scene
+from nerte.world.object import Object
+from nerte.world.camera import Camera
+from nerte.world.scene import Scene
 from nerte.geometry.geometry import Geometry
 from nerte.geometry.swirl_geometry import SwirlGeometry
 from nerte.renderer import ImageRenderer

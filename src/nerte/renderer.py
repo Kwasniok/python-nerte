@@ -11,9 +11,9 @@ from nerte.values.ray import Ray
 from nerte.values.coordinates import Coordinates  # TODO: remove
 from nerte.values.linalg import AbstractVector  # TODO: remove
 from nerte.values.color import Color, Colors
-from nerte.camera import Camera
-from nerte.object import Object
-from nerte.scene import Scene
+from nerte.world.camera import Camera
+from nerte.world.object import Object
+from nerte.world.scene import Scene
 from nerte.geometry.geometry import Geometry
 
 
