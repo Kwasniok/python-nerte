@@ -6,6 +6,10 @@ from nerte.values.coordinates import Coordinates
 from nerte.values.linalg import AbstractVector, dot, cross, normalized
 from nerte.values.face import Face
 from nerte.values.ray import Ray
+from nerte.values.util.convert import (
+    vector_as_coordinates,
+    coordinates_as_vector,
+)
 
 
 class Geometry(ABC):
@@ -25,15 +29,6 @@ class Geometry(ABC):
         """
         # pylint: disable=W0107
         pass
-
-
-# auxiliar trivial conversions
-def _coords_to_vec(coords: Coordinates) -> AbstractVector:
-    return AbstractVector(coords[0], coords[1], coords[2])
-
-
-def _vec_to_coords(vec: AbstractVector) -> Coordinates:
-    return Coordinates(vec[0], vec[1], vec[2])
 
 
 def _in_triangle(
@@ -86,9 +81,9 @@ class CarthesianGeometry(Geometry):
         # pylint: disable=C0103
 
         # (tivially) convert face coordinates to vectors
-        v0 = _coords_to_vec(face[0])
-        v1 = _coords_to_vec(face[1])
-        v2 = _coords_to_vec(face[2])
+        v0 = coordinates_as_vector(face[0])
+        v1 = coordinates_as_vector(face[1])
+        v2 = coordinates_as_vector(face[2])
         ## plane parameters:
         # basis vector spanning the plane
         b1 = v1 - v0
@@ -100,7 +95,7 @@ class CarthesianGeometry(Geometry):
         # (x,y,z) in plane <=> (x,y,z) . n = l
 
         ## ray parameters
-        s = _coords_to_vec(ray.start)
+        s = coordinates_as_vector(ray.start)
         u = ray.direction
         # (x,y,z) in line <=> ∃t: s + t*u = (x,y,z)
 
@@ -144,9 +139,9 @@ def intersects_segment(ray: Ray, face: Face) -> bool:
     # pylint: disable=C0103
 
     # (tivially) convert face coordinates to vectors
-    v0 = _coords_to_vec(face[0])
-    v1 = _coords_to_vec(face[1])
-    v2 = _coords_to_vec(face[2])
+    v0 = coordinates_as_vector(face[0])
+    v1 = coordinates_as_vector(face[1])
+    v2 = coordinates_as_vector(face[2])
     ## plane parameters:
     # basis vector spanning the plane
     b1 = v1 - v0
@@ -158,7 +153,7 @@ def intersects_segment(ray: Ray, face: Face) -> bool:
     # (x,y,z) in plane <=> (x,y,z) . n = l
 
     ## ray parameters
-    s = _coords_to_vec(ray.start)
+    s = coordinates_as_vector(ray.start)
     u = ray.direction
     # (x,y,z) in line <=> ∃t: s + t*u = (x,y,z)
 
