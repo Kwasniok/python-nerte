@@ -13,6 +13,7 @@ from nerte.values.linalg import (
     Metric,
     covariant,
     contravariant,
+    is_zero_vector,
     dot,
     cross,
     length,
@@ -170,6 +171,18 @@ class MetricTest(LinAlgTestCase):
         g = Metric(self.m)
         self.assertMatrixEquiv(g.matrix(), self.m)
         self.assertMatrixEquiv(g.inverse_matrix(), self.m_inv)
+
+
+class AbstractVectorIsZero(LinAlgTestCase):
+    def setUp(self) -> None:
+        self.v0 = AbstractVector(0.0, 0.0, 0.0)
+        self.v1 = AbstractVector(1.0, 2.0, -3.0)
+
+    def test_is_zero_vector(self) -> None:
+        """Tests zero vector test."""
+
+        self.assertTrue(is_zero_vector(self.v0))
+        self.assertFalse(is_zero_vector(self.v1))
 
 
 class AbstractVectorLengthTest(LinAlgTestCase):

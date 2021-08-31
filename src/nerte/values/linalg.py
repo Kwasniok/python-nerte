@@ -144,6 +144,11 @@ def contravariant(metric: Metric, co_vec: AbstractVector) -> AbstractVector:
     )
 
 
+def is_zero_vector(vec: AbstractVector) -> bool:
+    """Retruns True, iff the vector is a zero vector."""
+    return vec[0] == vec[1] == vec[2] == 0.0
+
+
 def dot(vec1: AbstractVector, vec2: AbstractVector) -> float:
     """Returns the (orthonormal) dot product of both vectors."""
     # NOTE: SMALL performance improvments with hardcoded version!
