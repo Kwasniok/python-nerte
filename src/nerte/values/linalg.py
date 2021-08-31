@@ -126,7 +126,10 @@ def covariant(metric: Metric, contra_vec: AbstractVector) -> AbstractVector:
     :param metric: metric of the tangential vector space
     :param contra_vec: contra-variant vector of the tangential vetor space
     """
-    return _abstract_vector_from_numpy(np.dot(metric._g._m, contra_vec._v))
+
+    return _abstract_vector_from_numpy(
+        np.dot(metric._g._m, contra_vec._v)  # type: ignore[no-untyped-call]
+    )
 
 
 def contravariant(metric: Metric, co_vec: AbstractVector) -> AbstractVector:
@@ -136,7 +139,9 @@ def contravariant(metric: Metric, co_vec: AbstractVector) -> AbstractVector:
     :param inv_metric: inverse of the metric of the tangential vector space
     :param contra_vec: co-variant vector of the tangential vetor space
     """
-    return _abstract_vector_from_numpy(np.dot(metric._g_inv._m, co_vec._v))
+    return _abstract_vector_from_numpy(
+        np.dot(metric._g_inv._m, co_vec._v)  # type: ignore[no-untyped-call]
+    )
 
 
 def dot(vec1: AbstractVector, vec2: AbstractVector) -> float:
@@ -167,7 +172,7 @@ def length(vec: AbstractVector) -> float:
     """
     Returns the length of the vector (with respect to an orthonormal basis).
     """
-    return np.linalg.norm(vec._v)
+    return np.linalg.norm(vec._v)  # type: ignore[no-untyped-call]
 
 
 def normalized(vec: AbstractVector) -> AbstractVector:
@@ -186,7 +191,9 @@ def inverted(mat: AbstractMatrix) -> AbstractMatrix:
     :raises: ArithmeticError
     """
     try:
-        mat = _abstract_matrix_from_numpy(np.linalg.inv(mat._m))
+        mat = _abstract_matrix_from_numpy(
+            np.linalg.inv(mat._m)  # type: ignore[no-untyped-call]
+        )
     except np.linalg.LinAlgError as ex:
         raise ArithmeticError from ex
     else:
