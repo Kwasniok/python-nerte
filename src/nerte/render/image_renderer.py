@@ -64,7 +64,7 @@ def perspective_ray_for_pixel(
     )
     direction = direction - coordinates_as_vector(
         camera.location
-    )  # TODO: HACK remove when plane offset exists
+    )  # TODO: HACK see note above
     return Ray(start=camera.location, direction=direction)
 
 
