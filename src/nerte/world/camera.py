@@ -15,12 +15,8 @@ class Camera:
         self,
         location: Coordinates,
         detector_manifold: Manifold2D,
-        detector_manifold_ranges: tuple[
-            tuple[float, float], tuple[float, float]
-        ],
         canvas_dimensions: tuple[int, int],
     ) -> None:
         self.location = location
         self.detector_manifold = detector_manifold
-        self.detector_manifold_ranges = detector_manifold_ranges
         self.canvas_dimensions = canvas_dimensions

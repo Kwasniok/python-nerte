@@ -26,15 +26,17 @@ class SceneTest(unittest.TestCase):
 
         # camera
         loc = Coordinates(0.0, 0.0, -10.0)
+        rnge = (-1.0, 1.0)
         manifold = Plane(
-            AbstractVector(1.0, 0.0, 0.0), AbstractVector(0.0, 1.0, 0.0)
+            AbstractVector(1.0, 0.0, 0.0),
+            AbstractVector(0.0, 1.0, 0.0),
+            x0_range=rnge,
+            x1_range=rnge,
         )
-        param_range = (0.0, 1.0)
         dim = 20
         self.camera = Camera(
             location=loc,
             detector_manifold=manifold,
-            detector_manifold_ranges=(param_range, param_range),
             canvas_dimensions=(dim, dim),
         )
 

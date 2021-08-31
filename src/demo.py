@@ -45,14 +45,16 @@ def make_camera(canvas_dimension: int) -> Camera:
     """Creates a camera with preset values."""
 
     location = Coordinates(0.0, 0.0, -2.0)
-    manifold = Plane(
-        AbstractVector(1.0, 0.0, 0.0), AbstractVector(0.0, 1.0, 0.0)
-    )
     manifold_param_range = (-1.0, 1.0)
+    manifold = Plane(
+        AbstractVector(1.0, 0.0, 0.0),
+        AbstractVector(0.0, 1.0, 0.0),
+        x0_range=manifold_param_range,
+        x1_range=manifold_param_range,
+    )
     camera = Camera(
         location=location,
         detector_manifold=manifold,
-        detector_manifold_ranges=(manifold_param_range, manifold_param_range),
         canvas_dimensions=(canvas_dimension, canvas_dimension),
     )
     return camera

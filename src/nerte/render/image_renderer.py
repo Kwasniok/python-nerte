@@ -22,7 +22,8 @@ def _detector_manifold_coords(
 ) -> Coordinates2D:
     # pylint: disable=C0103
     width, height = camera.canvas_dimensions
-    (x0_min, x0_max), (x1_min, x1_max) = camera.detector_manifold_ranges
+    x0_min, x0_max = camera.detector_manifold.x0_range()
+    x1_min, x1_max = camera.detector_manifold.x1_range()
     # x goes from left to right
     x0 = x0_min + (x0_max - x0_min) * (pixel_x / width)
     # y goes from top to bottom
@@ -38,7 +39,6 @@ def orthographic_ray_for_pixel(
     the canvas in orthographic projection.
     NOTE: All initial rays are parallel.
     """
-    # TODO: rework when ranges are inside manifold
     coords_2d = _detector_manifold_coords(camera, pixel_x, pixel_y)
     start = camera.detector_manifold.coordinates(coords_2d)
     direction = camera.detector_manifold.surface_normal(coords_2d)
@@ -54,7 +54,6 @@ def perspective_ray_for_pixel(
     NOTE: All initial rays converge in one point.
     """
     # TODO: does this work in the general case?
-    # TODO: rework when ranges are inside manifold
     coords_2d = _detector_manifold_coords(camera, pixel_x, pixel_y)
     direction = coordinates_as_vector(
         camera.detector_manifold.coordinates(coords_2d)
