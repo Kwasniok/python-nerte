@@ -28,6 +28,16 @@ class Geometry(ABC):
         # pylint: disable=W0107
         pass
 
+    # TODO: use the implementation
+    @abstractmethod
+    def ray_towards(self, start: Coordinates, target: Coordinates) -> Ray:
+        """
+        Returns a ray from the given starting position pointing towards the
+        given target.
+        """
+        # pylint: disable=W0107
+        pass
+
 
 def _in_triangle(
     b1: AbstractVector, b2: AbstractVector, x: AbstractVector
@@ -127,6 +137,11 @@ class CarthesianGeometry(Geometry):
 
         # return if x lies in the triangle spanned by b1 and b2
         return _in_triangle(b1, b2, x)
+
+    def ray_towards(self, start: Coordinates, target: Coordinates) -> Ray:
+        vec_s = coordinates_as_vector(start)
+        vec_t = coordinates_as_vector(target)
+        return Ray(start=start, direction=(vec_t - vec_s))
 
 
 def intersects_segment(ray: Ray, face: Face) -> bool:
