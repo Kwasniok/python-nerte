@@ -54,6 +54,9 @@ def perspective_ray_for_pixel(
     NOTE: All initial rays converge in one point.
     """
     # TODO: does this work in the general case?
+    # TODO: The direction of the rays should be determined by the local tangent
+    #       of the geodesics connecting the camera location with the point
+    #       on the detector manifold.
     coords_2d = _detector_manifold_coords(camera, pixel_x, pixel_y)
     direction = coordinates_as_vector(
         camera.detector_manifold.coordinates(coords_2d)
