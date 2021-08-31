@@ -143,26 +143,15 @@ def render(
     perspective projection.
     """
 
-    print("rendering orthographic projection ...")
-    image_renderer = ImageRenderer(
-        mode=ImageRenderer.Mode.ORTHOGRAPHIC,
-    )
-    image_renderer.render(scene=scene, geometry=geometry)
-    image = image_renderer.last_image()
-    if image is not None:
-        image.save(f"{output_path}/{file_prefix}_ortho.png")
-        if show:
-            image.show()
-
-    print("rendering perspective projection ...")
-    image_renderer = ImageRenderer(
-        mode=ImageRenderer.Mode.PERSPECTIVE,
-    )
-    image_renderer.render(scene=scene, geometry=geometry)
-    if image is not None:
-        image.save(f"{output_path}/{file_prefix}_persp.png")
-        if show:
-            image.show()
+    for mode in ImageRenderer.Mode:
+        print(f"rendering {mode.name} projection ...")
+        image_renderer = ImageRenderer(mode=mode)
+        image_renderer.render(scene=scene, geometry=geometry)
+        image = image_renderer.last_image()
+        if image is not None:
+            image.save(f"{output_path}/{file_prefix}_{mode.name}.png")
+            if show:
+                image.show()
 
 
 def main() -> None:
