@@ -17,6 +17,10 @@ from nerte.geometry.geometry import Geometry
 from nerte.render.renderer import Renderer
 
 
+# TODO: In general tests for the validity of the coordinates must be included
+#       troughout this module.
+
+
 def _detector_manifold_coords(
     camera: Camera, pixel_location: tuple[int, int]
 ) -> Coordinates2D:

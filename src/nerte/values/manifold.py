@@ -53,6 +53,7 @@ class Manifold2D(ABC):
                 + f" Ranges are {self._x0_domain} and {self._x1_domain}."
             )
 
+    # TODO: improve name
     @abstractmethod
     def coordinates(self, coords: Coordinates2D) -> Coordinates:
         """
