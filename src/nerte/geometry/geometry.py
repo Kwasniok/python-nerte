@@ -9,6 +9,7 @@ from nerte.values.ray import Ray
 from nerte.values.util.convert import coordinates_as_vector
 
 
+# TODO: make geometry a manifold as well?
 class Geometry(ABC):
     """Interface of a geometry."""
 
@@ -74,6 +75,7 @@ class CarthesianGeometry(Geometry):
     def is_valid_coordinate(self, coordinates: Coordinates) -> bool:
         return True
 
+    # TOD: unify with intersects_segment
     def intersects(self, ray: Ray, face: Face) -> bool:
         # pylint: disable=C0103
 
