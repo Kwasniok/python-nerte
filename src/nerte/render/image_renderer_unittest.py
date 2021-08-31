@@ -7,6 +7,7 @@
 import unittest
 from nerte.values.coordinates import Coordinates
 from nerte.values.linalg import AbstractVector
+from nerte.values.manifold import Plane
 from nerte.values.face import Face
 from nerte.values.color import Colors
 from nerte.world.object import Object
@@ -26,15 +27,16 @@ class ImageRendererTest(unittest.TestCase):
         obj.add_face(Face(p0, p1, p2))
         # camera
         loc = Coordinates(0.0, 0.0, -1.0)
-        direction = AbstractVector(0.0, 0.0, 1.0)
+        manifold = Plane(
+            AbstractVector(1.0, 0.0, 0.0), AbstractVector(0.0, 1.0, 0.0)
+        )
+        param_range = (0.0, 1.0)
         dim = 10
-        wv = AbstractVector(4.0, 0.0, 0.0)
-        hv = AbstractVector(0.0, 4.0, 0.0)
         cam = Camera(
             location=loc,
-            direction=direction,
+            detector_manifold=manifold,
+            detector_manifold_ranges=(param_range, param_range),
             canvas_dimensions=(dim, dim),
-            detector_manifold=(wv, hv),
         )
         # scene
         self.scene = Scene(camera=cam)
@@ -62,15 +64,16 @@ class ImageRendererProjectionTest(unittest.TestCase):
         obj.add_face(Face(p0, p2, p3))
         # camera
         loc = Coordinates(0.0, 0.0, -1.0)
-        direction = AbstractVector(0.0, 0.0, 1.0)
-        dim = 20
-        wv = AbstractVector(4.0, 0.0, 0.0)
-        hv = AbstractVector(0.0, 4.0, 0.0)
+        manifold = Plane(
+            AbstractVector(1.0, 0.0, 0.0), AbstractVector(0.0, 1.0, 0.0)
+        )
+        param_range = (-2.0, 2.0)
+        dim = 25
         cam = Camera(
             location=loc,
-            direction=direction,
+            detector_manifold=manifold,
+            detector_manifold_ranges=(param_range, param_range),
             canvas_dimensions=(dim, dim),
-            detector_manifold=(wv, hv),
         )
         # scene
         self.scene = Scene(camera=cam)

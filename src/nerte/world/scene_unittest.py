@@ -7,6 +7,7 @@
 import unittest
 from nerte.values.coordinates import Coordinates
 from nerte.values.linalg import AbstractVector
+from nerte.values.manifold import Plane
 from nerte.values.face import Face
 from nerte.world.object import Object
 from nerte.world.camera import Camera
@@ -25,15 +26,16 @@ class SceneTest(unittest.TestCase):
 
         # camera
         loc = Coordinates(0.0, 0.0, -10.0)
-        direction = AbstractVector(0.0, 0.0, 1.0)
-        dim = 200
-        wv = AbstractVector(1.0, 0.0, 0.0)
-        hv = AbstractVector(0.0, 1.0, 0.0)
+        manifold = Plane(
+            AbstractVector(1.0, 0.0, 0.0), AbstractVector(0.0, 1.0, 0.0)
+        )
+        param_range = (0.0, 1.0)
+        dim = 20
         self.camera = Camera(
             location=loc,
-            direction=direction,
+            detector_manifold=manifold,
+            detector_manifold_ranges=(param_range, param_range),
             canvas_dimensions=(dim, dim),
-            detector_manifold=(wv, hv),
         )
 
     def test_camera(self) -> None:

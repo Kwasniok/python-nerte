@@ -6,10 +6,7 @@ from nerte.values.coordinates import Coordinates
 from nerte.values.linalg import AbstractVector, dot, cross, normalized
 from nerte.values.face import Face
 from nerte.values.ray import Ray
-from nerte.values.util.convert import (
-    vector_as_coordinates,
-    coordinates_as_vector,
-)
+from nerte.values.util.convert import coordinates_as_vector
 
 
 class Geometry(ABC):

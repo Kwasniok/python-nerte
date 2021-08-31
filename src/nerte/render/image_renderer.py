@@ -6,9 +6,9 @@ from enum import Enum
 
 from PIL import Image
 
+from nerte.values.coordinates import Coordinates2D
 from nerte.values.ray import Ray
-from nerte.values.coordinates import Coordinates  # TODO: remove
-from nerte.values.linalg import AbstractVector  # TODO: remove
+from nerte.values.util.convert import coordinates_as_vector
 from nerte.values.color import Color, Colors
 from nerte.world.camera import Camera
 from nerte.world.object import Object
@@ -16,14 +16,18 @@ from nerte.world.scene import Scene
 from nerte.geometry.geometry import Geometry
 from nerte.render.renderer import Renderer
 
-# TODO: not acceptable for non-euclidean geometry
-# auxiliar trivial conversions
-def _coords_to_vec(coords: Coordinates) -> AbstractVector:
-    return AbstractVector(coords[0], coords[1], coords[2])
 
-
-def _vec_to_coords(vec: AbstractVector) -> Coordinates:
-    return Coordinates(vec[0], vec[1], vec[2])
+def _detector_manifold_coords(
+    camera: Camera, pixel_x: int, pixel_y: int
+) -> Coordinates2D:
+    # pylint: disable=C0103
+    width, height = camera.canvas_dimensions
+    (x0_min, x0_max), (x1_min, x1_max) = camera.detector_manifold_ranges
+    # x goes from left to right
+    x0 = x0_min + (x0_max - x0_min) * (pixel_x / width)
+    # y goes from top to bottom
+    x1 = x1_max - (x1_max - x1_min) * (pixel_y / height)
+    return Coordinates2D(x0, x1)
 
 
 def orthographic_ray_for_pixel(
@@ -34,14 +38,11 @@ def orthographic_ray_for_pixel(
     the canvas in orthographic projection.
     NOTE: All initial rays are parallel.
     """
-    width, height = camera.canvas_dimensions
-    width_vec, height_vec = camera.detector_manifold
-    start = _vec_to_coords(
-        _coords_to_vec(camera.location)
-        + (width_vec * (pixel_x / width - 0.5))
-        + (height_vec * (0.5 - pixel_y / height))
-    )
-    return Ray(start=start, direction=camera.direction)
+    # TODO: rework when ranges are inside manifold
+    coords_2d = _detector_manifold_coords(camera, pixel_x, pixel_y)
+    start = camera.detector_manifold.coordinates(coords_2d)
+    direction = camera.detector_manifold.surface_normal(coords_2d)
+    return Ray(start=start, direction=direction)
 
 
 def perspective_ray_for_pixel(
@@ -52,13 +53,15 @@ def perspective_ray_for_pixel(
     the canvas in perspective projection.
     NOTE: All initial rays converge in one point.
     """
-    width, height = camera.canvas_dimensions
-    width_vec, height_vec = camera.detector_manifold
-    direction = (
-        camera.direction
-        + (width_vec * (pixel_x / width - 0.5))
-        + (height_vec * (0.5 - pixel_y / height))
+    # TODO: does this work in the general case?
+    # TODO: rework when ranges are inside manifold
+    coords_2d = _detector_manifold_coords(camera, pixel_x, pixel_y)
+    direction = coordinates_as_vector(
+        camera.detector_manifold.coordinates(coords_2d)
     )
+    direction = direction - coordinates_as_vector(
+        camera.location
+    )  # TODO: HACK remove when plane offset exists
     return Ray(start=camera.location, direction=direction)
 
 

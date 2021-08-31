@@ -4,6 +4,7 @@ from enum import IntEnum
 
 from nerte.values.coordinates import Coordinates
 from nerte.values.linalg import AbstractVector
+from nerte.values.manifold import Plane
 from nerte.values.face import Face
 from nerte.world.object import Object
 from nerte.world.camera import Camera
@@ -44,14 +45,15 @@ def make_camera(canvas_dimension: int) -> Camera:
     """Creates a camera with preset values."""
 
     location = Coordinates(0.0, 0.0, -2.0)
-    direction = AbstractVector(0.0, 0.0, 1.0)
-    width_vec = AbstractVector(1.0, 0.0, 0.0)
-    height_vec = AbstractVector(0.0, 1.0, 0.0)
+    manifold = Plane(
+        AbstractVector(1.0, 0.0, 0.0), AbstractVector(0.0, 1.0, 0.0)
+    )
+    manifold_param_range = (-1.0, 1.0)
     camera = Camera(
         location=location,
-        direction=direction,
+        detector_manifold=manifold,
+        detector_manifold_ranges=(manifold_param_range, manifold_param_range),
         canvas_dimensions=(canvas_dimension, canvas_dimension),
-        detector_manifold=(width_vec, height_vec),
     )
     return camera
 
