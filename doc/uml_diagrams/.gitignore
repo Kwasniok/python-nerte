@@ -1,5 +1,6 @@
 # UML Source Files
 # *.dia
+*.autosave
 
 # Alternative Preview File Formats
 # *.svg
