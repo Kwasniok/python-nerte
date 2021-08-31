@@ -57,7 +57,11 @@ class ManifoldUnittest(unittest.TestCase):
             ) from ae
 
 
-class Manifold2DTest(ManifoldUnittest):
+class Manifold2DImplementationTest(ManifoldUnittest):
+    def setUp(self) -> None:
+        self.range = (-1.0, 1.0)
+        self.invalid_range = (3.0, 3.0)
+
     def test_implementation(self) -> None:
         """Tests manifold interface implementation."""
         # x-y plane
@@ -67,7 +71,7 @@ class Manifold2DTest(ManifoldUnittest):
                 x0_range: tuple[float, float],
                 x1_range: tuple[float, float],
             ):
-                Manifold2D.__init__(self, x0_range=x0_range, x1_range=x0_range)
+                Manifold2D.__init__(self, x0_range=x0_range, x1_range=x1_range)
 
             def coordinates(self, coords: Coordinates2D) -> Coordinates:
                 return Coordinates(coords[0], coords[1], 0.0)
@@ -83,13 +87,19 @@ class Manifold2DTest(ManifoldUnittest):
                     AbstractVector(0.0, 1.0, 0.0),
                 )
 
-        rnge = (-1.0, 1.0)
-        man = DummyManifold2D(rnge, rnge)
+        man = DummyManifold2D(self.range, self.range)
         for x, y in ((i, j) for i in range(-10, 11) for j in range(-10, 11)):
             man.coordinates(Coordinates2D(x, y))
-        invalid_range = (3.0, 3.0)
+
         with self.assertRaises(ValueError):
-            DummyManifold2D(invalid_range, invalid_range)
+            DummyManifold2D(self.invalid_range, self.range)
+        with self.assertRaises(ValueError):
+            DummyManifold2D(self.range, self.invalid_range)
+        with self.assertRaises(ValueError):
+            DummyManifold2D(self.invalid_range, self.invalid_range)
+
+        self.assertTrue(man.x0_range() is self.range)
+        self.assertTrue(man.x1_range() is self.range)
 
 
 class PlaneConstructorTest(unittest.TestCase):

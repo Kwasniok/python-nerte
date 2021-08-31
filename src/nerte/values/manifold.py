@@ -37,12 +37,20 @@ class Manifold2D(ABC):
         self._x0_range = x0_range
         self._x1_range = x1_range
 
+    def x0_range(self) -> tuple[float, float]:
+        """Return the range of the x0 parameter."""
+        return self._x0_range
+
+    def x1_range(self) -> tuple[float, float]:
+        """Return the range of the x1 parameter."""
+        return self._x1_range
+
     def is_in_domain(self, coords: Coordinates2D) -> bool:
         """
         Returns True, iff two-dimensional coordinates are in the map's domain.
         """
-        return (min(*self._x0_range) < coords[0] < max(*self._x0_range)) and (
-            min(*self._x1_range) < coords[1] < max(*self._x1_range)
+        return (min(*self._x0_range) <= coords[0] <= max(*self._x0_range)) and (
+            min(*self._x1_range) <= coords[1] <= max(*self._x1_range)
         )
 
     def in_domain_assertion(self, coords: Coordinates2D) -> None:
