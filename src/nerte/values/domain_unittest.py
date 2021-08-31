@@ -77,7 +77,6 @@ class Domain1DPropertiesTest(unittest.TestCase):
             for val in incl_vals:
                 self.assertTrue(val in domain)
             for val in excl_vals:
-                print(val, domain)
                 self.assertFalse(val in domain)
 
 
