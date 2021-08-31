@@ -18,10 +18,10 @@ from nerte.render.renderer import Renderer
 
 
 def _detector_manifold_coords(
-    camera: Camera, pixel_x: int, pixel_y: int
+    camera: Camera, pixel_location: tuple[int, int]
 ) -> Coordinates2D:
     # pylint: disable=C0103
-    # TODO: law of demeter!
+    pixel_x, pixel_y = pixel_location
     width, height = camera.canvas_dimensions
     x0_min, x0_max = camera.detector_manifold.x0_domain().as_tuple()
     x1_min, x1_max = camera.detector_manifold.x1_domain().as_tuple()
@@ -33,21 +33,21 @@ def _detector_manifold_coords(
 
 
 def orthographic_ray_for_pixel(
-    camera: Camera, pixel_x: int, pixel_y: int
+    camera: Camera, pixel_location: tuple[int, int]
 ) -> Ray:
     """
     Returns the initial ray leaving the cameras detector for a given pixel on
     the canvas in orthographic projection.
     NOTE: All initial rays are parallel.
     """
-    coords_2d = _detector_manifold_coords(camera, pixel_x, pixel_y)
+    coords_2d = _detector_manifold_coords(camera, pixel_location)
     start = camera.detector_manifold.coordinates(coords_2d)
     direction = camera.detector_manifold.surface_normal(coords_2d)
     return Ray(start=start, direction=direction)
 
 
 def perspective_ray_for_pixel(
-    camera: Camera, pixel_x: int, pixel_y: int
+    camera: Camera, pixel_location: tuple[int, int]
 ) -> Ray:
     """
     Returns the initial ray leaving the cameras detector for a given pixel on
@@ -58,7 +58,7 @@ def perspective_ray_for_pixel(
     # TODO: The direction of the rays should be determined by the local tangent
     #       of the geodesics connecting the camera location with the point
     #       on the detector manifold.
-    coords_2d = _detector_manifold_coords(camera, pixel_x, pixel_y)
+    coords_2d = _detector_manifold_coords(camera, pixel_location)
     direction = coordinates_as_vector(
         camera.detector_manifold.coordinates(coords_2d)
     )
@@ -97,7 +97,7 @@ class ImageRenderer(Renderer):
         """Returns the color of the pixel."""
 
         # calculate light ray
-        ray = ImageRenderer.ray_for_pixel[self.mode](camera, *pixel_location)
+        ray = ImageRenderer.ray_for_pixel[self.mode](camera, pixel_location)
         # detect intersections with objects and make object randomly colored
         for obj in objects:
             for face in obj.faces():
@@ -112,13 +112,14 @@ class ImageRenderer(Renderer):
         # paint in pixels
         for pixel_x in range(width):
             for pixel_y in range(height):
+                pixel_location = (pixel_x, pixel_y)
                 pixel_color = self.render_pixel(
                     scene.camera,
                     geometry,
                     scene.objects(),
-                    (pixel_x, pixel_y),
+                    pixel_location,
                 )
-                image.putpixel((pixel_x, pixel_y), pixel_color.rgb)
+                image.putpixel(pixel_location, pixel_color.rgb)
         self._last_image = image
 
     def last_image(self) -> Optional[Image.Image]:
