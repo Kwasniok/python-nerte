@@ -1,5 +1,6 @@
 # Package Structure
 
+__TODO: OUT OF DATE__
 ![UML](/doc/uml_diagrams/UML.svg)
 UML Diagram: Simplified overview of the general package structure of NERTE inspired by domain-driven design.
 

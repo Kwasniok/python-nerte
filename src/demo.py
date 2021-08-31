@@ -3,6 +3,7 @@
 from enum import IntEnum
 
 from nerte.values.coordinates import Coordinates
+from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.manifold import Plane
 from nerte.values.face import Face
@@ -31,7 +32,7 @@ class Side(IntEnum):
 
 
 class Distance(IntEnum):
-    """Representation of the negative or positive range of an axis."""
+    """Representation of the negative or positive domain of an axis."""
 
     NEAR = -1
     FAR = +1
@@ -45,12 +46,12 @@ def make_camera(canvas_dimension: int) -> Camera:
     """Creates a camera with preset values."""
 
     location = Coordinates(0.0, 0.0, -2.0)
-    manifold_param_range = (-1.0, 1.0)
+    manifold_param_domain = Domain1D(-1.0, 1.0)
     manifold = Plane(
         AbstractVector(1.0, 0.0, 0.0),
         AbstractVector(0.0, 1.0, 0.0),
-        x0_range=manifold_param_range,
-        x1_range=manifold_param_range,
+        x0_domain=manifold_param_domain,
+        x1_domain=manifold_param_domain,
     )
     camera = Camera(
         location=location,

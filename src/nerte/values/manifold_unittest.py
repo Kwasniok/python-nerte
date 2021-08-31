@@ -7,6 +7,7 @@
 import unittest
 
 from nerte.values.coordinates import Coordinates2D, Coordinates
+from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector, cross
 from nerte.values.manifold import Manifold2D, OutOfDomainError, Plane
 from nerte.values.util.convert import (
@@ -59,8 +60,7 @@ class ManifoldUnittest(unittest.TestCase):
 
 class Manifold2DImplementationTest(ManifoldUnittest):
     def setUp(self) -> None:
-        self.range = (-1.0, 1.0)
-        self.invalid_range = (3.0, 3.0)
+        self.domain = Domain1D(-1.0, 1.0)
 
     def test_implementation(self) -> None:
         """Tests manifold interface implementation."""
@@ -68,10 +68,12 @@ class Manifold2DImplementationTest(ManifoldUnittest):
         class DummyManifold2D(Manifold2D):
             def __init__(
                 self,
-                x0_range: tuple[float, float],
-                x1_range: tuple[float, float],
+                x0_domain: Domain1D,
+                x1_domain: Domain1D,
             ):
-                Manifold2D.__init__(self, x0_range=x0_range, x1_range=x1_range)
+                Manifold2D.__init__(
+                    self, x0_domain=x0_domain, x1_domain=x1_domain
+                )
 
             def coordinates(self, coords: Coordinates2D) -> Coordinates:
                 return Coordinates(coords[0], coords[1], 0.0)
@@ -87,28 +89,21 @@ class Manifold2DImplementationTest(ManifoldUnittest):
                     AbstractVector(0.0, 1.0, 0.0),
                 )
 
-        man = DummyManifold2D(self.range, self.range)
+        man = DummyManifold2D(self.domain, self.domain)
         for x, y in ((i, j) for i in range(-10, 11) for j in range(-10, 11)):
             man.coordinates(Coordinates2D(x, y))
 
-        with self.assertRaises(ValueError):
-            DummyManifold2D(self.invalid_range, self.range)
-        with self.assertRaises(ValueError):
-            DummyManifold2D(self.range, self.invalid_range)
-        with self.assertRaises(ValueError):
-            DummyManifold2D(self.invalid_range, self.invalid_range)
-
-        self.assertTrue(man.x0_range() is self.range)
-        self.assertTrue(man.x1_range() is self.range)
+        self.assertTrue(man.x0_domain() is self.domain)
+        self.assertTrue(man.x1_domain() is self.domain)
 
 
 class PlaneConstructorTest(unittest.TestCase):
     def setUp(self) -> None:
+        self.domain = Domain1D(-1.0, 4.0)
         self.v0 = AbstractVector(0.0, 0.0, 0.0)
         self.v1 = AbstractVector(1.0, 0.0, 0.0)
         self.v2 = AbstractVector(0.0, 1.0, 0.0)
         self.offset = AbstractVector(0.0, 0.0, 0.0)
-        self.invalid_ranges = ((0.0, 0.0), (-7.0, -7.0), (2.0, 2.0))
 
     def test_plane_constructor(self) -> None:
         """Tests plane constroctor."""
@@ -120,9 +115,6 @@ class PlaneConstructorTest(unittest.TestCase):
             Plane(self.v1, self.v0)
         with self.assertRaises(ValueError):
             Plane(self.v0, self.v0)
-        for rnge in self.invalid_ranges:
-            with self.assertRaises(ValueError):
-                Plane(self.v1, self.v2, x0_range=rnge)
 
 
 class PlaneDomainTest(ManifoldUnittest):
@@ -130,7 +122,7 @@ class PlaneDomainTest(ManifoldUnittest):
         v1 = AbstractVector(1.0, 0.0, 0.0)
         v2 = AbstractVector(0.0, 1.0, 0.0)
         self.finite_plane = Plane(
-            v1, v2, x0_range=(-1.0, 2.0), x1_range=(3.0, -4.0)
+            v1, v2, x0_domain=Domain1D(-1.0, 2.0), x1_domain=Domain1D(3.0, -4.0)
         )
         self.infinite_plane = Plane(v1, v2)
         self.coords = (

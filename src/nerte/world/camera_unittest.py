@@ -6,6 +6,7 @@
 
 import unittest
 from nerte.values.coordinates import Coordinates
+from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.manifold import Plane
 from nerte.world.camera import Camera
@@ -14,12 +15,12 @@ from nerte.world.camera import Camera
 class CameraTest(unittest.TestCase):
     def setUp(self) -> None:
         self.location = Coordinates(1.1, 2.2, 3.3)
-        rnge = (-1.0, 1.0)
+        rnge = Domain1D(-1.0, 1.0)
         self.detector_manifold = Plane(
             AbstractVector(1.0, 0.0, 0.0),
             AbstractVector(0.0, 1.0, 0.0),
-            x0_range=rnge,
-            x1_range=rnge,
+            x0_domain=rnge,
+            x1_domain=rnge,
         )
         self.dim = 100
 

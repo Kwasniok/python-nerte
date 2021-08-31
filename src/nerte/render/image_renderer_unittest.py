@@ -6,6 +6,7 @@
 
 import unittest
 from nerte.values.coordinates import Coordinates
+from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.manifold import Plane
 from nerte.values.face import Face
@@ -27,12 +28,12 @@ class ImageRendererTest(unittest.TestCase):
         obj.add_face(Face(p0, p1, p2))
         # camera
         loc = Coordinates(0.0, 0.0, -1.0)
-        rnge = (-1.0, 1.0)
+        domain = Domain1D(-1.0, 1.0)
         manifold = Plane(
             AbstractVector(1.0, 0.0, 0.0),
             AbstractVector(0.0, 1.0, 0.0),
-            x0_range=rnge,
-            x1_range=rnge,
+            x0_domain=domain,
+            x1_domain=domain,
         )
         dim = 10
         cam = Camera(
@@ -66,12 +67,12 @@ class ImageRendererProjectionTest(unittest.TestCase):
         obj.add_face(Face(p0, p2, p3))
         # camera
         loc = Coordinates(0.0, 0.0, -1.0)
-        rnge = (-2.0, 2.0)
+        domain = Domain1D(-2.0, 2.0)
         manifold = Plane(
             AbstractVector(1.0, 0.0, 0.0),
             AbstractVector(0.0, 1.0, 0.0),
-            x0_range=rnge,
-            x1_range=rnge,
+            x0_domain=domain,
+            x1_domain=domain,
         )
         dim = 25
         cam = Camera(

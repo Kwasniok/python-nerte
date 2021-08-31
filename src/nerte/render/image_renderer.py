@@ -21,9 +21,10 @@ def _detector_manifold_coords(
     camera: Camera, pixel_x: int, pixel_y: int
 ) -> Coordinates2D:
     # pylint: disable=C0103
+    # TODO: law of demeter!
     width, height = camera.canvas_dimensions
-    x0_min, x0_max = camera.detector_manifold.x0_range()
-    x1_min, x1_max = camera.detector_manifold.x1_range()
+    x0_min, x0_max = camera.detector_manifold.x0_domain().as_tuple()
+    x1_min, x1_max = camera.detector_manifold.x1_domain().as_tuple()
     # x goes from left to right
     x0 = x0_min + (x0_max - x0_min) * (pixel_x / width)
     # y goes from top to bottom

@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 import math
 
 from nerte.values.coordinates import Coordinates2D, Coordinates
+from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector, is_zero_vector, cross
 from nerte.values.util.convert import vector_as_coordinates
 
@@ -18,40 +19,27 @@ class OutOfDomainError(ValueError):
     pass
 
 
-def _range_test(min_max: tuple[float, float]) -> None:
-    if min_max[0] == min_max[1]:
-        raise ValueError(
-            f"Cannot define domain of manifold with range {min_max}. Range has zero length."
-        )
-
-
 class Manifold2D(ABC):
     # pylint: disable=W0107
     """Representation of a two-dimensional manifold in three dimensions."""
 
-    def __init__(
-        self, x0_range: tuple[float, float], x1_range: tuple[float, float]
-    ) -> None:
-        _range_test(x0_range)
-        _range_test(x1_range)
-        self._x0_range = x0_range
-        self._x1_range = x1_range
+    def __init__(self, x0_domain: Domain1D, x1_domain: Domain1D) -> None:
+        self._x0_domain = x0_domain
+        self._x1_domain = x1_domain
 
-    def x0_range(self) -> tuple[float, float]:
-        """Return the range of the x0 parameter."""
-        return self._x0_range
+    def x0_domain(self) -> Domain1D:
+        """Return the domain of the x0 parameter."""
+        return self._x0_domain
 
-    def x1_range(self) -> tuple[float, float]:
-        """Return the range of the x1 parameter."""
-        return self._x1_range
+    def x1_domain(self) -> Domain1D:
+        """Return the domain of the x1 parameter."""
+        return self._x1_domain
 
     def is_in_domain(self, coords: Coordinates2D) -> bool:
         """
         Returns True, iff two-dimensional coordinates are in the map's domain.
         """
-        return (min(*self._x0_range) <= coords[0] <= max(*self._x0_range)) and (
-            min(*self._x1_range) <= coords[1] <= max(*self._x1_range)
-        )
+        return coords[0] in self._x0_domain and coords[1] in self._x1_domain
 
     def in_domain_assertion(self, coords: Coordinates2D) -> None:
         """
@@ -62,7 +50,7 @@ class Manifold2D(ABC):
         if not self.is_in_domain(coords):
             raise OutOfDomainError(
                 f"Coordinates {coords} are out of bounds of the manifold."
-                + f" Ranges are {self._x0_range} and {self._x1_range}."
+                + f" Ranges are {self._x0_domain} and {self._x1_domain}."
             )
 
     @abstractmethod
@@ -114,20 +102,19 @@ class Plane(Manifold2D):
         self,
         b0: AbstractVector,
         b1: AbstractVector,
-        x0_range: Optional[tuple[float, float]] = None,
-        x1_range: Optional[tuple[float, float]] = None,
+        x0_domain: Optional[Domain1D] = None,
+        x1_domain: Optional[Domain1D] = None,
         offset: Optional[AbstractVector] = None,
     ):
         # pylint: disable=R0913
         if is_zero_vector(b0) or is_zero_vector(b1):
             raise ValueError("Basis vector cannot be zero vector..")
 
-        if x0_range is None:
-            x0_range = (-math.inf, math.inf)
-        if x1_range is None:
-            x1_range = (-math.inf, math.inf)
-
-        Manifold2D.__init__(self, x0_range, x1_range)
+        if x0_domain is None:
+            x0_domain = Domain1D(-math.inf, math.inf)
+        if x1_domain is None:
+            x1_domain = Domain1D(-math.inf, math.inf)
+        Manifold2D.__init__(self, x0_domain, x1_domain)
 
         self._b0 = b0
         self._b1 = b1
