@@ -5,7 +5,7 @@
 # pylint: disable=C0144
 
 import unittest
-from nerte.values.coordinates import Coordinates
+from nerte.values.coordinates import Coordinates3D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.manifold import Plane
@@ -14,7 +14,7 @@ from nerte.world.camera import Camera
 
 class CameraTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.location = Coordinates(1.1, 2.2, 3.3)
+        self.location = Coordinates3D(1.1, 2.2, 3.3)
         rnge = Domain1D(-1.0, 1.0)
         self.detector_manifold = Plane(
             AbstractVector(1.0, 0.0, 0.0),

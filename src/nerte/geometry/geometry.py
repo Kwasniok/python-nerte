@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-from nerte.values.coordinates import Coordinates
+from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, dot, cross, normalized
 from nerte.values.face import Face
 from nerte.values.ray import Ray
@@ -14,7 +14,7 @@ class Geometry(ABC):
     """Interface of a geometry."""
 
     @abstractmethod
-    def is_valid_coordinate(self, coordinates: Coordinates) -> bool:
+    def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
         """Returns True, iff coordinates are within the valid domain."""
         # pylint: disable=W0107
         pass
@@ -30,7 +30,7 @@ class Geometry(ABC):
 
     # TODO: use the implementation
     @abstractmethod
-    def ray_towards(self, start: Coordinates, target: Coordinates) -> Ray:
+    def ray_towards(self, start: Coordinates3D, target: Coordinates3D) -> Ray:
         """
         Returns a ray from the given starting position pointing towards the
         given target.
@@ -82,7 +82,7 @@ class CarthesianGeometry(Geometry):
         # pylint: disable=C0103,C0144
         self.𝜀: float = 1e-8
 
-    def is_valid_coordinate(self, coordinates: Coordinates) -> bool:
+    def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
         return True
 
     # TOD: unify with intersects_segment
@@ -138,7 +138,7 @@ class CarthesianGeometry(Geometry):
         # return if x lies in the triangle spanned by b1 and b2
         return _in_triangle(b1, b2, x)
 
-    def ray_towards(self, start: Coordinates, target: Coordinates) -> Ray:
+    def ray_towards(self, start: Coordinates3D, target: Coordinates3D) -> Ray:
         vec_s = coordinates_as_vector(start)
         vec_t = coordinates_as_vector(target)
         return Ray(start=start, direction=(vec_t - vec_s))

@@ -2,7 +2,7 @@
 
 from enum import IntEnum
 
-from nerte.values.coordinates import Coordinates
+from nerte.values.coordinates import Coordinates3D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.manifold import Plane
@@ -45,7 +45,7 @@ COLOR = RandomColorGenerator()
 def make_camera(canvas_dimension: int) -> Camera:
     """Creates a camera with preset values."""
 
-    location = Coordinates(0.0, 0.0, -2.0)
+    location = Coordinates3D(0.0, 0.0, -2.0)
     manifold_param_domain = Domain1D(-1.0, 1.0)
     manifold = Plane(
         AbstractVector(1.0, 0.0, 0.0),
@@ -80,9 +80,9 @@ def make_triangle_object(fix: Axis, distance: Distance, side: Side) -> Object:
     coords[2][axis_u] = +1.0
     coords[2][axis_v] = +1.0
     # represent the coefficients as proper coordinates
-    point0 = Coordinates(*coords[0])
-    point1 = Coordinates(*coords[1])
-    point2 = Coordinates(*coords[2])
+    point0 = Coordinates3D(*coords[0])
+    point1 = Coordinates3D(*coords[1])
+    point2 = Coordinates3D(*coords[2])
     # create the triangle as an object
     tri = Face(point0, point1, point2)
     obj = Object(color=next(COLOR))  # pseudo-random color

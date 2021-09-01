@@ -5,7 +5,7 @@
 # pylint: disable=C0144
 
 import unittest
-from nerte.values.coordinates import Coordinates
+from nerte.values.coordinates import Coordinates3D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.manifold import Plane
@@ -18,15 +18,15 @@ from nerte.world.scene import Scene
 class SceneTest(unittest.TestCase):
     def setUp(self) -> None:
         # object
-        p0 = Coordinates(1.0, 0.0, 0.0)
-        p1 = Coordinates(0.0, 1.0, 0.0)
-        p2 = Coordinates(0.0, 0.0, 1.0)
+        p0 = Coordinates3D(1.0, 0.0, 0.0)
+        p1 = Coordinates3D(0.0, 1.0, 0.0)
+        p2 = Coordinates3D(0.0, 0.0, 1.0)
         f = Face(p0, p1, p2)
         self.obj = Object()
         self.obj.add_face(f)
 
         # camera
-        loc = Coordinates(0.0, 0.0, -10.0)
+        loc = Coordinates3D(0.0, 0.0, -10.0)
         domain = Domain1D(-1.0, 1.0)
         manifold = Plane(
             AbstractVector(1.0, 0.0, 0.0),

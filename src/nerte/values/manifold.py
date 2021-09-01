@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 
 import math
 
-from nerte.values.coordinates import Coordinates2D, Coordinates
+from nerte.values.coordinates import Coordinates2D, Coordinates3D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector, is_zero_vector, cross
 from nerte.values.util.convert import vector_as_coordinates
@@ -49,13 +49,13 @@ class Manifold2D(ABC):
         """
         if not self.is_in_domain(coords):
             raise OutOfDomainError(
-                f"Coordinates {coords} are out of bounds of the manifold."
+                f"Coordinates3D {coords} are out of bounds of the manifold."
                 + f" Ranges are {self._x0_domain} and {self._x1_domain}."
             )
 
     # TODO: improve name
     @abstractmethod
-    def coordinates(self, coords: Coordinates2D) -> Coordinates:
+    def coordinates(self, coords: Coordinates2D) -> Coordinates3D:
         """
         Returns the embedded three-dimensional coordinates of the manifold.
 
@@ -125,7 +125,7 @@ class Plane(Manifold2D):
         else:
             self._offset = offset
 
-    def coordinates(self, coords: Coordinates2D) -> Coordinates:
+    def coordinates(self, coords: Coordinates2D) -> Coordinates3D:
         self.in_domain_assertion(coords)
         return vector_as_coordinates(
             self._b0 * coords[0] + self._b1 * coords[1] + self._offset

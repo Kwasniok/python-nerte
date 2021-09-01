@@ -1,6 +1,6 @@
 """Module for representing rays."""
 
-from nerte.values.coordinates import Coordinates
+from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector
 
 
@@ -13,7 +13,7 @@ class Ray:
     depending on the usecase.
     """
 
-    def __init__(self, start: Coordinates, direction: AbstractVector) -> None:
+    def __init__(self, start: Coordinates3D, direction: AbstractVector) -> None:
         self.start = start
         self.direction = direction
 

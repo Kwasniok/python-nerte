@@ -1,6 +1,6 @@
 """Module for representing a dummy geometry."""
 
-from nerte.values.coordinates import Coordinates
+from nerte.values.coordinates import Coordinates3D
 from nerte.values.util.convert import coordinates_as_vector
 from nerte.values.ray import Ray
 from nerte.values.linalg import AbstractVector, cross, normalized
@@ -20,10 +20,10 @@ class SwirlGeometry(SegmentedRayGeometry):
         self.ray_segment_length = max_ray_length / max_steps
         self.bend_factor = bend_factor
 
-    def is_valid_coordinate(self, coordinates: Coordinates) -> bool:
+    def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
         return True
 
-    def ray_towards(self, start: Coordinates, target: Coordinates) -> Ray:
+    def ray_towards(self, start: Coordinates3D, target: Coordinates3D) -> Ray:
         # TODO: This method is crude and incorrect.
         vec_s = coordinates_as_vector(start)
         vec_t = coordinates_as_vector(target)
@@ -37,7 +37,7 @@ class SwirlGeometry(SegmentedRayGeometry):
         d_old = ray.direction
         # new segment
         # advance starting point
-        s_new = Coordinates(
+        s_new = Coordinates3D(
             s_old[0] + d_old[0], s_old[1] + d_old[1], s_old[2] + d_old[2]
         )
         # swirl: rotate direction slightly

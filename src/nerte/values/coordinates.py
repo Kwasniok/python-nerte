@@ -3,10 +3,10 @@
 # TODO: use typing.NewType instead?
 
 
-class Coordinates:
+class Coordinates3D:
     """
     Represenation of a three dimensional coordinate as a triple of real numbers.
-    NOTE: Coordinates aren't vectors in the general case.
+    NOTE: Coordinates3D aren't vectors in the general case.
     """
 
     def __init__(self, x1: float, x2: float, x3: float) -> None:
@@ -22,7 +22,7 @@ class Coordinates:
 class Coordinates2D:
     """
     Represenation of a two dimensional coordinate as a pair of real numbers.
-    NOTE: Coordinates aren't vectors in the general case.
+    NOTE: Coordinates3D aren't vectors in the general case.
     """
 
     def __init__(self, x1: float, x2: float) -> None:

@@ -6,7 +6,7 @@
 
 import unittest
 
-from nerte.values.coordinates import Coordinates2D, Coordinates
+from nerte.values.coordinates import Coordinates2D, Coordinates3D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector, cross
 from nerte.values.manifold import Manifold2D, OutOfDomainError, Plane
@@ -23,7 +23,7 @@ def _equiv(x: float, y: float) -> bool:
 
 
 # True, iff two coordinates component-wise agree up to the (absolute) precision 𝜀
-def _coords_equiv(x: Coordinates, y: Coordinates) -> bool:
+def _coords_equiv(x: Coordinates3D, y: Coordinates3D) -> bool:
     return _equiv(x[0], y[0]) and _equiv(x[1], y[1]) and _equiv(x[2], y[2])
 
 
@@ -33,7 +33,7 @@ def _vec_equiv(x: AbstractVector, y: AbstractVector) -> bool:
 
 
 class ManifoldUnittest(unittest.TestCase):
-    def assertCoordinatesEquiv(self, x: Coordinates, y: Coordinates) -> None:
+    def assertCoordinates3DEquiv(self, x: Coordinates3D, y: Coordinates3D) -> None:
         """
         Asserts ths equivalence of two vectors.
         Note: This replaces assertTrue(x == y) for vectors.
@@ -42,7 +42,7 @@ class ManifoldUnittest(unittest.TestCase):
             self.assertTrue(_coords_equiv(x, y))
         except AssertionError as ae:
             raise AssertionError(
-                "Coordinates {} are not equivalent to {}.".format(x, y)
+                "Coordinates3D {} are not equivalent to {}.".format(x, y)
             ) from ae
 
     def assertVectorEquiv(self, x: AbstractVector, y: AbstractVector) -> None:
@@ -75,8 +75,8 @@ class Manifold2DImplementationTest(ManifoldUnittest):
                     self, x0_domain=x0_domain, x1_domain=x1_domain
                 )
 
-            def coordinates(self, coords: Coordinates2D) -> Coordinates:
-                return Coordinates(coords[0], coords[1], 0.0)
+            def coordinates(self, coords: Coordinates2D) -> Coordinates3D:
+                return Coordinates3D(coords[0], coords[1], 0.0)
 
             def surface_normal(self, coords: Coordinates2D) -> AbstractVector:
                 return AbstractVector(0.0, 0.0, 1.0)
@@ -173,10 +173,10 @@ class PlanePropertiesTest(ManifoldUnittest):
         c2d_1 = Coordinates2D(1.0, 0.0)
         c2d_2 = Coordinates2D(0.0, 1.0)
         c2d_3 = Coordinates2D(2.0, -3.0)
-        c3d_0 = Coordinates(0.0, 0.0, 0.0)
-        c3d_1 = Coordinates(1.0, 0.0, 0.0)
-        c3d_2 = Coordinates(0.0, 1.0, 0.0)
-        c3d_3 = Coordinates(2.0, -3.0, 0.0)
+        c3d_0 = Coordinates3D(0.0, 0.0, 0.0)
+        c3d_1 = Coordinates3D(1.0, 0.0, 0.0)
+        c3d_2 = Coordinates3D(0.0, 1.0, 0.0)
+        c3d_3 = Coordinates3D(2.0, -3.0, 0.0)
         self.coords_2d = (c2d_0, c2d_1, c2d_2, c2d_3)
         self.coords_3d = (c3d_0, c3d_1, c3d_2, c3d_3)
 
@@ -184,7 +184,7 @@ class PlanePropertiesTest(ManifoldUnittest):
         """Tests plane coordinates."""
         for plane, offset in zip(self.planes, self.offsets):
             for c2d, c3d in zip(self.coords_2d, self.coords_3d):
-                self.assertCoordinatesEquiv(
+                self.assertCoordinates3DEquiv(
                     plane.coordinates(c2d),
                     vector_as_coordinates(coordinates_as_vector(c3d) + offset),
                 )
