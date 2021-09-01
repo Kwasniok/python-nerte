@@ -33,7 +33,7 @@ def _detector_manifold_coords(
     x0 = x0_min + (x0_max - x0_min) * (pixel_x / width)
     # y goes from top to bottom
     x1 = x1_max - (x1_max - x1_min) * (pixel_y / height)
-    return Coordinates2D(x0, x1)
+    return Coordinates2D((x0, x1))
 
 
 def orthographic_ray_for_pixel(

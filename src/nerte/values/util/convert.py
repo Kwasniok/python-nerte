@@ -13,4 +13,4 @@ def coordinates_as_vector(coords: Coordinates3D) -> AbstractVector:
 
 def vector_as_coordinates(vec: AbstractVector) -> Coordinates3D:
     """Returns reinterpretation of a vector as coordinates."""
-    return Coordinates3D(vec[0], vec[1], vec[2])
+    return Coordinates3D((vec[0], vec[1], vec[2]))

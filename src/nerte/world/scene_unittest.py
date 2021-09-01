@@ -18,15 +18,15 @@ from nerte.world.scene import Scene
 class SceneTest(unittest.TestCase):
     def setUp(self) -> None:
         # object
-        p0 = Coordinates3D(1.0, 0.0, 0.0)
-        p1 = Coordinates3D(0.0, 1.0, 0.0)
-        p2 = Coordinates3D(0.0, 0.0, 1.0)
+        p0 = Coordinates3D((1.0, 0.0, 0.0))
+        p1 = Coordinates3D((0.0, 1.0, 0.0))
+        p2 = Coordinates3D((0.0, 0.0, 1.0))
         f = Face(p0, p1, p2)
         self.obj = Object()
         self.obj.add_face(f)
 
         # camera
-        loc = Coordinates3D(0.0, 0.0, -10.0)
+        loc = Coordinates3D((0.0, 0.0, -10.0))
         domain = Domain1D(-1.0, 1.0)
         manifold = Plane(
             AbstractVector(1.0, 0.0, 0.0),

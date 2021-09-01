@@ -14,9 +14,9 @@ from nerte.world.object import Object
 class ObjectTest(unittest.TestCase):
     def setUp(self) -> None:
         # face
-        p0 = Coordinates3D(1.0, 0.0, 0.0)
-        p1 = Coordinates3D(0.0, 1.0, 0.0)
-        p2 = Coordinates3D(0.0, 0.0, 1.0)
+        p0 = Coordinates3D((1.0, 0.0, 0.0))
+        p1 = Coordinates3D((0.0, 1.0, 0.0))
+        p2 = Coordinates3D((0.0, 0.0, 1.0))
         self.face = Face(p0, p1, p2)
         # color
         self.color = Color(1, 2, 3)

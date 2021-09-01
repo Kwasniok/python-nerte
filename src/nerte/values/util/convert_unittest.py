@@ -61,9 +61,9 @@ class ConvertTest(unittest.TestCase):
     def setUp(self) -> None:
         cs0 = (0.0, 0.0, 0.0)
         cs1 = (1.1, 2.2, 3.3)
-        self.coords0 = Coordinates3D(*cs0)
+        self.coords0 = Coordinates3D(cs0)
         self.vec0 = AbstractVector(*cs0)
-        self.coords1 = Coordinates3D(*cs1)
+        self.coords1 = Coordinates3D(cs1)
         self.vec1 = AbstractVector(*cs1)
 
     def test_coordinates_to_vector(self) -> None:

@@ -11,9 +11,9 @@ from nerte.values.face import Face
 
 class FaceTest(unittest.TestCase):
     def setUp(self) -> None:
-        c0 = Coordinates3D(1.0, 0.0, 0.0)
-        c1 = Coordinates3D(0.0, 1.0, 0.0)
-        c2 = Coordinates3D(0.0, 0.0, 1.0)
+        c0 = Coordinates3D((1.0, 0.0, 0.0))
+        c1 = Coordinates3D((0.0, 1.0, 0.0))
+        c2 = Coordinates3D((0.0, 0.0, 1.0))
         self.coords = (c0, c1, c2)
 
     def test_item(self) -> None:

@@ -14,7 +14,7 @@ from nerte.world.camera import Camera
 
 class CameraTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.location = Coordinates3D(1.1, 2.2, 3.3)
+        self.location = Coordinates3D((1.1, 2.2, 3.3))
         rnge = Domain1D(-1.0, 1.0)
         self.detector_manifold = Plane(
             AbstractVector(1.0, 0.0, 0.0),

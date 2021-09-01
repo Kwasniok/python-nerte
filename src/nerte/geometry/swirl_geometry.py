@@ -38,7 +38,7 @@ class SwirlGeometry(SegmentedRayGeometry):
         # new segment
         # advance starting point
         s_new = Coordinates3D(
-            s_old[0] + d_old[0], s_old[1] + d_old[1], s_old[2] + d_old[2]
+            (s_old[0] + d_old[0], s_old[1] + d_old[1], s_old[2] + d_old[2])
         )
         # swirl: rotate direction slightly
         d_new = (

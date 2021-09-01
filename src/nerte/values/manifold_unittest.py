@@ -76,7 +76,7 @@ class Manifold2DImplementationTest(ManifoldUnittest):
                 )
 
             def coordinates(self, coords: Coordinates2D) -> Coordinates3D:
-                return Coordinates3D(coords[0], coords[1], 0.0)
+                return Coordinates3D((coords[0], coords[1], 0.0))
 
             def surface_normal(self, coords: Coordinates2D) -> AbstractVector:
                 return AbstractVector(0.0, 0.0, 1.0)
@@ -91,7 +91,7 @@ class Manifold2DImplementationTest(ManifoldUnittest):
 
         man = DummyManifold2D(self.domain, self.domain)
         for x, y in ((i, j) for i in range(-10, 11) for j in range(-10, 11)):
-            man.coordinates(Coordinates2D(x, y))
+            man.coordinates(Coordinates2D((x, y)))
 
         self.assertTrue(man.x0_domain() is self.domain)
         self.assertTrue(man.x1_domain() is self.domain)
@@ -126,10 +126,10 @@ class PlaneDomainTest(ManifoldUnittest):
         )
         self.infinite_plane = Plane(v1, v2)
         self.coords = (
-            Coordinates2D(-2.0, -2.0),
-            Coordinates2D(3.0, -2.0),
-            Coordinates2D(1.0, -5.0),
-            Coordinates2D(1.0, 4.0),
+            Coordinates2D((-2.0, -2.0)),
+            Coordinates2D((3.0, -2.0)),
+            Coordinates2D((1.0, -5.0)),
+            Coordinates2D((1.0, 4.0)),
         )
 
     def test_plane_coordinates_domain(self) -> None:
@@ -169,14 +169,14 @@ class PlanePropertiesTest(ManifoldUnittest):
         self.planes = tuple(
             Plane(self.v1, self.v2, offset=o) for o in self.offsets
         )
-        c2d_0 = Coordinates2D(0.0, 0.0)
-        c2d_1 = Coordinates2D(1.0, 0.0)
-        c2d_2 = Coordinates2D(0.0, 1.0)
-        c2d_3 = Coordinates2D(2.0, -3.0)
-        c3d_0 = Coordinates3D(0.0, 0.0, 0.0)
-        c3d_1 = Coordinates3D(1.0, 0.0, 0.0)
-        c3d_2 = Coordinates3D(0.0, 1.0, 0.0)
-        c3d_3 = Coordinates3D(2.0, -3.0, 0.0)
+        c2d_0 = Coordinates2D((0.0, 0.0))
+        c2d_1 = Coordinates2D((1.0, 0.0))
+        c2d_2 = Coordinates2D((0.0, 1.0))
+        c2d_3 = Coordinates2D((2.0, -3.0))
+        c3d_0 = Coordinates3D((0.0, 0.0, 0.0))
+        c3d_1 = Coordinates3D((1.0, 0.0, 0.0))
+        c3d_2 = Coordinates3D((0.0, 1.0, 0.0))
+        c3d_3 = Coordinates3D((2.0, -3.0, 0.0))
         self.coords_2d = (c2d_0, c2d_1, c2d_2, c2d_3)
         self.coords_3d = (c3d_0, c3d_1, c3d_2, c3d_3)
 
