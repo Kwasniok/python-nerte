@@ -87,18 +87,18 @@ class AbstractVectorTestItem(LinAlgTestCase):
 
     def test_vector_item(self) -> None:
         """Tests item related operations."""
-        v = AbstractVector(*self.cs)
+        v = AbstractVector(self.cs)
         for i, c in zip(range(3), self.cs):
             self.assertEquiv(v[i], c)
 
 
 class AbstractVectorMathTest(LinAlgTestCase):
     def setUp(self) -> None:
-        self.v1 = AbstractVector(1.1, 2.2, 3.3)
-        self.v2 = AbstractVector(4.4, 5.5, 6.6)
-        self.v3 = AbstractVector(5.5, 7.7, 9.9)
-        self.v4 = AbstractVector(1.0, 1.0, 1.0)
-        self.v5 = AbstractVector(3.3, 3.3, 3.3)
+        self.v1 = AbstractVector((1.1, 2.2, 3.3))
+        self.v2 = AbstractVector((4.4, 5.5, 6.6))
+        self.v3 = AbstractVector((5.5, 7.7, 9.9))
+        self.v4 = AbstractVector((1.0, 1.0, 1.0))
+        self.v5 = AbstractVector((3.3, 3.3, 3.3))
 
     def test_vector_linear(self) -> None:
         """Tests linear operations on vectors."""
@@ -112,9 +112,9 @@ class AbstractVectorMathTest(LinAlgTestCase):
 class AbstractMatrixTestItem(LinAlgTestCase):
     def setUp(self) -> None:
         self.vs = (
-            AbstractVector(1.0, 2.0, 3.0),
-            AbstractVector(4.0, 5.0, 6.0),
-            AbstractVector(7.0, 8.0, 9.0),
+            AbstractVector((1.0, 2.0, 3.0)),
+            AbstractVector((4.0, 5.0, 6.0)),
+            AbstractVector((7.0, 8.0, 9.0)),
         )
 
     def test_matrix_item(self) -> None:
@@ -126,11 +126,11 @@ class AbstractMatrixTestItem(LinAlgTestCase):
 
 class AbstractMatrixMathTest(LinAlgTestCase):
     def setUp(self) -> None:
-        v1 = AbstractVector(1.1, 2.2, 3.3)
-        v2 = AbstractVector(4.4, 5.5, 6.6)
-        v3 = AbstractVector(5.5, 7.7, 9.9)
-        v4 = AbstractVector(1.0, 1.0, 1.0)
-        v5 = AbstractVector(3.3, 3.3, 3.3)
+        v1 = AbstractVector((1.1, 2.2, 3.3))
+        v2 = AbstractVector((4.4, 5.5, 6.6))
+        v3 = AbstractVector((5.5, 7.7, 9.9))
+        v4 = AbstractVector((1.0, 1.0, 1.0))
+        v5 = AbstractVector((3.3, 3.3, 3.3))
         self.m1 = AbstractMatrix(v1, v1, v1)
         self.m2 = AbstractMatrix(v2, v2, v2)
         self.m3 = AbstractMatrix(v3, v3, v3)
@@ -149,14 +149,14 @@ class AbstractMatrixMathTest(LinAlgTestCase):
 class MetricTest(LinAlgTestCase):
     def setUp(self) -> None:
         self.m0 = AbstractMatrix(
-            AbstractVector(0.0, 0.0, 0.0),
-            AbstractVector(0.0, 0.0, 0.0),
-            AbstractVector(0.0, 0.0, 0.0),
+            AbstractVector((0.0, 0.0, 0.0)),
+            AbstractVector((0.0, 0.0, 0.0)),
+            AbstractVector((0.0, 0.0, 0.0)),
         )
         self.m = AbstractMatrix(
-            AbstractVector(2.0, 3.0, 5.0),
-            AbstractVector(7.0, 11.0, 13.0),
-            AbstractVector(17.0, 19.0, 23.0),
+            AbstractVector((2.0, 3.0, 5.0)),
+            AbstractVector((7.0, 11.0, 13.0)),
+            AbstractVector((17.0, 19.0, 23.0)),
         )
         self.m_inv = inverted(self.m)
 
@@ -175,8 +175,8 @@ class MetricTest(LinAlgTestCase):
 
 class AbstractVectorIsZero(LinAlgTestCase):
     def setUp(self) -> None:
-        self.v0 = AbstractVector(0.0, 0.0, 0.0)
-        self.v1 = AbstractVector(1.0, 2.0, -3.0)
+        self.v0 = AbstractVector((0.0, 0.0, 0.0))
+        self.v1 = AbstractVector((1.0, 2.0, -3.0))
 
     def test_is_zero_vector(self) -> None:
         """Tests zero vector test."""
@@ -187,8 +187,8 @@ class AbstractVectorIsZero(LinAlgTestCase):
 
 class AbstractVectorLengthTest(LinAlgTestCase):
     def setUp(self) -> None:
-        self.v0 = AbstractVector(0.0, 0.0, 0.0)
-        self.v1 = AbstractVector(1.0, 2.0, -3.0)
+        self.v0 = AbstractVector((0.0, 0.0, 0.0))
+        self.v1 = AbstractVector((1.0, 2.0, -3.0))
 
     def test_vector_length(self) -> None:
         """Tests vector length."""
@@ -199,8 +199,8 @@ class AbstractVectorLengthTest(LinAlgTestCase):
 
 class AbstractVectorNormalizedTest(LinAlgTestCase):
     def setUp(self) -> None:
-        self.n = AbstractVector(1.0, 1.0, 1.0) / math.sqrt(3)
-        self.w = AbstractVector(7.0, 7.0, 7.0)
+        self.n = AbstractVector((1.0, 1.0, 1.0)) / math.sqrt(3)
+        self.w = AbstractVector((7.0, 7.0, 7.0))
 
     def test_vector_normalized(self) -> None:
         """Tests vector normalization."""
@@ -211,9 +211,9 @@ class DotTest(LinAlgTestCase):
     def setUp(self) -> None:
         # standart Carthesian basis
         self.orth_norm_basis = (
-            AbstractVector(1.0, 0.0, 0.0),
-            AbstractVector(0.0, 1.0, 0.0),
-            AbstractVector(0.0, 0.0, 1.0),
+            AbstractVector((1.0, 0.0, 0.0)),
+            AbstractVector((0.0, 1.0, 0.0)),
+            AbstractVector((0.0, 0.0, 1.0)),
         )
         # arbitrary factors
         self.scalar_factors = (0.0, 1.2345, -0.98765)
@@ -256,9 +256,9 @@ class CrossTest(LinAlgTestCase):
     def setUp(self) -> None:
         # standart Carthesian basis
         self.orth_norm_basis = (
-            AbstractVector(1.0, 0.0, 0.0),
-            AbstractVector(0.0, 1.0, 0.0),
-            AbstractVector(0.0, 0.0, 1.0),
+            AbstractVector((1.0, 0.0, 0.0)),
+            AbstractVector((0.0, 1.0, 0.0)),
+            AbstractVector((0.0, 0.0, 1.0)),
         )
         # arbitrary factors
         self.scalar_factors = (0.0, 1.2345, -0.98765)
@@ -296,10 +296,10 @@ class CrossTest(LinAlgTestCase):
 
 class InvertedTest(LinAlgTestCase):
     def setUp(self) -> None:
-        v0 = AbstractVector(0.0, 0.0, 0.0)
-        e0 = AbstractVector(1.0, 0.0, 0.0)
-        e1 = AbstractVector(0.0, 1.0, 0.0)
-        e2 = AbstractVector(0.0, 0.0, 1.0)
+        v0 = AbstractVector((0.0, 0.0, 0.0))
+        e0 = AbstractVector((1.0, 0.0, 0.0))
+        e1 = AbstractVector((0.0, 1.0, 0.0))
+        e2 = AbstractVector((0.0, 0.0, 1.0))
         orth_norm_basis = (e0, e1, e2)
         self.m0 = AbstractMatrix(v0, v0, v0)
         self.mI = AbstractMatrix(*orth_norm_basis)  # own inverse
@@ -307,15 +307,15 @@ class InvertedTest(LinAlgTestCase):
         self.m2_inv = AbstractMatrix(e0 / 1.0, e1 / 2.0, e2 / 3.0)
         self.m3 = AbstractMatrix(e0, e1, e0 * -1.0)  # linear dependency
         self.m4 = AbstractMatrix(
-            AbstractVector(2, 3, 5),
-            AbstractVector(7, 11, 13),
-            AbstractVector(17, 19, 23),
+            AbstractVector((2, 3, 5)),
+            AbstractVector((7, 11, 13)),
+            AbstractVector((17, 19, 23)),
         )
         self.m4_inv = (
             AbstractMatrix(
-                AbstractVector(-6, -26, 16),
-                AbstractVector(-60, 39, -9),
-                AbstractVector(54, -13, -1),
+                AbstractVector((-6, -26, 16)),
+                AbstractVector((-60, 39, -9)),
+                AbstractVector((54, -13, -1)),
             )
             / 78
         )
@@ -335,28 +335,28 @@ class CoAndCoraviantTest(LinAlgTestCase):
     # pylint: disable=R0902
 
     def setUp(self) -> None:
-        e0 = AbstractVector(1.0, 0.0, 0.0)
-        e1 = AbstractVector(0.0, 1.0, 0.0)
-        e2 = AbstractVector(0.0, 0.0, 1.0)
+        e0 = AbstractVector((1.0, 0.0, 0.0))
+        e1 = AbstractVector((0.0, 1.0, 0.0))
+        e2 = AbstractVector((0.0, 0.0, 1.0))
         orth_norm_basis = (e0, e1, e2)
-        self.v0 = AbstractVector(0.0, 0.0, 0.0)
-        self.v1 = AbstractVector(1.0, 2.0, 3.0)
+        self.v0 = AbstractVector((0.0, 0.0, 0.0))
+        self.v1 = AbstractVector((1.0, 2.0, 3.0))
 
         mI = AbstractMatrix(*orth_norm_basis)
         self.gI = Metric(mI)
 
         m1 = AbstractMatrix(e0 * 2.0, e1 * 5.0, e2 * 7.0)
         self.g1 = Metric(m1)
-        self.v11_co = AbstractVector(2.0, 10.0, 21.0)
-        self.v11_con = AbstractVector(1 / 2, 2 / 5, 3 / 7)
+        self.v11_co = AbstractVector((2.0, 10.0, 21.0))
+        self.v11_con = AbstractVector((1 / 2, 2 / 5, 3 / 7))
         m2 = AbstractMatrix(
-            AbstractVector(2, 3, 5),
-            AbstractVector(7, 11, 13),
-            AbstractVector(17, 19, 23),
+            AbstractVector((2, 3, 5)),
+            AbstractVector((7, 11, 13)),
+            AbstractVector((17, 19, 23)),
         )
         self.g2 = Metric(m2)
-        self.v12_co = AbstractVector(23, 68, 124)
-        self.v12_con = AbstractVector(-5 / 39, -3 / 26, 25 / 78)
+        self.v12_co = AbstractVector((23, 68, 124))
+        self.v12_con = AbstractVector((-5 / 39, -3 / 26, 25 / 78))
 
         self.gs = (self.gI, self.g1, self.g2)
         self.vs = (self.v0, self.v1)

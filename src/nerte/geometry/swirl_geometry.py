@@ -43,7 +43,7 @@ class SwirlGeometry(SegmentedRayGeometry):
         # swirl: rotate direction slightly
         d_new = (
             d_old
-            + cross(d_old, AbstractVector(s_old[0], s_old[1], s_old[2]))
+            + cross(d_old, AbstractVector((s_old[0], s_old[1], s_old[2])))
             * self.bend_factor
         )
         # ensure ray segment length

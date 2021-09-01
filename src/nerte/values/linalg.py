@@ -12,8 +12,8 @@ class AbstractVector:
           must be implicitly given by the context the vector is used in.
     """
 
-    def __init__(self, v1: float, v2: float, v3: float) -> None:
-        self._v = np.array((v1, v2, v3))
+    def __init__(self, coeffs: tuple[float, float, float]) -> None:
+        self._v = np.array(coeffs)
 
     def __repr__(self) -> str:
         return "V(" + (",".join(repr(x) for x in self._v)) + ")"
@@ -165,9 +165,11 @@ def cross(vec1: AbstractVector, vec2: AbstractVector) -> AbstractVector:
     """Returns the (orthonormal) cross product of both vectors."""
     # NOTE: MASSIVE performance improvments with hardcoded version!
     return AbstractVector(
-        vec1._v[1] * vec2._v[2] - vec1._v[2] * vec2._v[1],
-        vec1._v[2] * vec2._v[0] - vec1._v[0] * vec2._v[2],
-        vec1._v[0] * vec2._v[1] - vec1._v[1] * vec2._v[0],
+        (
+            vec1._v[1] * vec2._v[2] - vec1._v[2] * vec2._v[1],
+            vec1._v[2] * vec2._v[0] - vec1._v[0] * vec2._v[2],
+            vec1._v[0] * vec2._v[1] - vec1._v[1] * vec2._v[0],
+        )
     )
     # NOTE: DON'T use this:
     # return Vector.__from_numpy(np.cross(vec1._v, vec2._v))

@@ -17,8 +17,8 @@ class CameraTest(unittest.TestCase):
         self.location = Coordinates3D((1.1, 2.2, 3.3))
         rnge = Domain1D(-1.0, 1.0)
         self.detector_manifold = Plane(
-            AbstractVector(1.0, 0.0, 0.0),
-            AbstractVector(0.0, 1.0, 0.0),
+            AbstractVector((1.0, 0.0, 0.0)),
+            AbstractVector((0.0, 1.0, 0.0)),
             x0_domain=rnge,
             x1_domain=rnge,
         )

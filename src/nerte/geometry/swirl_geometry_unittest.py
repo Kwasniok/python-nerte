@@ -32,7 +32,7 @@ class SwirlGeometryTest(unittest.TestCase):
         s2 = Coordinates3D((0.0, 0.3, 0.0))  # one third of p2
         s3 = Coordinates3D((0.0, 0.0, 0.3))  # one third of p3
         ss = (s0, s1, s2, s3)
-        v = AbstractVector(1.0, 1.0, 1.0)
+        v = AbstractVector((1.0, 1.0, 1.0))
         self.intersecting_rays = list(Ray(start=s, direction=v) for s in ss)
 
     def test_dummy_geometry_intersects(self) -> None:

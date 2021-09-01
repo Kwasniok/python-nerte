@@ -79,14 +79,14 @@ class Manifold2DImplementationTest(ManifoldUnittest):
                 return Coordinates3D((coords[0], coords[1], 0.0))
 
             def surface_normal(self, coords: Coordinates2D) -> AbstractVector:
-                return AbstractVector(0.0, 0.0, 1.0)
+                return AbstractVector((0.0, 0.0, 1.0))
 
             def tangential_space(
                 self, coords: Coordinates2D
             ) -> tuple[AbstractVector, AbstractVector]:
                 return (
-                    AbstractVector(1.0, 0.0, 0.0),
-                    AbstractVector(0.0, 1.0, 0.0),
+                    AbstractVector((1.0, 0.0, 0.0)),
+                    AbstractVector((0.0, 1.0, 0.0)),
                 )
 
         man = DummyManifold2D(self.domain, self.domain)
@@ -100,10 +100,10 @@ class Manifold2DImplementationTest(ManifoldUnittest):
 class PlaneConstructorTest(unittest.TestCase):
     def setUp(self) -> None:
         self.domain = Domain1D(-1.0, 4.0)
-        self.v0 = AbstractVector(0.0, 0.0, 0.0)
-        self.v1 = AbstractVector(1.0, 0.0, 0.0)
-        self.v2 = AbstractVector(0.0, 1.0, 0.0)
-        self.offset = AbstractVector(0.0, 0.0, 0.0)
+        self.v0 = AbstractVector((0.0, 0.0, 0.0))
+        self.v1 = AbstractVector((1.0, 0.0, 0.0))
+        self.v2 = AbstractVector((0.0, 1.0, 0.0))
+        self.offset = AbstractVector((0.0, 0.0, 0.0))
 
     def test_plane_constructor(self) -> None:
         """Tests plane constroctor."""
@@ -119,8 +119,8 @@ class PlaneConstructorTest(unittest.TestCase):
 
 class PlaneDomainTest(ManifoldUnittest):
     def setUp(self) -> None:
-        v1 = AbstractVector(1.0, 0.0, 0.0)
-        v2 = AbstractVector(0.0, 1.0, 0.0)
+        v1 = AbstractVector((1.0, 0.0, 0.0))
+        v2 = AbstractVector((0.0, 1.0, 0.0))
         self.finite_plane = Plane(
             v1, v2, x0_domain=Domain1D(-1.0, 2.0), x1_domain=Domain1D(3.0, -4.0)
         )
@@ -159,12 +159,12 @@ class PlaneDomainTest(ManifoldUnittest):
 
 class PlanePropertiesTest(ManifoldUnittest):
     def setUp(self) -> None:
-        self.v1 = AbstractVector(1.0, 0.0, 0.0)
-        self.v2 = AbstractVector(0.0, 1.0, 0.0)
+        self.v1 = AbstractVector((1.0, 0.0, 0.0))
+        self.v2 = AbstractVector((0.0, 1.0, 0.0))
         self.n = cross(self.v1, self.v2)
         self.offsets = (
-            AbstractVector(0.0, 0.0, 0.0),
-            AbstractVector(1.1, 2.2, 3.3),
+            AbstractVector((0.0, 0.0, 0.0)),
+            AbstractVector((1.1, 2.2, 3.3)),
         )
         self.planes = tuple(
             Plane(self.v1, self.v2, offset=o) for o in self.offsets

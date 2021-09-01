@@ -30,8 +30,8 @@ class ImageRendererTest(unittest.TestCase):
         loc = Coordinates3D((0.0, 0.0, -1.0))
         domain = Domain1D(-1.0, 1.0)
         manifold = Plane(
-            AbstractVector(1.0, 0.0, 0.0),
-            AbstractVector(0.0, 1.0, 0.0),
+            AbstractVector((1.0, 0.0, 0.0)),
+            AbstractVector((0.0, 1.0, 0.0)),
             x0_domain=domain,
             x1_domain=domain,
         )
@@ -69,8 +69,8 @@ class ImageRendererProjectionTest(unittest.TestCase):
         loc = Coordinates3D((0.0, 0.0, -1.0))
         domain = Domain1D(-2.0, 2.0)
         manifold = Plane(
-            AbstractVector(1.0, 0.0, 0.0),
-            AbstractVector(0.0, 1.0, 0.0),
+            AbstractVector((1.0, 0.0, 0.0)),
+            AbstractVector((0.0, 1.0, 0.0)),
             x0_domain=domain,
             x1_domain=domain,
         )

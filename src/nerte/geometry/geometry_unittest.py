@@ -33,7 +33,7 @@ class CarthesianGeometryIntersectsTest1(unittest.TestCase):
         s2 = Coordinates3D((0.0, 0.3, 0.0))  # one third of p2
         s3 = Coordinates3D((0.0, 0.0, 0.3))  # one third of p3
         ss = (s0, s1, s2, s3)
-        v = AbstractVector(1.0, 1.0, 1.0)
+        v = AbstractVector((1.0, 1.0, 1.0))
         self.intersecting_rays = list(Ray(start=s, direction=v) for s in ss)
 
     def test_euclidean_intersects_1(self) -> None:
@@ -63,7 +63,7 @@ class CarthesianGeometryIntersectsTest2(unittest.TestCase):
         s2 = Coordinates3D((0.0, 0.3, 0.0))  # one third of p2
         s3 = Coordinates3D((0.0, 0.0, 0.3))  # one third of p3
         ss = (s0, s1, s2, s3)
-        v = AbstractVector(1.0, 1.0, 1.0)
+        v = AbstractVector((1.0, 1.0, 1.0))
         self.non_intersecting_rays = list(
             Ray(start=s, direction=-v) for s in ss
         )
@@ -94,7 +94,7 @@ class CarthesianGeometryIntersectsTest3(unittest.TestCase):
         s2 = Coordinates3D((0.6, 0.0, 0.6))  # 'complement' of p2
         s3 = Coordinates3D((0.6, 0.6, 0.0))  # 'complement' of p3
         ss = (s1, s2, s3)
-        v = AbstractVector(1.0, 1.0, 1.0)
+        v = AbstractVector((1.0, 1.0, 1.0))
         self.non_intersecting_rays = list(Ray(start=s, direction=v) for s in ss)
 
     def test_euclidean_intersects_3(self) -> None:
@@ -123,7 +123,7 @@ class CarthesianGeometryIntersectsTest4(unittest.TestCase):
         s2 = Coordinates3D((0.6, 0.0, 0.6))  # 'complement' of p2
         s3 = Coordinates3D((0.6, 0.6, 0.0))  # 'complement' of p3
         ss = (s1, s2, s3)
-        v = AbstractVector(1.0, 1.0, 1.0)
+        v = AbstractVector((1.0, 1.0, 1.0))
         self.non_intersecting_rays = list(
             Ray(start=s, direction=-v) for s in ss
         )

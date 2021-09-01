@@ -121,7 +121,7 @@ class Plane(Manifold2D):
         self._b1 = b1
         self._n = cross(b0, b1)
         if offset is None:
-            self._offset = AbstractVector(0.0, 0.0, 0.0)
+            self._offset = AbstractVector((0.0, 0.0, 0.0))
         else:
             self._offset = offset
 

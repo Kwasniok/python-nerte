@@ -48,8 +48,8 @@ def make_camera(canvas_dimension: int) -> Camera:
     location = Coordinates3D((0.0, 0.0, -2.0))
     manifold_param_domain = Domain1D(-1.0, 1.0)
     manifold = Plane(
-        AbstractVector(1.0, 0.0, 0.0),
-        AbstractVector(0.0, 1.0, 0.0),
+        AbstractVector((1.0, 0.0, 0.0)),
+        AbstractVector((0.0, 1.0, 0.0)),
         x0_domain=manifold_param_domain,
         x1_domain=manifold_param_domain,
     )
