@@ -8,7 +8,6 @@ from PIL import Image
 
 from nerte.values.coordinates import Coordinates2D
 from nerte.values.ray import Ray
-from nerte.values.util.convert import coordinates_as_vector
 from nerte.values.color import Color, Colors
 from nerte.world.camera import Camera
 from nerte.world.object import Object
