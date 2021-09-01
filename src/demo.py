@@ -80,9 +80,9 @@ def make_triangle_object(fix: Axis, distance: Distance, side: Side) -> Object:
     coords[2][axis_u] = +1.0
     coords[2][axis_v] = +1.0
     # represent the coefficients as proper coordinates
-    point0 = Coordinates3D(coords[0])
-    point1 = Coordinates3D(coords[1])
-    point2 = Coordinates3D(coords[2])
+    point0 = Coordinates3D(coords[0])  # type: ignore[arg-type]
+    point1 = Coordinates3D(coords[1])  # type: ignore[arg-type]
+    point2 = Coordinates3D(coords[2])  # type: ignore[arg-type]
     # create the triangle as an object
     tri = Face(point0, point1, point2)
     obj = Object(color=next(COLOR))  # pseudo-random color

@@ -23,9 +23,9 @@ class Coordinates3DTest(unittest.TestCase):
         for i in range(3):
             self.assertTrue(c[i] is self.coeffs[i])
         with self.assertRaises(IndexError):
-            c[3]
+            c[3]  # type: ignore[misc]
         with self.assertRaises(IndexError):
-            c[-4]
+            c[-4]  # type: ignore[misc]
 
 
 class Coordinates2DTest(unittest.TestCase):
@@ -40,9 +40,9 @@ class Coordinates2DTest(unittest.TestCase):
         for i in range(2):
             self.assertTrue(c[i] is self.coeffs[i])
         with self.assertRaises(IndexError):
-            c[2]
+            c[2]  # type: ignore[misc]
         with self.assertRaises(IndexError):
-            c[-3]
+            c[-3]  # type: ignore[misc]
 
 
 if __name__ == "__main__":
