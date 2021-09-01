@@ -250,7 +250,7 @@
     <rect style="fill: #ffffff" x="947.822" y="1311.84" width="495.1" height="68"/>
     <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke-linejoin: round; stroke: #000000" x="947.822" y="1311.84" width="495.1" height="68"/>
     <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="950.822" y="1325.72">+is_in_domain(Coordinate2D): Bool</text>
-    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:italic;font-weight:700" x="950.822" y="1341.72">+coordinates(coords:Coordinates2D): Coordinates</text>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:italic;font-weight:700" x="950.822" y="1341.72">+embed(coords:Coordinates2D): Coordinates</text>
     <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:italic;font-weight:700" x="950.822" y="1357.72">+surface_normal(coords:Coordinates2D): Vector</text>
     <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:italic;font-weight:700" x="950.822" y="1373.72">+tangential_vector_space(coords:Coordinates2D): (Vector,Vector)</text>
   </g>
