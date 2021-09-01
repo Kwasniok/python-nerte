@@ -26,8 +26,8 @@ def _detector_manifold_coords(
     # pylint: disable=C0103
     pixel_x, pixel_y = pixel_location
     width, height = camera.canvas_dimensions
-    x0_min, x0_max = camera.detector_manifold.x0_domain().as_tuple()
-    x1_min, x1_max = camera.detector_manifold.x1_domain().as_tuple()
+    x0_min, x0_max = camera.detector_manifold.domain[0].as_tuple()
+    x1_min, x1_max = camera.detector_manifold.domain[1].as_tuple()
     # x goes from left to right
     x0 = x0_min + (x0_max - x0_min) * (pixel_x / width)
     # y goes from top to bottom
@@ -46,7 +46,7 @@ def orthographic_ray_for_pixel(
     NOTE: All initial rays start on the detector's manifold and are normal to it.
     """
     coords_2d = _detector_manifold_coords(camera, pixel_location)
-    start = camera.detector_manifold.coordinates(coords_2d)
+    start = camera.detector_manifold.embed(coords_2d)
     direction = camera.detector_manifold.surface_normal(coords_2d)
     return Ray(start=start, direction=direction)
 
@@ -62,7 +62,7 @@ def perspective_ray_for_pixel(
           detector's manifold.
     """
     coords_2d = _detector_manifold_coords(camera, pixel_location)
-    target = camera.detector_manifold.coordinates(coords_2d)
+    target = camera.detector_manifold.embed(coords_2d)
     return geometry.ray_towards(start=camera.location, target=target)
 
 
