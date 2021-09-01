@@ -1,5 +1,7 @@
 """Module for Coordinate representation."""
 
+# TODO: use typing.NewType instead?
+
 
 class Coordinates:
     """
