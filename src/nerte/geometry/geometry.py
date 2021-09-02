@@ -78,77 +78,7 @@ def _in_triangle(
     return f1 >= 0 and f2 >= 0 and f1 + f2 < 1
 
 
-class CarthesianGeometry(Geometry):
-    """Represenation of the euclidean geometry in Carthesian coordinates."""
-
-    def __init__(self) -> None:
-        # precision of floating point representations
-        # pylint: disable=C0103,C0144
-        self.𝜀: float = 1e-8
-
-    def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
-        return True
-
-    # TOD: unify with intersects_segment
-    def intersects(self, ray: Ray, face: Face) -> bool:
-        # pylint: disable=C0103
-
-        # (tivially) convert face coordinates to vectors
-        v0 = coordinates_as_vector(face[0])
-        v1 = coordinates_as_vector(face[1])
-        v2 = coordinates_as_vector(face[2])
-        ## plane parameters:
-        # basis vector spanning the plane
-        b1 = v1 - v0
-        b2 = v2 - v0
-        # normal vector of plane
-        n = normalized(cross(b1, b2))
-        # level parameter (distance for plane to origin)
-        l = dot(n, v0)
-        # (x,y,z) in plane <=> (x,y,z) . n = l
-
-        ## ray parameters
-        s = coordinates_as_vector(ray.start)
-        u = ray.direction
-        # (x,y,z) in line <=> ∃t: s + t*u = (x,y,z)
-
-        # intersection of line iff ∃t: (s + t*u) . n = l
-        # <=> ∃t: t = a/b  for a = l - s . n and b = u . n
-        # Here, b = 0 means that the line is parallel to the plane and
-        # a = 0 means that s is in the plane
-
-        ## intersection of line and plane
-        # true if b≠0 or (b=0 and a=0)
-        a = l - dot(s, n)
-        b = dot(u, n)
-
-        if b == 0:
-            if a != 0:
-                # no intersection possible
-                return False
-            # ray starts in plane
-            return True  # this is arbitrary
-
-        t = a / b
-
-        if t < 0:
-            # intersection is before ray start
-            return False
-        # ray points towards plane
-
-        # intersection point with respect to the triangles origin
-        x = (s + u * t) - v0
-
-        # return if x lies in the triangle spanned by b1 and b2
-        return _in_triangle(b1, b2, x)
-
-    def ray_towards(self, start: Coordinates3D, target: Coordinates3D) -> Ray:
-        vec_s = coordinates_as_vector(start)
-        vec_t = coordinates_as_vector(target)
-        return Ray(start=start, direction=(vec_t - vec_s))
-
-
-def intersects_segment(ray: Ray, face: Face) -> bool:
+def intersects_ray(ray: Ray, is_ray_segment: bool, face: Face) -> bool:
     """
     Returns True, iff the (straight) ray intersects with the face within
     its length.
@@ -197,17 +127,33 @@ def intersects_segment(ray: Ray, face: Face) -> bool:
     if t < 0:
         # intersection is before ray segment started
         return False
-
-    # NOTE: THIS CONDITION IS UNIQUE FOR SEGMENTS!
-    if t > 1:
+    if is_ray_segment and t > 1:
         # intersection after ray segment ended
         return False
 
-    # intersection point with respect to the triangles origin
-    x = (s + u * t) - v0
-
+    # x = intersection point with respect to the triangles origin
     # return if x lies in the triangle spanned by b1 and b2
-    return _in_triangle(b1, b2, x)
+    return _in_triangle(b1, b2, (s + u * t) - v0)
+
+
+class CarthesianGeometry(Geometry):
+    """Represenation of the euclidean geometry in Carthesian coordinates."""
+
+    def __init__(self) -> None:
+        # precision of floating point representations
+        # pylint: disable=C0103,C0144
+        self.𝜀: float = 1e-8
+
+    def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
+        return True
+
+    def intersects(self, ray: Ray, face: Face) -> bool:
+        return intersects_ray(ray=ray, is_ray_segment=False, face=face)
+
+    def ray_towards(self, start: Coordinates3D, target: Coordinates3D) -> Ray:
+        vec_s = coordinates_as_vector(start)
+        vec_t = coordinates_as_vector(target)
+        return Ray(start=start, direction=(vec_t - vec_s))
 
 
 class SegmentedRayGeometry(Geometry):
@@ -248,7 +194,9 @@ class SegmentedRayGeometry(Geometry):
     def intersects(self, ray: Ray, face: Face) -> bool:
         current_ray_segment = self.normalize_initial_ray(ray)
         for _ in range(self.max_steps):
-            if intersects_segment(current_ray_segment, face):
+            if intersects_ray(
+                ray=current_ray_segment, is_ray_segment=True, face=face
+            ):
                 return True
             next_ray_segment = self.next_ray_segment(current_ray_segment)
             if next_ray_segment is not None:
