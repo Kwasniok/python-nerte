@@ -48,7 +48,6 @@ def orthographic_ray_for_pixel(
     coords_2d = _detector_manifold_coords(camera, pixel_location)
     start = camera.detector_manifold.embed(coords_2d)
     direction = camera.detector_manifold.surface_normal(coords_2d)
-    # TODO: add error handling
     return Ray(start=start, direction=direction)
 
 
@@ -64,7 +63,6 @@ def perspective_ray_for_pixel(
     """
     coords_2d = _detector_manifold_coords(camera, pixel_location)
     target = camera.detector_manifold.embed(coords_2d)
-    # TODO: add error handling
     return geometry.ray_towards(start=camera.location, target=target)
 
 
