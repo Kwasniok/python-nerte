@@ -10,6 +10,7 @@ from nerte.values.util.convert import coordinates_as_vector
 
 
 # TODO: make geometry a manifold as well?
+# TODO: coordinates' validity must be checked
 class Geometry(ABC):
     """Interface of a geometry."""
 
@@ -19,6 +20,8 @@ class Geometry(ABC):
         # pylint: disable=W0107
         pass
 
+    # TODO: needs optimization: the ray is currently calculated for each
+    #       use cache or allow for multiple faces at once?
     @abstractmethod
     def intersects(self, ray: Ray, face: Face) -> bool:
         """
@@ -28,7 +31,6 @@ class Geometry(ABC):
         # pylint: disable=W0107
         pass
 
-    # TODO: use the implementation
     @abstractmethod
     def ray_towards(self, start: Coordinates3D, target: Coordinates3D) -> Ray:
         """
