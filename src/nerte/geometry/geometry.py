@@ -38,6 +38,8 @@ class Geometry(ABC):
         """
         Returns a ray from the given starting position pointing towards the
         given target.
+
+        :raises: ValueError if no valid ray could be constructed
         """
         # pylint: disable=W0107
         pass
