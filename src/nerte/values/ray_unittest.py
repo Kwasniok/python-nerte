@@ -12,6 +12,7 @@ from nerte.values.ray import Ray
 
 class RayTest(unittest.TestCase):
     def setUp(self) -> None:
+        self.v0 = AbstractVector((0.0, 0.0, 0.0))
         self.start = Coordinates3D((0.0, 0.0, 0.0))
         self.direction = AbstractVector((1.0, 0.0, 0.0))
 
@@ -20,6 +21,8 @@ class RayTest(unittest.TestCase):
         ray = Ray(start=self.start, direction=self.direction)
         self.assertTrue(ray.start == self.start)
         self.assertTrue(ray.direction == self.direction)
+        with self.assertRaises(ValueError):
+            Ray(start=self.start, direction=self.v0)
 
 
 if __name__ == "__main__":
