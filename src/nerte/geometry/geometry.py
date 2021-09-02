@@ -1,5 +1,7 @@
 """Module for representing a geometry."""
 
+from typing import Optional
+
 from abc import ABC, abstractmethod
 
 from nerte.values.coordinates import Coordinates3D
@@ -222,11 +224,15 @@ class SegmentedRayGeometry(Geometry):
         self.max_ray_length = max_ray_length
 
     @abstractmethod
-    def next_ray_segment(self, ray: Ray) -> Ray:
+    def next_ray_segment(self, ray: Ray) -> Optional[Ray]:
         # pylint: disable=W0107
         """
         Returns the next ray segment (straight approximation of the geodesic
-        segment).
+        segment) if it exists.
+
+        NOTE: A ray might hit the boundary of the manifold representing the
+              geometry. If this happens further extending the ray might be
+              infeasable.
         """
         pass
 
@@ -240,10 +246,13 @@ class SegmentedRayGeometry(Geometry):
         pass
 
     def intersects(self, ray: Ray, face: Face) -> bool:
-        # TODO: test for coordinate validity
         current_ray_segment = self.normalize_initial_ray(ray)
         for _ in range(self.max_steps):
             if intersects_segment(current_ray_segment, face):
                 return True
-            current_ray_segment = self.next_ray_segment(current_ray_segment)
+            next_ray_segment = self.next_ray_segment(current_ray_segment)
+            if next_ray_segment is not None:
+                current_ray_segment = next_ray_segment
+            else:
+                return False
         return False
