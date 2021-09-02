@@ -59,6 +59,8 @@ class SwirlGeometry(SegmentedRayGeometry):
         )
         # swirl: rotate direction slightly
         # NOTE: d_new is never a zero vector
+        # TODO This method does not converge properly for increased max_step
+        #      and ray_segment_length.
         d_new = (
             d_old
             + cross(d_old, AbstractVector((s_old[0], s_old[1], s_old[2])))
