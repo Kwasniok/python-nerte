@@ -1,4 +1,7 @@
 # Non-Euclidean Ray-Tracing Engine
+[![unittest](https://github.com/Kwasniok/python-nerte/actions/workflows/unittest.yml/badge.svg)](https://github.com/Kwasniok/python-nerte/actions/workflows/unittest.yml)
+[![lint-pylint](https://github.com/Kwasniok/python-nerte/actions/workflows/pylint.yml/badge.svg)](https://github.com/Kwasniok/python-nerte/actions/workflows/pylint.yml)
+[![lint-mypy](https://github.com/Kwasniok/python-nerte/actions/workflows/mypy.yml/badge.svg)](https://github.com/Kwasniok/python-nerte/actions/workflows/mypy.yml)
 
 ## Installation & Dependencies
 NERTE requires [Python 3.9+](https://www.python.org/downloads/) with [pip](https://pip.pypa.io/en/stable/user_guide/) and the usage of a virtual environment ([venv](https://docs.python.org/3/tutorial/venv.html)) is recommended.
