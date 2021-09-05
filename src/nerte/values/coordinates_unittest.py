@@ -8,6 +8,7 @@
 # pylint: disable=E1136
 
 import unittest
+
 from nerte.values.coordinates import Coordinates3D, Coordinates2D
 
 
@@ -27,6 +28,11 @@ class Coordinates3DTest(unittest.TestCase):
         with self.assertRaises(IndexError):
             c[-4]  # type: ignore[misc]
 
+        # TODO: remove pylint disable, if bug was fixed in pylint
+        # pylint: disable=E0633
+        x0, x1, x2 = c
+        self.assertTrue((x0, x1, x2) == self.coeffs)
+
 
 class Coordinates2DTest(unittest.TestCase):
     def setUp(self) -> None:
@@ -43,6 +49,11 @@ class Coordinates2DTest(unittest.TestCase):
             c[2]  # type: ignore[misc]
         with self.assertRaises(IndexError):
             c[-3]  # type: ignore[misc]
+
+        # TODO: remove pylint disable, if bug was fixed in pylint
+        # pylint: disable=E0633
+        x0, x1 = c
+        self.assertTrue((x0, x1) == self.coeffs)
 
 
 if __name__ == "__main__":
