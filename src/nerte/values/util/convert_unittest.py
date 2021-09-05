@@ -6,6 +6,8 @@
 
 import unittest
 
+import math
+
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector
 from nerte.values.util.convert import (
@@ -14,11 +16,9 @@ from nerte.values.util.convert import (
 )
 
 
-# equivalence of floating point representations with finite precision
-𝜀 = 1e-8
-# True, iff two floats agree up to the (absolute) precision 𝜀
+# True, iff two floats are equivalent
 def _equiv(x: float, y: float) -> bool:
-    return abs(x - y) < 𝜀
+    return math.isclose(x, y)
 
 
 # True, iff two coordinates component-wise agree up to the (absolute) precision 𝜀
