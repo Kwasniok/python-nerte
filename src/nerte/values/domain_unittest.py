@@ -62,6 +62,10 @@ class Domain1DPropertiesTest(unittest.TestCase):
         """Tests domain parameters getters."""
         for domain, params in zip(self.domains, self.domain_params):
             self.assertTrue(domain.as_tuple() == params)
+            self.assertTrue(domain.start() == params[0])
+            self.assertTrue(domain.stop() == params[1])
+            self.assertTrue(domain.min() == min(params))
+            self.assertTrue(domain.max() == max(params))
 
     def test_domain1d_contains(self) -> None:
         """Tests domain contains."""

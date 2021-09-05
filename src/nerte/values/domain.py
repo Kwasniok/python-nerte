@@ -43,3 +43,19 @@ class Domain1D:
     def as_tuple(self) -> tuple[float, float]:
         """Returns start and stop parameter as a tuple."""
         return self._start, self._stop
+
+    def start(self) -> float:
+        """Returns the  start parameter."""
+        return self._start
+
+    def stop(self) -> float:
+        """Returns the stop parameter."""
+        return self._stop
+
+    def min(self) -> float:
+        """Returns the minimum of start and stop parameter."""
+        return self._min
+
+    def max(self) -> float:
+        """Returns the maximum of start and stop parameter."""
+        return self._max
