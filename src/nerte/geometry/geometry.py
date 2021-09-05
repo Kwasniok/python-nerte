@@ -86,6 +86,8 @@ def intersects_ray(ray: Ray, is_ray_segment: bool, face: Face) -> bool:
     its length.
     """
 
+    # TODO: fix bug, when ray inside the face
+
     # pylint: disable=C0103
 
     # (tivially) convert face coordinates to vectors
@@ -165,6 +167,7 @@ class SegmentedRayGeometry(Geometry):
     """
 
     def __init__(self, max_steps: int, max_ray_length: float):
+        # TODO: implement assertions (+ unittest)
         # precision of floating point representations
         # pylint: disable=C0103,C0144
         self.𝜀 = 1e-8
