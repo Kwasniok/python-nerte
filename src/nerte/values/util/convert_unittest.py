@@ -101,6 +101,13 @@ class ConvertCoordinates(EquivTestCase):
                 )
             ),
         )
+        self.invalid_cylin_coords = (
+            Coordinates3D((-1.0, 0.0, 0.0)),
+            Coordinates3D((1.0, -2 * math.pi, 0.0)),
+            Coordinates3D((1.0, 2 * math.pi, 0.0)),
+            Coordinates3D((1.0, 0.0, -math.inf)),
+            Coordinates3D((1.0, 0.0, math.inf)),
+        )
         # x, y, z
         self.carth_coords = Coordinates3D(
             (2.0 * math.sqrt(1 / 2), 2.0 * math.sqrt(1 / 2), -3.0)
@@ -115,6 +122,14 @@ class ConvertCoordinates(EquivTestCase):
             ),
             AbstractVector((2.0, 3.0, 5.0)),
         )
+        self.invalid_carth_coords = (
+            Coordinates3D((-math.inf, 0.0, 0.0)),
+            Coordinates3D((math.inf, 0.0, 0.0)),
+            Coordinates3D((0.0, -math.inf, 0.0)),
+            Coordinates3D((0.0, +math.inf, 0.0)),
+            Coordinates3D((0.0, 0.0, -math.inf)),
+            Coordinates3D((0.0, 0.0, +math.inf)),
+        )
 
     def test_carthesian_to_cylindric_coords(self) -> None:
         """Tests cathesian to cylindrical coordinates conversion."""
@@ -122,6 +137,9 @@ class ConvertCoordinates(EquivTestCase):
             carthesian_to_cylindric_coords(self.carth_coords),
             self.cylin_coords,
         )
+        for coords in self.invalid_carth_coords:
+            with self.assertRaises(AssertionError):
+                carthesian_to_cylindric_coords(coords)
 
     def test_cylindric_to_carthesian_coords(self) -> None:
         """Tests cylindircal to carthesian coordinates conversion."""
@@ -129,6 +147,9 @@ class ConvertCoordinates(EquivTestCase):
             cylindric_to_carthesian_coords(self.cylin_coords),
             self.carth_coords,
         )
+        for coords in self.invalid_cylin_coords:
+            with self.assertRaises(AssertionError):
+                cylindric_to_carthesian_coords(coords)
 
     def test_carthesian_to_cylindric_vector(self) -> None:
         """Tests cathesian vector to cylindrical vector conversion."""
@@ -137,6 +158,9 @@ class ConvertCoordinates(EquivTestCase):
                 carthesian_to_cylindric_vector(self.carth_coords, carth_vec),
                 cylin_vec,
             )
+        for coords, vec in zip(self.invalid_carth_coords, self.carth_vecs):
+            with self.assertRaises(AssertionError):
+                carthesian_to_cylindric_vector(coords, vec)
 
     def test_cylindric_to_carthesian_vector(self) -> None:
         """Tests cylindrical vector to cathesian vector conversion."""
@@ -145,6 +169,9 @@ class ConvertCoordinates(EquivTestCase):
                 cylindric_to_carthesian_vector(self.cylin_coords, cylin_vec),
                 carth_vec,
             )
+        for coords, vec in zip(self.invalid_cylin_coords, self.cylin_vecs):
+            with self.assertRaises(AssertionError):
+                cylindric_to_carthesian_vector(coords, vec)
 
 
 if __name__ == "__main__":

@@ -5,8 +5,6 @@ import math
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector
 
-# TODO: use this implementation everywhere
-
 
 def coordinates_as_vector(coords: Coordinates3D) -> AbstractVector:
     """Returns reinterpretation of coordinates as a vector."""
@@ -64,12 +62,12 @@ def cylindric_to_carthesian_coords(coords: Coordinates3D) -> Coordinates3D:
     Returns carthesian coordinates obtained from cylindrical coordinates.
 
     :param coords: cylindrical coordinates (r, phi, z)
-                   where 0 < r < inf and 0 < phi < 2*pi and -inf < z < inf
+                   where 0 < r < inf and -pi < phi < pi and -inf < z < inf
     """
     # pylint:disable=C0103
     r, phi, z = coords
     assert 0 < r < math.inf, f"{r} is out of bounds"
-    assert 0 < phi < 2 * math.pi, f"{phi} is out of bounds"
+    assert -math.pi < phi < math.pi, f"{phi} is out of bounds"
     assert -math.inf < z < math.inf, f"{z} is out of bounds"
     x = r * math.cos(phi)
     y = r * math.sin(phi)
@@ -84,14 +82,14 @@ def cylindric_to_carthesian_vector(
     a vector in tangential vector space in cylindircal coordinates.
 
     :param coords: cylindrical coordinates (r, phi, z)
-                   where 0 < r < inf and 0 < phi < 2*pi and -inf < z < inf
+                   where 0 < r < inf and -pi < phi < pi and -inf < z < inf
     :param vec: vector in tangential vector space of the cylindircal coordinates
                 (r, phi, z) such that vec = e_r * r + e_phi * phi + e_z * z
     """
     # pylint:disable=C0103
     r, phi, z = coords
     assert 0 < r < math.inf, f"{r} is out of bounds"
-    assert 0 < phi < 2 * math.pi, f"{phi} is out of bounds"
+    assert -math.pi < phi < math.pi, f"{phi} is out of bounds"
     assert -math.inf < z < math.inf, f"{z} is out of bounds"
     e_r = AbstractVector((math.cos(phi), math.sin(phi), 0.0))
     e_phi = AbstractVector((-math.sin(phi), math.cos(phi), 0.0))
