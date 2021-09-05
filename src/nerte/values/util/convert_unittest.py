@@ -13,6 +13,10 @@ from nerte.values.linalg import AbstractVector
 from nerte.values.util.convert import (
     coordinates_as_vector,
     vector_as_coordinates,
+    carthesian_to_cylindric_coords,
+    carthesian_to_cylindric_vector,
+    cylindric_to_carthesian_coords,
+    cylindric_to_carthesian_vector,
 )
 
 
@@ -31,7 +35,7 @@ def _vec_equiv(x: AbstractVector, y: AbstractVector) -> bool:
     return _equiv(x[0], y[0]) and _equiv(x[1], y[1]) and _equiv(x[2], y[2])
 
 
-class ConvertTest(unittest.TestCase):
+class EquivTestCase(unittest.TestCase):
     def assertCoordinates3DEquiv(
         self, x: Coordinates3D, y: Coordinates3D
     ) -> None:
@@ -58,6 +62,8 @@ class ConvertTest(unittest.TestCase):
                 "Vector {} is not equivalent to {}.".format(x, y)
             ) from ae
 
+
+class ConvertCoordinatesVectorTypeTest(EquivTestCase):
     def setUp(self) -> None:
         cs0 = (0.0, 0.0, 0.0)
         cs1 = (1.1, 2.2, 3.3)
@@ -79,6 +85,66 @@ class ConvertTest(unittest.TestCase):
         self.assertCoordinates3DEquiv(
             vector_as_coordinates(self.vec1), self.coords1
         )
+
+
+class ConvertCoordinates(EquivTestCase):
+    def setUp(self) -> None:
+        # r, phi, z
+        self.cylin_coords = Coordinates3D((2.0, math.pi / 4, -3.0))
+        self.cylin_vecs = (
+            AbstractVector((2.0, 3.0, 5.0)),
+            AbstractVector(
+                (
+                    +2.0 * math.sqrt(1 / 2) + 3.0 * math.sqrt(1 / 2),
+                    -2.0 * math.sqrt(1 / 2) + 3.0 * math.sqrt(1 / 2),
+                    5.0,
+                )
+            ),
+        )
+        # x, y, z
+        self.carth_coords = Coordinates3D(
+            (2.0 * math.sqrt(1 / 2), 2.0 * math.sqrt(1 / 2), -3.0)
+        )
+        self.carth_vecs = (
+            AbstractVector(
+                (
+                    +2.0 * math.sqrt(1 / 2) - 3.0 * math.sqrt(1 / 2),
+                    +2.0 * math.sqrt(1 / 2) + 3.0 * math.sqrt(1 / 2),
+                    5.0,
+                )
+            ),
+            AbstractVector((2.0, 3.0, 5.0)),
+        )
+
+    def test_carthesian_to_cylindric_coords(self) -> None:
+        """Tests cathesian to cylindrical coordinates conversion."""
+        self.assertCoordinates3DEquiv(
+            carthesian_to_cylindric_coords(self.carth_coords),
+            self.cylin_coords,
+        )
+
+    def test_cylindric_to_carthesian_coords(self) -> None:
+        """Tests cylindircal to carthesian coordinates conversion."""
+        self.assertCoordinates3DEquiv(
+            cylindric_to_carthesian_coords(self.cylin_coords),
+            self.carth_coords,
+        )
+
+    def test_carthesian_to_cylindric_vector(self) -> None:
+        """Tests cathesian vector to cylindrical vector conversion."""
+        for carth_vec, cylin_vec in zip(self.carth_vecs, self.cylin_vecs):
+            self.assertVectorEquiv(
+                carthesian_to_cylindric_vector(self.carth_coords, carth_vec),
+                cylin_vec,
+            )
+
+    def test_cylindric_to_carthesian_vector(self) -> None:
+        """Tests cylindrical vector to cathesian vector conversion."""
+        for cylin_vec, carth_vec in zip(self.cylin_vecs, self.carth_vecs):
+            self.assertVectorEquiv(
+                cylindric_to_carthesian_vector(self.cylin_coords, cylin_vec),
+                carth_vec,
+            )
 
 
 if __name__ == "__main__":
