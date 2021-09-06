@@ -13,7 +13,7 @@ class Camera:
 
     def __init__(
         self,
-        location: Coordinates3D,
+        location: Coordinates3D,  # TODO: change to focal point
         detector_manifold: Manifold2D,
         canvas_dimensions: tuple[int, int],
     ) -> None:
