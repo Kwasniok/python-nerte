@@ -126,14 +126,22 @@ class Metric:
                 f"Cannot construct metric form non-symmetric matrix"
                 f" {matrix}."
             )
-        rank = np.linalg.matrix_rank(
-            matrix._m,
-            hermitian=True,
-        )  # type: ignore[no-untyped-call]
-        if rank != 3:
+        # # NOTE: Declaring the matrix symmetric significantly boosts the
+        # #       rank calculations!
+        # rank = np.linalg.matrix_rank(
+        #     matrix._m,
+        #     hermitian=True,
+        # )  # type: ignore[no-untyped-call]
+        # if rank != 3:
+        #     raise ValueError(
+        #         f"Cannot construct metric form non-invertible symmetric matrix"
+        #         f" {matrix} - its rank is {rank}."
+        #     )
+        # NOTE: Calculating the determinant is faster than calculating the rank!
+        if np.linalg.det(matrix._m) == 0.0:  # type: ignore[no-untyped-call]
             raise ValueError(
                 f"Cannot construct metric form non-invertible symmetric matrix"
-                f" {matrix} - its rank is {rank}."
+                f" {matrix}."
             )
 
         self._g = matrix
