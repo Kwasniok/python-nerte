@@ -4,6 +4,7 @@
 
 from typing import Optional
 
+import math
 import numpy as np
 
 
@@ -92,10 +93,11 @@ class AbstractMatrix:
         Note: Small numerical deviations of the coefficients are allowed.
         """
         if self._is_symmetric is None:
+            # NOTE: np.isclose is significantly slower
             self._is_symmetric = (
-                np.isclose(self._m[0][1], self._m[1][0])
-                and np.isclose(self._m[0][2], self._m[2][0])
-                and np.isclose(self._m[1][2], self._m[2][1])
+                math.isclose(self._m[0][1], self._m[1][0])
+                and math.isclose(self._m[0][2], self._m[2][0])
+                and math.isclose(self._m[1][2], self._m[2][1])
             )
         return self._is_symmetric
 
