@@ -313,26 +313,55 @@ class AbstractVectorIsZero(LinAlgTestCase):
         self.assertFalse(is_zero_vector(self.v1))
 
 
-class AbstractVectorLengthTest(LinAlgTestCase):
+class LengthTest(LinAlgTestCase):
     def setUp(self) -> None:
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
         self.v1 = AbstractVector((1.0, 2.0, -3.0))
+        # metric
+        self.metric = Metric(
+            AbstractSymmetricMatrix(
+                AbstractVector((5.0, 0.0, 0.0)),
+                AbstractVector((0.0, 7.0, 0.0)),
+                AbstractVector((0.0, 0.0, 11.0)),
+            )
+        )
 
-    def test_vector_length(self) -> None:
+    def test_length(self) -> None:
         """Tests vector length."""
 
         self.assertEquiv(length(self.v0), 0.0)
         self.assertEquiv(length(self.v1) ** 2, 14.0)
 
+    def test_length_metric(self) -> None:
+        """Tests vector length with metric."""
 
-class AbstractVectorNormalizedTest(LinAlgTestCase):
+        self.assertEquiv(length(self.v0, metric=self.metric), 0.0)
+        self.assertEquiv(length(self.v1, metric=self.metric) ** 2, 132.0)
+
+
+class NormalizedTest(LinAlgTestCase):
     def setUp(self) -> None:
         self.n = AbstractVector((1.0, 1.0, 1.0)) / math.sqrt(3)
         self.w = AbstractVector((7.0, 7.0, 7.0))
+        # metric
+        self.metric = Metric(
+            AbstractSymmetricMatrix(
+                AbstractVector((1.0, 0.0, 0.0)),
+                AbstractVector((0.0, 2.0, 0.0)),
+                AbstractVector((0.0, 0.0, 3.0)),
+            )
+        )
+        self.n_metric = AbstractVector((1.0, 1.0, 1.0)) / math.sqrt(6)
 
-    def test_vector_normalized(self) -> None:
+    def test_normalized(self) -> None:
         """Tests vector normalization."""
         self.assertVectorEquiv(normalized(self.w), self.n)
+
+    def test_normized_metric(self) -> None:
+        """Tests vetor normalization with metric."""
+        self.assertVectorEquiv(
+            normalized(self.w, metric=self.metric), self.n_metric
+        )
 
 
 class DotTest(LinAlgTestCase):
@@ -345,6 +374,14 @@ class DotTest(LinAlgTestCase):
         )
         # arbitrary factors
         self.scalar_factors = (0.0, 1.2345, -0.98765)
+        # metric
+        self.metric = Metric(
+            AbstractSymmetricMatrix(
+                AbstractVector((1.0, 0.0, 0.0)),
+                AbstractVector((0.0, 2.0, 0.0)),
+                AbstractVector((0.0, 0.0, 3.0)),
+            )
+        )
 
     def test_math_dot_orthonormality(self) -> None:
         """Tests dot product acting on orthonormal basis."""
@@ -378,6 +415,14 @@ class DotTest(LinAlgTestCase):
                                 dot(u, (v * a) + (w * b)),
                                 dot(u, v) * a + dot(u, w) * b,
                             )
+
+    def test_math_dot_metric(self) -> None:
+        """Tests dot with metric."""
+        for i, v in enumerate(self.orth_norm_basis):
+            for j, w in enumerate(self.orth_norm_basis):
+                self.assertEquiv(
+                    dot(v, w, metric=self.metric), self.metric.matrix()[i][j]
+                )
 
 
 class CrossTest(LinAlgTestCase):

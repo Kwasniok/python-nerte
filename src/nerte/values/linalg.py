@@ -223,21 +223,32 @@ def is_zero_vector(vec: AbstractVector) -> bool:
     return vec[0] == vec[1] == vec[2] == 0.0
 
 
-# TODO: include metric
-def dot(vec1: AbstractVector, vec2: AbstractVector) -> float:
+def dot(
+    vec1: AbstractVector,
+    vec2: AbstractVector,
+    metric: Optional[Metric] = None,
+) -> float:
     """Returns the (orthonormal) dot product of both vectors."""
-    # NOTE: SMALL performance improvments with hardcoded version!
-    return (
-        vec1._v[0] * vec2._v[0]
-        + vec1._v[1] * vec2._v[1]
-        + vec1._v[2] * vec2._v[2]
-    )
-    # NOTE: DON'T use this:
-    # return np.dot(vec1._v, vec2._v)
+    if metric is None:
+        # NOTE: SMALL performance improvments with hardcoded version!
+        return (
+            vec1._v[0] * vec2._v[0]
+            + vec1._v[1] * vec2._v[1]
+            + vec1._v[2] * vec2._v[2]
+        )
+        # NOTE: DON'T use this:
+        # return np.dot(vec1._v, vec2._v)
+    return np.dot(
+        vec1._v,
+        np.dot(metric.matrix()._m, vec2._v),  # type: ignore[no-untyped-call]
+    )  # TODO: optimize
 
 
-# TODO: include metric
-def cross(vec1: AbstractVector, vec2: AbstractVector) -> AbstractVector:
+# TODO: include metric and transformation
+def cross(
+    vec1: AbstractVector,
+    vec2: AbstractVector,
+) -> AbstractVector:
     """Returns the (orthonormal) cross product of both vectors."""
     # NOTE: MASSIVE performance improvments with hardcoded version!
     return AbstractVector(
@@ -251,23 +262,27 @@ def cross(vec1: AbstractVector, vec2: AbstractVector) -> AbstractVector:
     # return Vector.__from_numpy(np.cross(vec1._v, vec2._v))
 
 
-# TODO: include metric
-def length(vec: AbstractVector) -> float:
+def length(vec: AbstractVector, metric: Optional[Metric] = None) -> float:
     """
     Returns the length of the vector (with respect to an orthonormal basis).
     """
-    return np.linalg.norm(vec._v)  # type: ignore[no-untyped-call]
+    if metric is None:
+        return np.linalg.norm(vec._v)  # type: ignore[no-untyped-call]
+    return dot(vec, vec, metric) ** 0.5  # TODO: optimize
 
 
-# TODO: include metric
-def normalized(vec: AbstractVector) -> AbstractVector:
+def normalized(
+    vec: AbstractVector, metric: Optional[Metric] = None
+) -> AbstractVector:
     """
     Returns the normalized vector (with respect to an orthonormal basis).
     """
-    # NOTE: VERY SMALL performance improvments with hardcoded version!
-    return _abstract_vector_from_numpy(vec._v * (dot(vec, vec) ** -0.5))
-    # NOTE: DON'T use this:
-    # return Vector.__from_numpy((1 / np.linalg.norm(vec._v)) * vec._v)
+    if metric is None:
+        # NOTE: VERY SMALL performance improvments with hardcoded version!
+        return _abstract_vector_from_numpy(vec._v * (dot(vec, vec) ** -0.5))
+        # NOTE: DON'T use this:
+        # return Vector.__from_numpy((1 / np.linalg.norm(vec._v)) * vec._v)
+    return vec / length(vec, metric)  # TODO: optimize
 
 
 def inverted(mat: AbstractMatrix) -> AbstractMatrix:
