@@ -8,7 +8,7 @@ from nerte.values.linalg import AbstractVector
 
 def coordinates_as_vector(coords: Coordinates3D) -> AbstractVector:
     """Returns reinterpretation of coordinates as a vector."""
-    return AbstractVector(coords)
+    return AbstractVector((coords[0], coords[1], coords[2]))
 
 
 def vector_as_coordinates(vec: AbstractVector) -> Coordinates3D:

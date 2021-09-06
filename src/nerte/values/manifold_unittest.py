@@ -181,7 +181,7 @@ class Manifold3DImplementationTest(ManifoldUnittest):
 
             def embed(self, coords: Coordinates3D) -> Coordinates3D:
                 self.in_domain_assertion(coords)
-                return Coordinates3D(coords)
+                return coords
 
             def tangential_space(
                 self, coords: Coordinates3D
