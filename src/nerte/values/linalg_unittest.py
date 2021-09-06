@@ -148,12 +148,12 @@ class AbstractMatrixIsSymmetricTest(LinAlgTestCase):
         v3_anti = AbstractVector((-3.3, -6.6, 9.9))
 
         self.symmetic_mats = (
-            AbstractMatrix(v0, v0, v0),
             AbstractMatrix(v1, v2, v3),
             AbstractMatrix(v1 + v0, v2, v3 + v0),
         )
 
         self.non_symmetic_mats = (
+            AbstractMatrix(v0, v0, v0),
             AbstractMatrix(v1, v1, v1),
             AbstractMatrix(v1, v2_anti, v3_anti),
         )
