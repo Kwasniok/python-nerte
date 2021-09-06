@@ -12,7 +12,9 @@ import math
 from nerte.values.linalg import (
     AbstractVector,
     AbstractMatrix,
+    AbstractSymmetricMatrix,
     Metric,
+    to_symmetric_matrix,
     covariant,
     contravariant,
     is_zero_vector,
@@ -109,6 +111,20 @@ class AbstractVectorMathTest(LinAlgTestCase):
         self.assertVectorEquiv(self.v5 / 3.3, self.v4)
 
 
+class AbstractMatrixTest(LinAlgTestCase):
+    def setUp(self) -> None:
+        self.v0 = AbstractVector((0.0, 0.0, 0.0))
+        self.v1 = AbstractVector((1.1, 2.2, 3.3))
+        self.v2 = AbstractVector((4.4, 5.5, 6.6))
+        self.v3 = AbstractVector((5.5, 7.7, 9.9))
+
+    def test_matrix_constructor(self) -> None:
+        """Test matrix constructor."""
+        AbstractMatrix(self.v0, self.v1, self.v2)
+        AbstractMatrix(self.v1, self.v1, self.v1)
+        AbstractMatrix(self.v1, self.v2, self.v3)
+
+
 class AbstractMatrixTestItem(LinAlgTestCase):
     def setUp(self) -> None:
         self.vs = (
@@ -122,6 +138,34 @@ class AbstractMatrixTestItem(LinAlgTestCase):
         m = AbstractMatrix(*self.vs)
         for i, v in zip(range(3), self.vs):
             self.assertVectorEquiv(m[i], v)
+
+
+class AbstractMatrixIsSymmetricTest(LinAlgTestCase):
+    def setUp(self) -> None:
+        v0 = AbstractVector((0.0, 1e-9, 0.0))  # simulated small numerical error
+        v1 = AbstractVector((1.1, 2.2, 3.3))
+        v2 = AbstractVector((2.2, 5.5, 6.6))
+        v3 = AbstractVector((3.3, 6.6, 9.9))
+        v2_anti = AbstractVector((-2.2, 5.5, 6.6))
+        v3_anti = AbstractVector((-3.3, -6.6, 9.9))
+
+        self.symmetic_mats = (
+            AbstractMatrix(v0, v0, v0),
+            AbstractMatrix(v1, v2, v3),
+            AbstractMatrix(v1 + v0, v2, v3 + v0),
+        )
+
+        self.non_symmetic_mats = (
+            AbstractMatrix(v1, v1, v1),
+            AbstractMatrix(v1, v2_anti, v3_anti),
+        )
+
+    def test_matrix_is_symmetric(self) -> None:
+        """Tests matix symmetry property."""
+        for mat in self.symmetic_mats:
+            self.assertTrue(mat.is_symmetric())
+        for mat in self.non_symmetic_mats:
+            self.assertFalse(mat.is_symmetric())
 
 
 class AbstractMatrixMathTest(LinAlgTestCase):
@@ -146,17 +190,101 @@ class AbstractMatrixMathTest(LinAlgTestCase):
         self.assertMatrixEquiv(self.m5 / 3.3, self.m4)
 
 
+class AbstractSymetricMatrixTest(LinAlgTestCase):
+    def setUp(self) -> None:
+        self.v0 = AbstractVector(
+            (0.0, 1e-9, 0.0)
+        )  # simulated small numerical error
+        self.v1 = AbstractVector((1.1, 2.2, 3.3))
+        self.v2 = AbstractVector((2.2, 5.5, 6.6))
+        self.v3 = AbstractVector((3.3, 6.6, 9.9))
+        self.v2_anti = AbstractVector((-2.2, 5.5, 6.6))
+        self.v3_anti = AbstractVector((-3.3, -6.6, 9.9))
+
+    def test_matrix_constructor(self) -> None:
+        """Test symmetric matrix constructor."""
+        AbstractSymmetricMatrix(self.v0, self.v0, self.v0)
+        AbstractSymmetricMatrix(self.v1, self.v2, self.v3)
+        AbstractSymmetricMatrix(self.v1 + self.v0, self.v2, self.v3 + self.v0)
+        with self.assertRaises(ValueError):
+            AbstractSymmetricMatrix(self.v1, self.v1, self.v1)
+        with self.assertRaises(ValueError):
+            AbstractSymmetricMatrix(self.v1, self.v2_anti, self.v3_anti)
+
+
+class AbstractSymmetricMatrixTestItem(LinAlgTestCase):
+    def setUp(self) -> None:
+        self.vs = (
+            AbstractVector((1.0, 2.0, 3.0)),
+            AbstractVector((2.0, 5.0, 6.0)),
+            AbstractVector((3.0, 6.0, 9.0)),
+        )
+
+    def test_matrix_item(self) -> None:
+        """Tests item related operations."""
+        m = AbstractMatrix(*self.vs)
+        for i, v in zip(range(3), self.vs):
+            self.assertVectorEquiv(m[i], v)
+
+
+class AbstractSymmetricMatrixMathTest(LinAlgTestCase):
+    def setUp(self) -> None:
+        v0 = AbstractVector((0.0, 1e-9, 0.0))  # simulated small numerical error
+        v1 = AbstractVector((1.1, 2.2, 3.3))
+        v2 = AbstractVector((2.2, 5.5, 6.6))
+        v3 = AbstractVector((3.3, 6.6, 9.9))
+        self.m1 = AbstractSymmetricMatrix(v0, v0, v0)
+        self.m2 = AbstractSymmetricMatrix(v1, v2, v3)
+        self.m3 = AbstractSymmetricMatrix(v1 + v0, v2, v3 + v0)
+        self.m23 = AbstractSymmetricMatrix(v1 * 3.3, v2 * 3.3, v3 * 3.3)
+
+    def test_matrix_linear(self) -> None:
+        """Tests linear operations on symmetric matrices."""
+
+        self.assertMatrixEquiv(self.m1 + self.m2, self.m2)
+        self.assertMatrixEquiv(self.m2 * 3.3, self.m23)
+        self.assertMatrixEquiv(self.m2 - self.m1, self.m2)
+        self.assertMatrixEquiv(self.m23 / 3.3, self.m2)
+
+
+class ToSymmetricMatrixTest(LinAlgTestCase):
+    def setUp(self) -> None:
+        v0 = AbstractVector((0.0, 1e-9, 0.0))  # simulated small numerical error
+        v1 = AbstractVector((1.1, 2.2, 3.3))
+        v2 = AbstractVector((2.2, 5.5, 6.6))
+        v3 = AbstractVector((3.3, 6.6, 9.9))
+        v2_anti = AbstractVector((-2.2, 5.5, 6.6))
+        v3_anti = AbstractVector((-3.3, -6.6, 9.9))
+
+        self.symmetic_mats = (
+            AbstractMatrix(v0, v0, v0),
+            AbstractMatrix(v1, v2, v3),
+            AbstractMatrix(v1 + v0, v2, v3 + v0),
+        )
+
+        self.non_symmetic_mats = (
+            AbstractMatrix(v1, v1, v1),
+            AbstractMatrix(v1, v2_anti, v3_anti),
+        )
+
+    def test_to_symmetric_matrix(self) -> None:
+        """Test matrix to symmetric matrix conversion."""
+        for mat in self.symmetic_mats:
+            sym_mat = to_symmetric_matrix(mat)
+            self.assertMatrixEquiv(sym_mat, mat)
+        for mat in self.non_symmetic_mats:
+            with self.assertRaises(ValueError):
+                to_symmetric_matrix(mat)
+
+
 class MetricTest(LinAlgTestCase):
     def setUp(self) -> None:
-        self.m0 = AbstractMatrix(
-            AbstractVector((0.0, 0.0, 0.0)),
-            AbstractVector((0.0, 0.0, 0.0)),
-            AbstractVector((0.0, 0.0, 0.0)),
-        )
-        self.m = AbstractMatrix(
+        v0 = AbstractVector((0.0, 0.0, 0.0))
+        self.m0 = AbstractSymmetricMatrix(v0, v0, v0)
+        self.m = AbstractSymmetricMatrix(
             AbstractVector((2.0, 3.0, 5.0)),
-            AbstractVector((7.0, 11.0, 13.0)),
-            AbstractVector((17.0, 19.0, 23.0)),
+            AbstractVector((3.0, 11.0, 13.0)),
+            AbstractVector((5.0, 13.0, 23.0)),
         )
         self.m_inv = inverted(self.m)
 
@@ -340,40 +468,39 @@ class CoAndCoraviantTest(LinAlgTestCase):
         e2 = AbstractVector((0.0, 0.0, 1.0))
         orth_norm_basis = (e0, e1, e2)
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
-        self.v1 = AbstractVector((1.0, 2.0, 3.0))
+        self.v1_con = AbstractVector((1.0, 2.0, 3.0))
 
-        mI = AbstractMatrix(*orth_norm_basis)
+        mI = AbstractSymmetricMatrix(*orth_norm_basis)
         self.gI = Metric(mI)
 
-        m1 = AbstractMatrix(e0 * 2.0, e1 * 5.0, e2 * 7.0)
+        m1 = AbstractSymmetricMatrix(e0 * 2.0, e1 * 5.0, e2 * 7.0)
         self.g1 = Metric(m1)
         self.v11_co = AbstractVector((2.0, 10.0, 21.0))
-        self.v11_con = AbstractVector((1 / 2, 2 / 5, 3 / 7))
-        m2 = AbstractMatrix(
+
+        m2 = AbstractSymmetricMatrix(
             AbstractVector((2, 3, 5)),
-            AbstractVector((7, 11, 13)),
-            AbstractVector((17, 19, 23)),
+            AbstractVector((3, 11, 13)),
+            AbstractVector((5, 13, 23)),
         )
         self.g2 = Metric(m2)
-        self.v12_co = AbstractVector((23, 68, 124))
-        self.v12_con = AbstractVector((-5 / 39, -3 / 26, 25 / 78))
+        self.v12_co = AbstractVector((23, 64, 100))
 
         self.gs = (self.gI, self.g1, self.g2)
-        self.vs = (self.v0, self.v1)
+        self.vs = (self.v0, self.v1_con)
 
     def test_co_variant(self) -> None:
         """Tests covariant conversion."""
         self.assertVectorEquiv(covariant(self.gI, self.v0), self.v0)
         self.assertVectorEquiv(covariant(self.g1, self.v0), self.v0)
-        self.assertVectorEquiv(covariant(self.g1, self.v1), self.v11_co)
-        self.assertVectorEquiv(covariant(self.g2, self.v1), self.v12_co)
+        self.assertVectorEquiv(covariant(self.g1, self.v1_con), self.v11_co)
+        self.assertVectorEquiv(covariant(self.g2, self.v1_con), self.v12_co)
 
     def test_contra_variant(self) -> None:
         """Tests contravariant conversion."""
         self.assertVectorEquiv(contravariant(self.gI, self.v0), self.v0)
         self.assertVectorEquiv(contravariant(self.g1, self.v0), self.v0)
-        self.assertVectorEquiv(contravariant(self.g1, self.v1), self.v11_con)
-        self.assertVectorEquiv(contravariant(self.g2, self.v1), self.v12_con)
+        self.assertVectorEquiv(contravariant(self.g1, self.v11_co), self.v1_con)
+        self.assertVectorEquiv(contravariant(self.g2, self.v12_co), self.v1_con)
 
     def test_co_contra_variant_invertibility(self) -> None:
         """Tests if co- and contravariant invert each other."""
