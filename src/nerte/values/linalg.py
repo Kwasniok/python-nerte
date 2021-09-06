@@ -62,6 +62,7 @@ class AbstractMatrix:
         self, vec0: AbstractVector, vec1: AbstractVector, vec2: AbstractVector
     ) -> None:
         self._m = np.array((vec0._v, vec1._v, vec2._v))
+        self._is_symmetric: Optional[bool] = None
 
     def __repr__(self) -> str:
         return "M(" + (",".join(repr(x) for x in self._m)) + ")"
@@ -90,11 +91,13 @@ class AbstractMatrix:
 
         Note: Small numerical deviations of the coefficients are allowed.
         """
-        return (
-            np.isclose(self._m[0][1], self._m[1][0])
-            and np.isclose(self._m[0][2], self._m[2][0])
-            and np.isclose(self._m[1][2], self._m[2][1])
-        )
+        if self._is_symmetric is None:
+            self._is_symmetric = (
+                np.isclose(self._m[0][1], self._m[1][0])
+                and np.isclose(self._m[0][2], self._m[2][0])
+                and np.isclose(self._m[1][2], self._m[2][1])
+            )
+        return self._is_symmetric
 
 
 def _abstract_matrix_from_numpy(np_array: np.ndarray) -> AbstractMatrix:
@@ -108,54 +111,6 @@ def _abstract_matrix_from_numpy(np_array: np.ndarray) -> AbstractMatrix:
     return mat
 
 
-class AbstractSymmetricMatrix(AbstractMatrix):
-    # pylint: disable=R0903
-    """
-    Represents an abstract symmetric matrix via three vectors.
-    Note: The basis of the vector space and the kindness (co- or contra-variant)
-          of each rank must be implicitly given by the context the vector is
-          used in.
-    """
-
-    def __init__(
-        self, vec0: AbstractVector, vec1: AbstractVector, vec2: AbstractVector
-    ) -> None:
-        if (
-            not np.isclose(vec0[1], vec1[0])
-            or not np.isclose(vec0[2], vec2[0])
-            or not np.isclose(vec1[2], vec2[1])
-        ):
-            raise ValueError(
-                f"Cannot construct a symmetric matrix for given vectors."
-                f" Vectors given are {vec0}, {vec1} and {vec2}"
-            )
-
-        AbstractMatrix.__init__(self, vec0, vec1, vec2)
-
-
-def _abstract_symmetric_matrix_from_numpy(
-    np_array: np.ndarray,
-) -> AbstractSymmetricMatrix:
-    """
-    Auxiliar function to wrap an np.array into a symmetric matrix.
-    Note: For internal usage only! The input is trusted to be valid and no
-    checks are applied.
-    """
-    mat = AbstractSymmetricMatrix.__new__(AbstractMatrix)
-    mat._m = np_array
-    return mat
-
-
-def to_symmetric_matrix(matrix: AbstractMatrix) -> AbstractSymmetricMatrix:
-    """
-    Declares a matrix to be symmetric.
-    :raises: ValueError, iff matrix is not symmetric
-    """
-    if not matrix.is_symmetric():
-        raise ValueError(f"Matrix {matrix} cannot be declared symmetic.")
-    return _abstract_symmetric_matrix_from_numpy(matrix._m)
-
-
 class Metric:
     """
     Represents a metric as a matrix acting on contravariant representations of
@@ -163,7 +118,12 @@ class Metric:
     Note: A metric must be invertible.
     """
 
-    def __init__(self, matrix: AbstractSymmetricMatrix) -> None:
+    def __init__(self, matrix: AbstractMatrix) -> None:
+        if not matrix.is_symmetric():
+            raise ValueError(
+                f"Cannot construct metric form non-symmetric matrix"
+                f" {matrix}."
+            )
         rank = np.linalg.matrix_rank(
             matrix._m,
             hermitian=True,
@@ -175,17 +135,17 @@ class Metric:
             )
 
         self._g = matrix
-        self._g_inv: Optional[AbstractSymmetricMatrix] = None
+        self._g_inv: Optional[AbstractMatrix] = None
 
-    def matrix(self) -> AbstractSymmetricMatrix:
+    def matrix(self) -> AbstractMatrix:
         """Returns the metric as a matrix."""
         return self._g
 
-    def inverse_matrix(self) -> AbstractSymmetricMatrix:
+    def inverse_matrix(self) -> AbstractMatrix:
         """Returns the inverse of the metric as a matrix."""
         if self._g_inv is None:
             try:
-                self._g_inv = to_symmetric_matrix(inverted(self._g))
+                self._g_inv = inverted(self._g)
             except ArithmeticError as ex:
                 raise ValueError(
                     "Cannot construct a metric from non-invertible matrix."
