@@ -30,8 +30,23 @@ def _triple_equiv(
 
 # True, iff two ray-like objects are equivalent
 def _ray_equiv(x: Union[Ray, RayDelta], y: Union[Ray, RayDelta]) -> bool:
-    return _triple_equiv(x.start, x.start) and _triple_equiv(
-        y.direction, y.direction
+    if isinstance(x, Ray):
+        if isinstance(y, Ray):
+            return _triple_equiv(x.start, y.start) and _triple_equiv(
+                x.direction, y.direction
+            )
+        # y must be RayDelta
+        return _triple_equiv(x.start, y.coords_delta) and _triple_equiv(
+            x.direction, y.velocity_delta
+        )
+    # x must be RayDelta
+    if isinstance(y, Ray):
+        return _triple_equiv(x.coords_delta, y.start) and _triple_equiv(
+            x.velocity_delta, y.direction
+        )
+    # y must be RayDelta
+    return _triple_equiv(x.coords_delta, y.coords_delta) and _triple_equiv(
+        x.velocity_delta, y.velocity_delta
     )
 
 
@@ -54,32 +69,40 @@ class RayTestCase(unittest.TestCase):
 class RayDeltaTest(RayTestCase):
     def setUp(self) -> None:
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
-        self.start = AbstractVector((0.0, 0.0, 0.0))
-        self.direction = AbstractVector((1.0, 0.0, 0.0))
+        self.coords_delta = AbstractVector((0.0, 0.0, 0.0))
+        self.velocity_delta = AbstractVector((1.0, 0.0, 0.0))
 
     def test_ray_delta(self) -> None:
         """Tests ray delta constructor."""
-        ray = RayDelta(start=self.start, direction=self.direction)
-        self.assertTrue(ray.start == self.start)
-        self.assertTrue(ray.direction == self.direction)
-        RayDelta(start=self.start, direction=self.v0)  # allowed!
+        ray = RayDelta(
+            coords_delta=self.coords_delta, velocity_delta=self.velocity_delta
+        )
+        self.assertTrue(ray.coords_delta == self.coords_delta)
+        self.assertTrue(ray.velocity_delta == self.velocity_delta)
+        RayDelta(
+            coords_delta=self.coords_delta, velocity_delta=self.v0
+        )  # allowed!
 
 
 class RayDeltaMathTest(RayTestCase):
     def setUp(self) -> None:
         v0 = AbstractVector((0.0, 0.0, 0.0))
-        self.ray_delta0 = RayDelta(start=v0, direction=v0)
+        self.ray_delta0 = RayDelta(coords_delta=v0, velocity_delta=v0)
         self.ray_delta1 = RayDelta(
-            start=AbstractVector((1.1, 2.2, 3.3)),
-            direction=AbstractVector((5.5, 7.7, 1.1)),
+            coords_delta=AbstractVector((1.1, 2.2, 3.3)),
+            velocity_delta=AbstractVector((5.5, 7.7, 1.1)),
         )
         self.ray_delta2 = RayDelta(
-            start=AbstractVector((3.3, 6.6, 9.9)),
-            direction=AbstractVector((16.5, 23.1, 3.3)),
+            coords_delta=AbstractVector((3.3, 6.6, 9.9)),
+            velocity_delta=AbstractVector((16.5, 23.1, 3.3)),
         )
         self.ray_delta3 = RayDelta(
-            start=AbstractVector((4.4, 8.8, 13.2)),
-            direction=AbstractVector((22.0, 30.8, 4.4)),
+            coords_delta=AbstractVector((4.4, 8.8, 13.2)),
+            velocity_delta=AbstractVector((22.0, 30.8, 4.4)),
+        )
+        self.ray_delta4 = RayDelta(
+            coords_delta=AbstractVector((-1.1, -2.2, -3.3)),
+            velocity_delta=AbstractVector((-5.5, -7.7, -1.1)),
         )
 
     def test_ray_delta_math(self) -> None:
@@ -89,6 +112,7 @@ class RayDeltaMathTest(RayTestCase):
         self.assertEquivRay(self.ray_delta3 - self.ray_delta2, self.ray_delta1)
         self.assertEquivRay(self.ray_delta1 * 3.0, self.ray_delta2)
         self.assertEquivRay(self.ray_delta2 / 3.0, self.ray_delta1)
+        self.assertEquivRay(-self.ray_delta1, self.ray_delta4)
 
 
 class RayToRayDeltaConversionTest(RayTestCase):
@@ -99,8 +123,8 @@ class RayToRayDeltaConversionTest(RayTestCase):
             direction=v,
         )
         self.ray_delta = RayDelta(
-            start=AbstractVector((1.1, 2.2, 3.3)),
-            direction=v,
+            coords_delta=AbstractVector((1.1, 2.2, 3.3)),
+            velocity_delta=v,
         )
 
     def test_ray_as_ray_delta(self) -> None:
@@ -115,8 +139,8 @@ class AddRayDeltaTest(RayTestCase):
             direction=AbstractVector((4.0, 5.0, 6.0)),
         )
         self.ray_delta = RayDelta(
-            start=AbstractVector((7.0, 8.0, 9.0)),
-            direction=AbstractVector((10.0, 11.0, 12.0)),
+            coords_delta=AbstractVector((7.0, 8.0, 9.0)),
+            velocity_delta=AbstractVector((10.0, 11.0, 12.0)),
         )
         self.ray2 = Ray(
             start=Coordinates3D((8.0, 10.0, 12.0)),
