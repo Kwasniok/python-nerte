@@ -12,12 +12,68 @@ from nerte.values.linalg import AbstractVector
 from nerte.values.ray import Ray
 from nerte.values.face import Face
 from nerte.geometry.geometry import CarthesianGeometry
+# True, iff two floats are equivalent
+def _equiv(
+    x: float,
+    y: float,
+) -> bool:
+    return math.isclose(x, y)
+
+
+# True, iff two vectors are equivalent
+def _vec_equiv(x: AbstractVector, y: AbstractVector) -> bool:
+    return _equiv(x[0], y[0]) and _equiv(x[1], y[1]) and _equiv(x[2], y[2])
+
+
+# True, iff two coordinates are equivalent
+def _coords_equiv(x: Coordinates3D, y: Coordinates3D) -> bool:
+    return _equiv(x[0], y[0]) and _equiv(x[1], y[1]) and _equiv(x[2], y[2])
+
+
+class GeometryTestCase(unittest.TestCase):
+    def assertEquiv(self, x: float, y: float) -> None:
+        """
+        Asserts the equivalence of two floats.
+        Note: This replaces assertTrue(x == y) for float.
+        """
+        try:
+            self.assertTrue(_equiv(x, y))
+        except AssertionError as ae:
+            raise AssertionError(
+                "Scalar {} is not equivalent to {}.".format(x, y)
+            ) from ae
+
+    def assertVectorEquiv(self, x: AbstractVector, y: AbstractVector) -> None:
+        """
+        Asserts ths equivalence of two vectors.
+        Note: This replaces assertTrue(x == y) for vectors.
+        """
+        try:
+            self.assertTrue(_vec_equiv(x, y))
+        except AssertionError as ae:
+            raise AssertionError(
+                "Vector {} is not equivalent to {}.".format(x, y)
+            ) from ae
+
+    def assertCoordinates3DEquiv(
+        self, x: Coordinates3D, y: Coordinates3D
+    ) -> None:
+        """
+        Asserts ths equivalence of two three dimensional coordinates.
+        Note: This replaces assertTrue(x == y) for three dimensional coordinates.
+        """
+        try:
+            self.assertTrue(_coords_equiv(x, y))
+        except AssertionError as ae:
+            raise AssertionError(
+                "Coordinates {} is not equivalent to {}.".format(x, y)
+            ) from ae
 
 
 # no test for abstract class/interface Geometry
 
 
-class CarthesianGeometryIntersectsTest1(unittest.TestCase):
+class CarthesianGeometryIntersectsTest1(GeometryTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -47,7 +103,7 @@ class CarthesianGeometryIntersectsTest1(unittest.TestCase):
                 self.assertTrue(self.geo.intersects(r, f))
 
 
-class CarthesianGeometryIntersectsTest2(unittest.TestCase):
+class CarthesianGeometryIntersectsTest2(GeometryTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -79,7 +135,7 @@ class CarthesianGeometryIntersectsTest2(unittest.TestCase):
                 self.assertFalse(self.geo.intersects(r, f))
 
 
-class CarthesianGeometryIntersectsTest3(unittest.TestCase):
+class CarthesianGeometryIntersectsTest3(GeometryTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -107,7 +163,7 @@ class CarthesianGeometryIntersectsTest3(unittest.TestCase):
                 self.assertFalse(self.geo.intersects(r, f))
 
 
-class CarthesianGeometryIntersectsTest4(unittest.TestCase):
+class CarthesianGeometryIntersectsTest4(GeometryTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
