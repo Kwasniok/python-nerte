@@ -8,7 +8,12 @@ import math
 
 from nerte.values.coordinates import Coordinates1D, Coordinates2D, Coordinates3D
 from nerte.values.domain import Domain1D
-from nerte.values.linalg import AbstractVector, is_zero_vector, cross
+from nerte.values.linalg import (
+    AbstractVector,
+    is_zero_vector,
+    cross,
+    are_linear_dependent,
+)
 from nerte.values.util.convert import vector_as_coordinates
 
 
@@ -317,13 +322,11 @@ class Plane(Manifold2D):
         x1_domain: Optional[Domain1D] = None,
         offset: Optional[AbstractVector] = None,
     ):
-        # pylint: disable=R0913
-        for i, b_i in enumerate((b0, b1)):
-            i -= 1
-            if is_zero_vector(b_i):
-                raise ValueError(
-                    f"Basis vector cannot be zero vector ({i}-th axis)."
-                )
+        if are_linear_dependent((b0, b1)):
+            raise ValueError(
+                f"Cannot construct plane. Basis vectors must be linear"
+                f" independent (not b0={b0} and b1={b1})."
+            )
 
         if x0_domain is None:
             x0_domain = Domain1D(-math.inf, math.inf)
@@ -360,7 +363,7 @@ class Plane(Manifold2D):
 
 class Parallelepiped(Manifold3D):
     """
-    Representation of a thre-dimensional paralellepiped embedded in three dimensions.
+    Representation of a three-dimensional paralellepiped embedded in three dimensions.
     """
 
     def __init__(
@@ -373,13 +376,11 @@ class Parallelepiped(Manifold3D):
         x2_domain: Optional[Domain1D] = None,
         offset: Optional[AbstractVector] = None,
     ):
-        # pylint: disable=R0913
-        for i, b_i in enumerate((b0, b1, b2)):
-            i -= 1
-            if is_zero_vector(b_i):
-                raise ValueError(
-                    f"Basis vector cannot be zero vector ({i}-th axis)."
-                )
+        if are_linear_dependent((b0, b1, b2)):
+            raise ValueError(
+                f"Cannot construct parallelepiped. Basis vectors must be linear"
+                f" independent (not b0={b0}, b1={b1}, b2={b2})."
+            )
 
         if x0_domain is None:
             x0_domain = Domain1D(-math.inf, math.inf)

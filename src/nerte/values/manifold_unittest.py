@@ -299,12 +299,16 @@ class PlaneConstructorTest(unittest.TestCase):
         """Tests plane constroctor."""
         Plane(b0=self.v1, b1=self.v2)
         Plane(b0=self.v1, b1=self.v2, offset=self.offset)
+        # no zero vector allowed
         with self.assertRaises(ValueError):
             Plane(self.v0, self.v1)
         with self.assertRaises(ValueError):
             Plane(self.v1, self.v0)
         with self.assertRaises(ValueError):
             Plane(self.v0, self.v0)
+        # no linear dependency allowed
+        with self.assertRaises(ValueError):
+            Plane(self.v1, self.v1)
 
 
 class PlaneDomainTest(ManifoldUnittest):
@@ -399,20 +403,28 @@ class ParallelepipedConstructorTest(unittest.TestCase):
         self.domain = Domain1D(-1.0, 4.0)
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
         self.v1 = AbstractVector((1.0, 0.0, 0.0))
-        self.v2 = AbstractVector((1.0, 0.0, 0.0))
-        self.v3 = AbstractVector((1.0, 0.0, 0.0))
+        self.v2 = AbstractVector((0.0, 1.0, 0.0))
+        self.v3 = AbstractVector((0.0, 0.0, 1.0))
         self.offset = AbstractVector((0.0, 0.0, 0.0))
 
     def test_parallelepiped_constructor(self) -> None:
         """Tests parallelepiped constroctor."""
         Parallelepiped(b0=self.v1, b1=self.v2, b2=self.v3)
         Parallelepiped(b0=self.v1, b1=self.v2, b2=self.v3, offset=self.offset)
+        # no zero vector allowed
         with self.assertRaises(ValueError):
             Parallelepiped(b0=self.v0, b1=self.v2, b2=self.v3)
         with self.assertRaises(ValueError):
             Parallelepiped(b0=self.v1, b1=self.v0, b2=self.v3)
         with self.assertRaises(ValueError):
             Parallelepiped(b0=self.v1, b1=self.v2, b2=self.v0)
+        # no linear dependency allowed
+        with self.assertRaises(ValueError):
+            Parallelepiped(b0=self.v1, b1=self.v1, b2=self.v2)
+        with self.assertRaises(ValueError):
+            Parallelepiped(b0=self.v1, b1=self.v2, b2=self.v2)
+        with self.assertRaises(ValueError):
+            Parallelepiped(b0=self.v3, b1=self.v2, b2=self.v3)
 
 
 class ParallelepipedDomainTest(ManifoldUnittest):
