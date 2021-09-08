@@ -29,6 +29,7 @@ class Geometry(ABC):
 
     # TODO: needs optimization: the ray is currently calculated for each
     #       use cache or allow for multiple faces at once?
+    # TODO: define proper interface for failures!
     @abstractmethod
     def intersects(self, ray: Ray, face: Face) -> bool:
         """
