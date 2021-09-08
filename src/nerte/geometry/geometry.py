@@ -1,13 +1,18 @@
 """Module for representing a geometry."""
 
 from typing import Optional
+from collections.abc import Callable
 
 from abc import ABC, abstractmethod
 
+import math
+
+from nerte.algorithm.runge_kutta import runge_kutta_4_delta
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, dot, cross, normalized
 from nerte.values.face import Face
 from nerte.values.ray import Ray
+from nerte.values.ray_delta import RayDelta, ray_as_delta, add_ray_delta
 from nerte.values.util.convert import coordinates_as_vector
 
 
@@ -209,3 +214,107 @@ class SegmentedRayGeometry(Geometry):
             else:
                 return False
         return False
+
+
+class RungeKuttaGeometry(Geometry):
+    """
+    Represenation of a geometry where rays are calculated based on the knowledge
+    of the equation of geodesics using a Runge-Kutta method to solve it.
+
+    Note: Rays may be represented in any three dimensional coordinate system and
+    this class is designed for rays which travel on non-liner lines - i.e. when
+    the underlying geometry is curved or even non-euclidean.
+    """
+
+    def __init__(
+        self,
+        max_ray_length: float,
+        step_size: float,
+        max_steps: int,
+    ):
+        if not max_ray_length > 0:
+            raise ValueError(
+                f"Cannot create Runge-Kutta geometry."
+                f" Maximum of ray length must be positive (not"
+                f" {max_ray_length})."
+            )
+        if not 0 < step_size < math.inf:
+            raise ValueError(
+                f"Cannot create Runge-Kutta geometry."
+                f" Step size must be positive and finite (not"
+                f" {step_size})."
+            )
+
+        if not max_steps > 0:
+            raise ValueError(
+                f"Cannot create Runge-Kutta geometry."
+                f" Maximum of steps must be positive (not {max_steps})."
+            )
+        self._max_ray_length = max_ray_length
+        self._step_size = step_size
+        self._max_steps = max_steps
+
+    @abstractmethod
+    def length(self, ray: Ray) -> float:
+        # pylint: disable=W0107
+        """
+        Returns the length of the vector with respect to the tangential space.
+        """
+        pass
+
+    def normalized(self, ray: Ray) -> Ray:
+        """
+        Returns the normalized vector with respect to the tangential space.
+        """
+        return Ray(ray.start, ray.direction / self.length(ray))
+
+    @abstractmethod
+    def geodesic_equation(self) -> Callable[[RayDelta], RayDelta]:
+        # pylint: disable=W0107
+        """
+        Returns the equation of motion for the geodesics encoded in a function
+        of the trajectory configuration.
+        """
+        pass
+
+    def intersects(self, ray: Ray, face: Face) -> bool:
+        steps = 0
+        total_ray_length = 0.0
+        ray = self.normalized(ray)
+
+        while (
+            total_ray_length < self._max_ray_length and steps < self._max_steps
+        ):
+            steps += 1
+
+            if not self.is_valid_coordinate(ray.start):
+                # ray has left the boundaries of the (local map of the)
+                # manifold
+                return False
+
+            # change in ray's configuration for a (small) step size
+            # Note: The step size behaves like Δt where t is the
+            #       parameter of the curve on which the light travels.
+            # Note: The smaller the step size, the better the approximation.
+            # TODO: check if Runge-Kutta-Nystrom is more suitable/efficient
+            ray_delta = runge_kutta_4_delta(
+                self.geodesic_equation(),
+                ray_as_delta(ray),
+                self._step_size,
+            )
+
+            # representation of the change of the ray's position as a ray
+            # segment
+            ray_segment = Ray(start=ray.start, direction=ray_delta.coords_delta)
+            total_ray_length += self.length(ray_segment)
+
+            if intersects_ray(ray=ray_segment, is_ray_segment=True, face=face):
+                return True
+
+            ray = add_ray_delta(ray, ray_delta)
+
+        return False
+
+    @abstractmethod
+    def ray_towards(self, start: Coordinates3D, target: Coordinates3D) -> Ray:
+        pass
