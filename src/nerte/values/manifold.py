@@ -314,7 +314,7 @@ class Line(Manifold1D):
 class Plane(Manifold2D):
     """Representation of a two-dimensional plane embedded in three dimensions."""
 
-    def __init__(
+    def __init__(  # pylint: disable=R0913
         self,
         b0: AbstractVector,
         b1: AbstractVector,
@@ -366,7 +366,7 @@ class Parallelepiped(Manifold3D):
     Representation of a three-dimensional paralellepiped embedded in three dimensions.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=R0913
         self,
         b0: AbstractVector,
         b1: AbstractVector,

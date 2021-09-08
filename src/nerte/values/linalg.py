@@ -263,7 +263,7 @@ def are_linear_dependent(vectors: tuple[AbstractVector, ...]) -> bool:
     """
     if 1 <= len(vectors) <= 3:
         matrix = np.array(tuple(v._v for v in vectors))
-        return np.linalg.matrix_rank(matrix) != len(vectors)
+        return np.linalg.matrix_rank(matrix) != len(vectors)  # type: ignore[no-untyped-call]
     return True
 
 
