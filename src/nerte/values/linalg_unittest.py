@@ -20,6 +20,7 @@ from nerte.values.linalg import (
     cross,
     length,
     normalized,
+    are_linear_dependent,
     inverted,
 )
 
@@ -383,6 +384,33 @@ class CrossTest(LinAlgTestCase):
                                 cross(u, (v * a) + (w * b)),
                                 cross(u, v) * a + cross(u, w) * b,
                             )
+
+
+class AreLinearDependentTest(LinAlgTestCase):
+    def setUp(self) -> None:
+        self.v0 = AbstractVector((0.0, 0.0, 0.0))
+        self.v1 = AbstractVector((1.0, 0.0, 0.0))
+        self.v2 = AbstractVector((0.0, 1.0, 0.0))
+        self.v3 = AbstractVector((0.0, 0.0, 1.0))
+        self.v4 = AbstractVector((1.0, 2.0, -3.0))
+
+    def test_are_linear_dependent(self) -> None:
+        """Tests linear dependecy check."""
+        # are not dependent
+        self.assertFalse(are_linear_dependent((self.v1,)))
+        self.assertFalse(are_linear_dependent((self.v1, self.v2)))
+        self.assertFalse(are_linear_dependent((self.v1, self.v2, self.v3)))
+        # are dependent
+        self.assertTrue(are_linear_dependent(()))
+        self.assertTrue(are_linear_dependent((self.v1, self.v1)))
+        self.assertTrue(are_linear_dependent((self.v1, self.v2, self.v1)))
+        self.assertTrue(are_linear_dependent((self.v0,)))
+        self.assertTrue(are_linear_dependent((self.v1, self.v0)))
+        self.assertTrue(are_linear_dependent((self.v1, self.v0, self.v1)))
+        self.assertTrue(are_linear_dependent((self.v1, self.v0, self.v2)))
+        self.assertTrue(
+            are_linear_dependent((self.v1, self.v2, self.v3, self.v4))
+        )
 
 
 class InvertedTest(LinAlgTestCase):

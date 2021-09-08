@@ -255,6 +255,18 @@ def normalized(
     return vec / length(vec, metric)  # TODO: optimize
 
 
+def are_linear_dependent(vectors: tuple[AbstractVector, ...]) -> bool:
+    """
+    Returns True iff, the vectors have a linear dependecy i.e. iff
+    there exist non-trivial coefficients a_i such that
+    v_1 * a_1 + v_2 * a_2 + ... + v_n * a_n = 0
+    """
+    if 1 <= len(vectors) <= 3:
+        matrix = np.array(tuple(v._v for v in vectors))
+        return np.linalg.matrix_rank(matrix) != len(vectors)
+    return True
+
+
 def inverted(mat: AbstractMatrix) -> AbstractMatrix:
     """
     Returns the inverse of a matrix.
