@@ -19,7 +19,7 @@ from nerte.values.ray_delta import RayDelta
 from nerte.values.face import Face
 from nerte.values.util.convert import coordinates_as_vector
 from nerte.geometry.geometry import (
-    intersects_ray,
+    intersection_ray_depth,
     CarthesianGeometry,
     SegmentedRayGeometry,
     RungeKuttaGeometry,
@@ -96,8 +96,10 @@ class GeometryTestCase(unittest.TestCase):
 
 # no test for abstract class/interface Geometry
 
+# TODO: add dedicated tests for intersection infos where ray leaves the manifold
 
-class IntersectsRayTest(GeometryTestCase):
+
+class IntersectionRayDepthRayTest(GeometryTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -107,20 +109,22 @@ class IntersectsRayTest(GeometryTestCase):
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # rays
         s10 = Coordinates3D((0.0, 0.0, 0.0))
-        s11 = Coordinates3D((0.3, 0.0, 0.0))  # one third of p1
-        s12 = Coordinates3D((0.0, 0.3, 0.0))  # one third of p2
-        s13 = Coordinates3D((0.0, 0.0, 0.3))  # one third of p3
+        s11 = Coordinates3D((1 / 3, 0.0, 0.0))  # one third of p1
+        s12 = Coordinates3D((0.0, 1 / 3, 0.0))  # one third of p2
+        s13 = Coordinates3D((0.0, 0.0, 1 / 3))  # one third of p3
         ss1 = (s10, s11, s12, s13)
-        # NOTE: SHORT distance vector!
-        v = AbstractVector((0.1, 0.1, 0.1))
+        # NOTE: distance vector
+        v = AbstractVector((1.0, 1.0, 1.0))
         # rays pointing 'forwards'
         # towards the face and parallel to face normal
-        self.intersecting_rays = [Ray(start=s, direction=v) for s in ss1]
+        self.intersecting_rays = [Ray(start=s, direction=v * 0.1) for s in ss1]
+        self.ray_depths = [10 / 3, 20 / 9, 20 / 9, 20 / 9]
         self.intersecting_ray_segments = [
-            Ray(start=s, direction=v * 10.0) for s in ss1
+            Ray(start=s, direction=v * 1.0) for s in ss1
         ]
+        self.ray_segment_depths = [1 / 3, 2 / 9, 2 / 9, 2 / 9]
         self.non_intersecting_ray_segments = [
-            Ray(start=s, direction=v) for s in ss1
+            Ray(start=s, direction=v * 0.1) for s in ss1
         ]
         # rays pointing 'backwards'
         # away from the face and parallel to face normal
@@ -145,6 +149,8 @@ class IntersectsRayTest(GeometryTestCase):
         # convert to proper lists
         self.intersecting_rays = list(self.intersecting_rays)
         self.intersecting_ray_segments = list(self.intersecting_ray_segments)
+        self.ray_depths = list(self.ray_depths)
+        self.ray_segment_depths = list(self.ray_segment_depths)
         self.non_intersecting_rays = list(self.non_intersecting_rays)
         self.non_intersecting_ray_segments = list(
             self.non_intersecting_ray_segments
@@ -154,21 +160,27 @@ class IntersectsRayTest(GeometryTestCase):
         """
         Tests if rays intersect as expected.
         """
-        for ray in self.intersecting_rays:
+        for ray, ray_depth in zip(self.intersecting_rays, self.ray_depths):
             for face in self.faces:
-                self.assertTrue(
-                    intersects_ray(ray=ray, is_ray_segment=False, face=face)
+                rd = intersection_ray_depth(
+                    ray=ray, is_ray_segment=False, face=face
                 )
+                self.assertTrue(0 <= rd < math.inf)
+                self.assertEquiv(rd, ray_depth)
 
     def test_intersetcs_ray_segment_hits(self) -> None:
         """
         Tests if ray segments intersect as expected.
         """
-        for ray in self.intersecting_ray_segments:
+        for ray, ray_depth in zip(
+            self.intersecting_ray_segments, self.ray_segment_depths
+        ):
             for face in self.faces:
-                self.assertTrue(
-                    intersects_ray(ray=ray, is_ray_segment=True, face=face)
+                rd = intersection_ray_depth(
+                    ray=ray, is_ray_segment=True, face=face
                 )
+                self.assertTrue(0 <= rd < math.inf)
+                self.assertEquiv(rd, ray_depth)
 
     def test_intersetcs_ray_misses(self) -> None:
         """
@@ -176,9 +188,10 @@ class IntersectsRayTest(GeometryTestCase):
         """
         for ray in self.non_intersecting_rays:
             for face in self.faces:
-                self.assertFalse(
-                    intersects_ray(ray=ray, is_ray_segment=False, face=face)
+                ray_depth = intersection_ray_depth(
+                    ray=ray, is_ray_segment=False, face=face
                 )
+                self.assertTrue(ray_depth == math.inf)
 
     def test_intersetcs_ray_segments_misses(self) -> None:
         """
@@ -186,9 +199,10 @@ class IntersectsRayTest(GeometryTestCase):
         """
         for ray in self.non_intersecting_ray_segments:
             for face in self.faces:
-                self.assertFalse(
-                    intersects_ray(ray=ray, is_ray_segment=True, face=face)
+                ray_depth = intersection_ray_depth(
+                    ray=ray, is_ray_segment=True, face=face
                 )
+                self.assertTrue(ray_depth == math.inf)
 
 
 class CarthesianGeometryIntersectsTest1(GeometryTestCase):
@@ -218,7 +232,8 @@ class CarthesianGeometryIntersectsTest1(GeometryTestCase):
         """
         for r in self.intersecting_rays:
             for f in self.faces:
-                self.assertTrue(self.geo.intersects(r, f))
+                info = self.geo.intersection_info(r, f)
+                self.assertTrue(info.hits())
 
 
 class CarthesianGeometryIntersectsTest2(GeometryTestCase):
@@ -250,7 +265,8 @@ class CarthesianGeometryIntersectsTest2(GeometryTestCase):
         """
         for r in self.non_intersecting_rays:
             for f in self.faces:
-                self.assertFalse(self.geo.intersects(r, f))
+                info = self.geo.intersection_info(r, f)
+                self.assertTrue(info.misses())
 
 
 class CarthesianGeometryIntersectsTest3(GeometryTestCase):
@@ -278,7 +294,8 @@ class CarthesianGeometryIntersectsTest3(GeometryTestCase):
         """
         for r in self.non_intersecting_rays:
             for f in self.faces:
-                self.assertFalse(self.geo.intersects(r, f))
+                info = self.geo.intersection_info(r, f)
+                self.assertTrue(info.misses())
 
 
 class CarthesianGeometryIntersectsTest4(GeometryTestCase):
@@ -309,7 +326,8 @@ class CarthesianGeometryIntersectsTest4(GeometryTestCase):
         """
         for r in self.non_intersecting_rays:
             for f in self.faces:
-                self.assertFalse(self.geo.intersects(r, f))
+                info = self.geo.intersection_info(r, f)
+                self.assertTrue(info.misses())
 
 
 def _dummy_segmented_ray_geometry_class() -> Type[SegmentedRayGeometry]:
@@ -507,10 +525,12 @@ class SegmentedRayGeometryIntersectsTest(GeometryTestCase):
 
     def test_intersects(self) -> None:
         """Tests ray and face intersection."""
-        self.assertTrue(self.geo.intersects(self.ray, self.face1))
-        self.assertFalse(self.geo.intersects(self.ray, self.face2))
+        info = self.geo.intersection_info(self.ray, self.face1)
+        self.assertTrue(info.hits())
+        info = self.geo.intersection_info(self.ray, self.face2)
+        self.assertTrue(info.misses())
         with self.assertRaises(ValueError):
-            self.geo.intersects(self.invalid_ray, self.face1)
+            self.geo.intersection_info(self.invalid_ray, self.face1)
 
 
 def _make_dummy_runge_kutta_geometry() -> Type[RungeKuttaGeometry]:
@@ -643,14 +663,20 @@ class RungeKuttaGeometryIntersectsTest(GeometryTestCase):
             max_steps=10,
         )
         s10 = Coordinates3D((0.0, 0.0, 0.0))
-        s11 = Coordinates3D((0.3, 0.0, 0.0))  # one third of p1
-        s12 = Coordinates3D((0.0, 0.3, 0.0))  # one third of p2
-        s13 = Coordinates3D((0.0, 0.0, 0.3))  # one third of p3
+        s11 = Coordinates3D((1 / 3, 0.0, 0.0))  # one third of p1
+        s12 = Coordinates3D((0.0, 1 / 3, 0.0))  # one third of p2
+        s13 = Coordinates3D((0.0, 0.0, 1 / 3))  # one third of p3
         ss1 = (s10, s11, s12, s13)
         v = AbstractVector((1.0, 1.0, 1.0))
         # rays pointing 'forwards'
         # towards the face and parallel to face normal
         self.intersecting_rays = [Ray(start=s, direction=v) for s in ss1]
+        self.ray_depths = [
+            (1 / 3) ** 0.5,
+            2 * 3 ** (-3 / 2),
+            2 * 3 ** (-3 / 2),
+            2 * 3 ** (-3 / 2),
+        ]
         # rays pointing 'backwards'
         # away from the face and parallel to face normal
         self.non_intersecting_rays = [Ray(start=s, direction=-v) for s in ss1]
@@ -662,18 +688,26 @@ class RungeKuttaGeometryIntersectsTest(GeometryTestCase):
         self.non_intersecting_rays += [Ray(start=s, direction=v) for s in ss2]
         self.non_intersecting_rays += [Ray(start=s, direction=-v) for s in ss2]
 
+        # convert to proper lists
+        self.intersecting_rays = list(self.intersecting_rays)
+        self.ray_depths = list(self.ray_depths)
+        self.non_intersecting_rays = list(self.non_intersecting_rays)
+
     def test_runge_kutta_geometry_intersects(self) -> None:
         """
         Tests if rays intersect as expected.
         Each ray points 'forwards' towards the face and is parallel to face's
         normal.
         """
-        for r in self.intersecting_rays:
+        for r, rd in zip(self.intersecting_rays, self.ray_depths):
             for f in self.faces:
-                self.assertTrue(self.geo.intersects(r, f))
+                info = self.geo.intersection_info(r, f)
+                self.assertTrue(info.hits())
+                self.assertEquiv(info.ray_depth(), rd)
         for r in self.non_intersecting_rays:
             for f in self.faces:
-                self.assertFalse(self.geo.intersects(r, f))
+                info = self.geo.intersection_info(r, f)
+                self.assertTrue(info.misses())
 
 
 if __name__ == "__main__":

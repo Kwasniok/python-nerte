@@ -4,6 +4,7 @@ from typing import Optional
 
 from enum import Enum
 
+import math
 from PIL import Image
 
 from nerte.values.coordinates import Coordinates2D
@@ -107,12 +108,16 @@ class ImageRenderer(Renderer):
             return self._color_failure
 
         # detect intersections with objects
-        # TODO: inapropriate algorthm: ray-depth not respected!
+        current_depth = math.inf
+        current_color = Colors.BLACK
         for obj in objects:
             for face in obj.faces():
-                if geometry.intersects(ray, face):
-                    return obj.color
-        return Colors.BLACK
+                intersection_info = geometry.intersection_info(ray, face)
+                if intersection_info.hits():
+                    if intersection_info.ray_depth() < current_depth:
+                        current_depth = intersection_info.ray_depth()
+                        current_color = obj.color
+        return current_color
 
     def render(self, scene: Scene, geometry: Geometry) -> None:
         width, height = scene.camera.canvas_dimensions

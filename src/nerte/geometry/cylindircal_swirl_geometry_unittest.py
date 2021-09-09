@@ -6,7 +6,7 @@
 
 import unittest
 
-from typing import TypeVar, Callable
+from typing import TypeVar, Callable, Optional
 
 from itertools import permutations
 import math
@@ -33,11 +33,10 @@ def _iterate(f: Callable[[T], T], n: int, x0: T) -> T:
 
 
 # True, iff two floats are equivalent
-def _equiv(
-    x: float,
-    y: float,
-) -> bool:
-    return math.isclose(x, y)
+def _equiv(x: float, y: float, rel_tol: Optional[float] = None) -> bool:
+    if rel_tol is None:
+        return math.isclose(x, y)
+    return math.isclose(x, y, rel_tol=rel_tol)
 
 
 # True, iff two vectors are equivalent
@@ -67,16 +66,23 @@ def _ray_equiv(x: RayDelta, y: RayDelta) -> bool:
 
 
 class GeometryTestCase(unittest.TestCase):
-    def assertEquiv(self, x: float, y: float) -> None:
+    def assertEquiv(
+        self, x: float, y: float, rel_tol: Optional[float] = None
+    ) -> None:
         """
         Asserts the equivalence of two floats.
         Note: This replaces assertTrue(x == y) for float.
         """
         try:
-            self.assertTrue(_equiv(x, y))
+            self.assertTrue(_equiv(x, y, rel_tol=rel_tol))
         except AssertionError as ae:
+            if rel_tol is None:
+                raise AssertionError(
+                    f"Scalar {x} is not equivalent to {y}."
+                ) from ae
             raise AssertionError(
                 f"Scalar {x} is not equivalent to {y}."
+                f" Relative tolerance is {rel_tol}."
             ) from ae
 
     def assertVectorEquiv(self, x: AbstractVector, y: AbstractVector) -> None:
@@ -457,7 +463,7 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
         self.geo = SwirlCylindricRungeKuttaGeometry(
             max_ray_length=math.inf,
             step_size=0.1,
-            max_steps=25,
+            max_steps=15,
             swirl_strength=0.0,
         )
         coords1 = (
@@ -469,6 +475,8 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
         # rays pointing 'forwards'
         # towards the face and parallel to face normal
         self.intersecting_rays = [Ray(start=s, direction=v) for s in coords1]
+        self.ray_depths = [1.0, 1.0, 1.0]  #
+        self.ray_depth_relaltive_tolerance = [1e-3, 1e-3, 1e-3]
         # rays pointing 'backwards'
         # away from the face and parallel to face normal
         self.non_intersecting_rays = [
@@ -486,17 +494,32 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
             Ray(start=s, direction=-v) for s in coords2
         ]
 
+        # convert to proper lists
+        self.intersecting_rays = list(self.intersecting_rays)
+        self.ray_depths = list(self.ray_depths)
+        self.ray_depth_relaltive_tolerance = list(
+            self.ray_depth_relaltive_tolerance
+        )
+        self.non_intersecting_rays = list(self.non_intersecting_rays)
+
     def test_intersects1(self) -> None:
         """Tests if rays intersect as expected."""
-        for r in self.intersecting_rays:
+        for r, rd, rt in zip(
+            self.intersecting_rays,
+            self.ray_depths,
+            self.ray_depth_relaltive_tolerance,
+        ):
             for f in self.faces:
-                self.assertTrue(self.geo.intersects(r, f))
+                info = self.geo.intersection_info(r, f)
+                self.assertTrue(info.hits())
+                self.assertEquiv(info.ray_depth(), rd, rel_tol=rt)
 
     def test_intersects2(self) -> None:
         """Tests if rays do not intersect as expected."""
         for r in self.non_intersecting_rays:
             for f in self.faces:
-                self.assertFalse(self.geo.intersects(r, f))
+                info = self.geo.intersection_info(r, f)
+                self.assertTrue(info.misses())
 
 
 class SwirlCylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
@@ -513,8 +536,8 @@ class SwirlCylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
         # geometry (cylindirc & non-euclidean)
         self.geo = SwirlCylindricRungeKuttaGeometry(
             max_ray_length=math.inf,
-            step_size=0.1,  # low resolution but good enough
-            max_steps=15,
+            step_size=0.05,  # low resolution but good enough
+            max_steps=30,  # expected ray length must exceed 1.0
             swirl_strength=5.0,  # non-euclidean / strong swirl
         )
         # all rays are (anti-)parallel to the z-axis
@@ -528,6 +551,8 @@ class SwirlCylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
         )
         # parallel (hit)
         self.intersecting_rays = [Ray(start=s, direction=v) for s in coords1]
+        self.ray_depths = [1.38, 1.38, 1.38]  # TODO: needs confirmation
+        self.ray_depth_relaltive_tolerance = [1e-2, 1e-2, 1e-2]
         # antiparallel (miss)
         self.non_intersecting_rays = [
             Ray(start=s, direction=-v) for s in coords1
@@ -546,17 +571,32 @@ class SwirlCylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
             Ray(start=s, direction=-v) for s in coords2
         ]
 
+        # convert to proper lists
+        self.intersecting_rays = list(self.intersecting_rays)
+        self.ray_depths = list(self.ray_depths)
+        self.ray_depth_relaltive_tolerance = list(
+            self.ray_depth_relaltive_tolerance
+        )
+        self.non_intersecting_rays = list(self.non_intersecting_rays)
+
     def test_intersects1(self) -> None:
         """Tests if rays intersect as expected."""
-        for r in self.intersecting_rays:
+        for r, rd, rt in zip(
+            self.intersecting_rays,
+            self.ray_depths,
+            self.ray_depth_relaltive_tolerance,
+        ):
             for f in self.faces:
-                self.assertTrue(self.geo.intersects(r, f))
+                info = self.geo.intersection_info(r, f)
+                self.assertTrue(info.hits())
+                self.assertEquiv(info.ray_depth(), rd, rel_tol=rt)
 
     def test_intersects2(self) -> None:
         """Tests if rays do not intersect as expected."""
         for r in self.non_intersecting_rays:
             for f in self.faces:
-                self.assertFalse(self.geo.intersects(r, f))
+                info = self.geo.intersection_info(r, f)
+                self.assertTrue(info.misses())
 
 
 if __name__ == "__main__":
