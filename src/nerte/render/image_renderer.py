@@ -16,10 +16,6 @@ from nerte.geometry.geometry import Geometry
 from nerte.render.renderer import Renderer
 
 
-# TODO: In general tests for the validity of the coordinates must be included
-#       troughout this module.
-
-
 def _detector_manifold_coords(
     camera: Camera, pixel_location: tuple[int, int]
 ) -> Coordinates2D:
@@ -84,6 +80,7 @@ class ImageRenderer(Renderer):
     def __init__(self, mode: "ImageRenderer.Mode"):
         self.mode = mode
         self._last_image: Optional[Image.Image] = None
+        self._color_failure = Color(255, 0, 255)
 
     def render_pixel(
         self,
@@ -98,7 +95,19 @@ class ImageRenderer(Renderer):
         ray = ImageRenderer.ray_for_pixel[self.mode](
             camera, geometry, pixel_location
         )
-        # detect intersections with objects and make object randomly colored
+
+        # ray must start with valid coordinates
+        if not geometry.is_valid_coordinate(ray.start):
+            print(
+                f"Info: Cannot render pixel {pixel_location} since its camera"
+                f" ray={ray} starts with invalid coordinates."
+                f"\n      The pixel color is set to {self._color_failure.rgb}"
+                f" instead."
+            )
+            return self._color_failure
+
+        # detect intersections with objects
+        # TODO: inapropriate algorthm: ray-depth not respected!
         for obj in objects:
             for face in obj.faces():
                 if geometry.intersects(ray, face):
