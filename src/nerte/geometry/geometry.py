@@ -169,9 +169,6 @@ class SegmentedRayGeometry(Geometry):
     """
 
     def __init__(self, max_steps: int, max_ray_length: float):
-        # TODO: implement assertions (+ unittest)
-        # precision of floating point representations
-        # pylint: disable=C0103,C0144
 
         if not max_steps > 0:
             raise ValueError(
