@@ -26,7 +26,6 @@ class SwirlGeometry(SegmentedRayGeometry):
                 + f" bend_factor must be finite (given value is {bend_factor})"
             )
 
-        self.ray_segment_length = max_ray_length / max_steps
         self.bend_factor = bend_factor
 
     def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
@@ -60,11 +59,11 @@ class SwirlGeometry(SegmentedRayGeometry):
         )
         # ensure ray segment length
         # NOTE: No exception handling, since d_new is never a zero vector
-        d_new = normalized(d_new) * self.ray_segment_length
+        d_new = normalized(d_new) * self.ray_segment_length()
         return Ray(start=s_new, direction=d_new)
 
     def normalize_initial_ray(self, ray: Ray) -> Ray:
         return Ray(
             start=ray.start,
-            direction=normalized(ray.direction) * self.ray_segment_length,
+            direction=normalized(ray.direction) * self.ray_segment_length(),
         )

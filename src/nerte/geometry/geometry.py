@@ -188,6 +188,11 @@ class SegmentedRayGeometry(Geometry):
 
         self.max_steps = max_steps
         self.max_ray_length = max_ray_length
+        self._ray_segment_length = max_ray_length / max_steps
+
+    def ray_segment_length(self) -> float:
+        """Returns the length of each ray segment."""
+        return self._ray_segment_length
 
     @abstractmethod
     def next_ray_segment(self, ray: Ray) -> Optional[Ray]:
