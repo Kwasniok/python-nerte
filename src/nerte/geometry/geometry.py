@@ -260,12 +260,16 @@ class RungeKuttaGeometry(Geometry):
         # pylint: disable=W0107
         """
         Returns the length of the vector with respect to the tangential space.
+
+        :raises: ValueError if ray.start are invalid coordinates
         """
         pass
 
     def normalized(self, ray: Ray) -> Ray:
         """
         Returns the normalized vector with respect to the tangential space.
+
+        :raises: ValueError if ray.start are invalid coordinates
         """
         return Ray(ray.start, ray.direction / self.length(ray))
 
