@@ -176,7 +176,7 @@ def main() -> None:
         scene=scene,
         geometry=geo,
         output_path="../images",
-        file_prefix="res",
+        file_prefix="demo_1",
         show=True,
     )
 

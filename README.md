@@ -57,7 +57,7 @@ mkdir -p images
 
 # execute demo script
 cd src
-python demo.py
+python demo_1.py
 ```
 This script was used to create the frames of this video:
 
