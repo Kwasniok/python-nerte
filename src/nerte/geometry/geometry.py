@@ -16,8 +16,6 @@ from nerte.values.ray_delta import RayDelta, ray_as_delta, add_ray_delta
 from nerte.values.util.convert import coordinates_as_vector
 
 
-# TODO: make geometry a manifold as well?
-# TODO: coordinates' validity must be checked
 class Geometry(ABC):
     """Interface of a geometry."""
 
@@ -218,7 +216,15 @@ class SegmentedRayGeometry(Geometry):
 
     def intersects(self, ray: Ray, face: Face) -> bool:
         current_ray_segment = self.normalize_initial_ray(ray)
-        for _ in range(self.max_steps):
+        for step in range(self.max_steps):
+            if not self.is_valid_coordinate(current_ray_segment.start):
+                raise ValueError(
+                    f"Cannot test for intersection for ray={ray}"
+                    f" and face={face}."
+                    f"At step={step} a ray segment={current_ray_segment} was"
+                    f" created which has invalid starting coordinates."
+                )
+
             if intersects_ray(
                 ray=current_ray_segment, is_ray_segment=True, face=face
             ):
