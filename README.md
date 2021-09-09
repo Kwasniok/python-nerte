@@ -44,7 +44,7 @@ python main.py
 ```
 
 ## Demo
-Use the following script to execute the demo script.
+Use the following script to execute any of the demo scripts.
 The results can be found in the directory `images`.
 ```
 #! /usr/bin/bash
@@ -55,11 +55,13 @@ source .venv/bin/activate
 # ensure existence of output directory
 mkdir -p images
 
-# execute demo script
+# execute demo scripts
 cd src
 python demo_1.py
+python demo_2.py
 ```
-This script was used to create the frames of this video:
+
+A similar script was used to create the frames of this video:
 
 https://user-images.githubusercontent.com/7516208/131228594-f264acce-c461-4ec6-891b-0ef9b7262717.mp4
 
