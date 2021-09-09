@@ -8,7 +8,7 @@ import unittest
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
-from nerte.values.manifold import Plane
+from nerte.values.manifolds.cartesian import Plane
 from nerte.world.camera import Camera
 
 

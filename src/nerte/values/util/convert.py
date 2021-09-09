@@ -16,6 +16,7 @@ def vector_as_coordinates(vec: AbstractVector) -> Coordinates3D:
     return Coordinates3D((vec[0], vec[1], vec[2]))
 
 
+# TOOD: add vality test for coordinates
 def carthesian_to_cylindric_coords(coords: Coordinates3D) -> Coordinates3D:
     """
     Returns cylindrical coordinates obtained from carthesian coordinates.
