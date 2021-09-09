@@ -93,9 +93,9 @@ class SwirlGeometryNonEuclideanIntersectionTest(unittest.TestCase):
         p2 = Coordinates3D((0.0, 1.0, 0.0))
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.faces = tuple(Face(*ps) for ps in permutations((p1, p2, p3)))
-        # geometry (some bend != euclidean)
+        # geometry (some bend == non-euclidean)
         self.geo = SwirlGeometry(
-            max_steps=30, max_ray_length=10.0, bend_factor=11
+            max_steps=30, max_ray_length=10.0, bend_factor=0.5
         )
         v = AbstractVector((1.0, 1.0, 1.0))
         # NOTE: Some of the hitting and missing rays are swapped with respect to
@@ -104,9 +104,9 @@ class SwirlGeometryNonEuclideanIntersectionTest(unittest.TestCase):
         # the face's normal
         ss_hit = (
             Coordinates3D((0.0, 0.0, 0.0)),
-            Coordinates3D((-0.3, 0.3, 0.3)),
-            Coordinates3D((0.3, -0.3, 0.3)),
-            Coordinates3D((0.3, 0.3, -0.3)),
+            Coordinates3D((0.6, 0.0, 0.0)),  # one third of p1
+            Coordinates3D((0.0, 0.6, 0.0)),  # one third of p2
+            Coordinates3D((0.0, 0.0, 0.6)),  # one third of p3
         )
         self.intersecting_rays = tuple(
             Ray(start=s, direction=v) for s in ss_hit
@@ -114,9 +114,9 @@ class SwirlGeometryNonEuclideanIntersectionTest(unittest.TestCase):
         # rays pointing 'forwards' towards faces and initially parallel to
         # the face's normal
         ss_miss = (
-            Coordinates3D((0.6, 0.0, 0.0)),  # one third of p1
-            Coordinates3D((0.0, 0.6, 0.0)),  # one third of p2
-            Coordinates3D((0.0, 0.0, 0.6)),  # one third of p3
+            Coordinates3D((-0.3, 0.3, 0.3)),
+            Coordinates3D((0.3, -0.3, 0.3)),
+            Coordinates3D((0.3, 0.3, -0.3)),
         )
         self.non_intersecting_rays = tuple(
             Ray(start=s, direction=v) for s in ss_miss
@@ -130,7 +130,6 @@ class SwirlGeometryNonEuclideanIntersectionTest(unittest.TestCase):
         """
         for r in self.intersecting_rays:
             for f in self.faces:
-                print(r)
                 self.assertTrue(self.geo.intersects(r, f))
         for r in self.non_intersecting_rays:
             for f in self.faces:
