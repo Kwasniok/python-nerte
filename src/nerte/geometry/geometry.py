@@ -83,7 +83,7 @@ def _in_triangle(
     f2 = (b2b2 * b1x - b1b2 * b2x) / D
 
     # test if x is inside the triangle
-    return f1 >= 0 and f2 >= 0 and f1 + f2 < 1
+    return f1 >= 0 and f2 >= 0 and f1 + f2 <= 1
 
 
 def intersects_ray(ray: Ray, is_ray_segment: bool, face: Face) -> bool:
