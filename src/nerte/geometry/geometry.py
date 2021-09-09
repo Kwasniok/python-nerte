@@ -150,9 +150,7 @@ class CarthesianGeometry(Geometry):
     """Represenation of the euclidean geometry in Carthesian coordinates."""
 
     def __init__(self) -> None:
-        # precision of floating point representations
-        # pylint: disable=C0103,C0144
-        self.𝜀: float = 1e-8
+        pass
 
     def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
         return True
@@ -176,7 +174,6 @@ class SegmentedRayGeometry(Geometry):
         # TODO: implement assertions (+ unittest)
         # precision of floating point representations
         # pylint: disable=C0103,C0144
-        self.𝜀 = 1e-8
         self.max_steps = max_steps
         self.max_ray_length = max_ray_length
 
