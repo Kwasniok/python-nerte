@@ -1,5 +1,5 @@
 """Module for representing a dummy geometry."""
-
+# TODO: remove this module? This geometry does not converge properly.
 import math
 
 from nerte.values.coordinates import Coordinates3D
