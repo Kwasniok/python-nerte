@@ -174,6 +174,18 @@ class SegmentedRayGeometry(Geometry):
         # TODO: implement assertions (+ unittest)
         # precision of floating point representations
         # pylint: disable=C0103,C0144
+
+        if not max_steps > 0:
+            raise ValueError(
+                "Cannot create segmented ray geometry. max_steps must be strictly"
+                + f" positive (given value is {max_steps})"
+            )
+        if not 0.0 < max_ray_length < math.inf:
+            raise ValueError(
+                "Cannot create segmented ray geometry. max_ray_length must be strictly"
+                + f" positive and finite (given value is {max_ray_length})"
+            )
+
         self.max_steps = max_steps
         self.max_ray_length = max_ray_length
 

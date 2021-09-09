@@ -19,21 +19,13 @@ class SwirlGeometry(SegmentedRayGeometry):
         self, max_steps: int, max_ray_length: float, bend_factor: float
     ):
         SegmentedRayGeometry.__init__(self, max_steps, max_ray_length)
-        if not max_steps > 0:
-            raise ValueError(
-                "Cannot create swirl geometry. max_steps must be strictly"
-                + f" positive (given value is {max_steps})"
-            )
-        if not 0.0 < max_ray_length < math.inf:
-            raise ValueError(
-                "Cannot create swirl geometry. max_ray_length must be strictly"
-                + f" positive and finite (given value is {max_ray_length})"
-            )
+
         if math.isinf(bend_factor) or math.isnan(bend_factor):
             raise ValueError(
                 "Cannot create swirl geometry."
                 + f" bend_factor must be finite (given value is {bend_factor})"
             )
+
         self.ray_segment_length = max_ray_length / max_steps
         self.bend_factor = bend_factor
 
