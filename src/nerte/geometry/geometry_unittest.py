@@ -18,7 +18,11 @@ from nerte.values.ray import Ray
 from nerte.values.ray_delta import RayDelta
 from nerte.values.face import Face
 from nerte.values.util.convert import coordinates_as_vector
-from nerte.geometry.geometry import CarthesianGeometry, RungeKuttaGeometry
+from nerte.geometry.geometry import (
+    intersects_ray,
+    CarthesianGeometry,
+    RungeKuttaGeometry,
+)
 
 T = TypeVar("T")
 
@@ -90,6 +94,100 @@ class GeometryTestCase(unittest.TestCase):
 
 
 # no test for abstract class/interface Geometry
+
+
+class IntersectsRayTest(GeometryTestCase):
+    def setUp(self) -> None:
+        # face with all permuations of its coordinates
+        # NOTE: Results are invariant under coordinate permutation!
+        p1 = Coordinates3D((1.0, 0.0, 0.0))
+        p2 = Coordinates3D((0.0, 1.0, 0.0))
+        p3 = Coordinates3D((0.0, 0.0, 1.0))
+        self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
+        # rays
+        s10 = Coordinates3D((0.0, 0.0, 0.0))
+        s11 = Coordinates3D((0.3, 0.0, 0.0))  # one third of p1
+        s12 = Coordinates3D((0.0, 0.3, 0.0))  # one third of p2
+        s13 = Coordinates3D((0.0, 0.0, 0.3))  # one third of p3
+        ss1 = (s10, s11, s12, s13)
+        # NOTE: SHORT distance vector!
+        v = AbstractVector((0.1, 0.1, 0.1))
+        # rays pointing 'forwards'
+        # towards the face and parallel to face normal
+        self.intersecting_rays = [Ray(start=s, direction=v) for s in ss1]
+        self.intersecting_ray_segments = [
+            Ray(start=s, direction=v * 10.0) for s in ss1
+        ]
+        self.non_intersecting_ray_segments = [
+            Ray(start=s, direction=v) for s in ss1
+        ]
+        # rays pointing 'backwards'
+        # away from the face and parallel to face normal
+        self.non_intersecting_rays = [Ray(start=s, direction=-v) for s in ss1]
+        self.non_intersecting_ray_segments += [
+            Ray(start=s, direction=-v) for s in ss1
+        ]
+        s21 = Coordinates3D((0.0, 0.6, 0.6))  # 'complement' of p1
+        s22 = Coordinates3D((0.6, 0.0, 0.6))  # 'complement' of p2
+        s23 = Coordinates3D((0.6, 0.6, 0.0))  # 'complement' of p3
+        ss2 = (s21, s22, s23)
+        # rays parallel to face normal but starting 'outside' the face
+        self.non_intersecting_rays += [Ray(start=s, direction=v) for s in ss2]
+        self.non_intersecting_rays += [Ray(start=s, direction=-v) for s in ss2]
+        self.non_intersecting_ray_segments += [
+            Ray(start=s, direction=v) for s in ss2
+        ]
+        self.non_intersecting_ray_segments += [
+            Ray(start=s, direction=-v) for s in ss2
+        ]
+
+        # convert to proper lists
+        self.intersecting_rays = list(self.intersecting_rays)
+        self.intersecting_ray_segments = list(self.intersecting_ray_segments)
+        self.non_intersecting_rays = list(self.non_intersecting_rays)
+        self.non_intersecting_ray_segments = list(
+            self.non_intersecting_ray_segments
+        )
+
+    def test_intersetcs_ray_hits(self) -> None:
+        """
+        Tests if rays intersect as expected.
+        """
+        for ray in self.intersecting_rays:
+            for face in self.faces:
+                self.assertTrue(
+                    intersects_ray(ray=ray, is_ray_segment=False, face=face)
+                )
+
+    def test_intersetcs_ray_segment_hits(self) -> None:
+        """
+        Tests if ray segments intersect as expected.
+        """
+        for ray in self.intersecting_ray_segments:
+            for face in self.faces:
+                self.assertTrue(
+                    intersects_ray(ray=ray, is_ray_segment=True, face=face)
+                )
+
+    def test_intersetcs_ray_misses(self) -> None:
+        """
+        Tests if rays do not intersect as expected.
+        """
+        for ray in self.non_intersecting_rays:
+            for face in self.faces:
+                self.assertFalse(
+                    intersects_ray(ray=ray, is_ray_segment=False, face=face)
+                )
+
+    def test_intersetcs_ray_segments_misses(self) -> None:
+        """
+        Tests if ray segments do not intersect as expected.
+        """
+        for ray in self.non_intersecting_ray_segments:
+            for face in self.faces:
+                self.assertFalse(
+                    intersects_ray(ray=ray, is_ray_segment=True, face=face)
+                )
 
 
 class CarthesianGeometryIntersectsTest1(GeometryTestCase):
