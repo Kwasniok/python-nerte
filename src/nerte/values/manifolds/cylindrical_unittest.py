@@ -83,6 +83,7 @@ class PlaneDomainTest(ManifoldTestCase):
 
 
 class PlanePropertiesTest(ManifoldTestCase):
+    # pylint: disable=R0902
     def setUp(self) -> None:
         self.v1 = AbstractVector((1.0, 0.0, 0.0))
         self.v2 = AbstractVector((0.0, 1.0, 0.0))
