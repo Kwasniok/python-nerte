@@ -12,12 +12,14 @@ from nerte.values.coordinates import Coordinates3D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.manifolds.cartesian import Plane
+from nerte.values.manifolds.cylindrical import Plane as PlaneCylindrical
 from nerte.values.face import Face
 from nerte.values.color import Colors
 from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
 from nerte.geometry.geometry import CarthesianGeometry
+from nerte.geometry.cylindircal_geometry import CylindricRungeKuttaGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_ray_depth_renderer import ImageRayDepthRenderer
 
@@ -223,6 +225,100 @@ class ImageColorRendererProjectionTest(unittest.TestCase):
                 self.assertTrue(
                     img.getpixel(pix) == renderer.color_no_intersection().rgb
                 )
+
+
+class ImageColorRendererProjectionFailureTest1(unittest.TestCase):
+    def setUp(self) -> None:
+        # camera
+        loc = Coordinates3D((0.0, 0.0, 0.0))
+        domain = Domain1D(-1.0, 1.0)
+        # manifold with invalid coordinates for pixel (0,0)
+        manifold = PlaneCylindrical(
+            AbstractVector((1.0, 0.0, 0.0)),
+            AbstractVector((0.0, 1.0, 0.0)),
+            x0_domain=domain,
+            x1_domain=domain,
+        )
+        self.dim = 2  # tiny canvas
+        cam = Camera(
+            location=loc,
+            detector_manifold=manifold,
+            canvas_dimensions=(self.dim, self.dim),
+        )
+        # scene
+        self.scene = Scene(camera=cam)
+        # geometry
+        self.geometry = CylindricRungeKuttaGeometry(
+            max_ray_length=math.inf,
+            step_size=0.1,
+            max_steps=2,
+        )
+
+        # renderers
+        self.renderer = ImageRayDepthRenderer(
+            projection_mode=ProjectionMode.ORTHOGRAPHIC,
+            print_warings=False,
+        )
+
+    def test_image_ray_depth_renderer_orthographic_failure(self) -> None:
+        """Tests orthographic projection failure."""
+        renderer = self.renderer
+        renderer.render(scene=self.scene, geometry=self.geometry)
+        img = renderer.last_image()
+        self.assertTrue(img is not None)
+        if img is not None:
+            found_failure_pixel = False
+            for x in range(self.dim):
+                for y in range(self.dim):
+                    if img.getpixel((x, y)) == renderer.color_failure().rgb:
+                        found_failure_pixel = True
+            self.assertTrue(found_failure_pixel)
+
+
+class ImageColorRendererProjectionFailureTest2(unittest.TestCase):
+    def setUp(self) -> None:
+        # camera
+        loc = Coordinates3D((0.0, 0.0, 0.0))
+        domain = Domain1D(-1.0, 1.0)
+        # manifold with invalid coordinates for pixel (0,0)
+        manifold = PlaneCylindrical(
+            AbstractVector((1.0, 0.0, 0.0)),
+            AbstractVector((0.0, 1.0, 0.0)),
+            x0_domain=domain,
+            x1_domain=domain,
+            offset=AbstractVector((0.0, 0.0, 1.0)),
+        )
+        dim = 1  # single pixel corresponding to (0.0, 0.0, 0.0)
+        cam = Camera(
+            location=loc,
+            detector_manifold=manifold,
+            canvas_dimensions=(dim, dim),
+        )
+        # scene
+        self.scene = Scene(camera=cam)
+        # geometry
+        self.geometry = CylindricRungeKuttaGeometry(
+            max_ray_length=math.inf,
+            step_size=0.1,
+            max_steps=2,
+        )
+
+        # renderers
+        self.renderer = ImageRayDepthRenderer(
+            projection_mode=ProjectionMode.PERSPECTIVE,
+            print_warings=False,
+        )
+
+    def test_image_ray_depth_renderer__perspective_failure(self) -> None:
+        """Tests perspective projection failrue."""
+        renderer = self.renderer
+        renderer.render(scene=self.scene, geometry=self.geometry)
+        img = renderer.last_image()
+        self.assertTrue(img is not None)
+        if img is not None:
+            self.assertTrue(
+                img.getpixel((0, 0)) == renderer.color_failure().rgb
+            )
 
 
 if __name__ == "__main__":
