@@ -12,7 +12,10 @@ from nerte.world.camera import Camera
 from nerte.world.scene import Scene
 from nerte.geometry.geometry import Geometry
 from nerte.geometry.swirl_geometry import SwirlGeometry
+from nerte.render.projection import ProjectionMode
 from nerte.render.image_renderer import ImageRenderer
+from nerte.render.image_color_renderer import ImageColorRenderer
+from nerte.render.image_ray_depth_renderer import ImageRayDepthRenderer
 from nerte.util.random_color_generator import RandomColorGenerator
 
 
@@ -139,6 +142,7 @@ def make_scene(canvas_dimension: int) -> Scene:
 def render(
     scene: Scene,
     geometry: Geometry,
+    render_ray_depth: bool,
     output_path: str,
     file_prefix: str,
     show: bool,
@@ -148,13 +152,23 @@ def render(
     perspective projection.
     """
 
-    for mode in ImageRenderer.Mode:
-        print(f"rendering {mode.name} projection ...")
-        image_renderer = ImageRenderer(mode=mode)
+    for projection_mode in ProjectionMode:
+        print(f"rendering {projection_mode.name} projection ...")
+        if render_ray_depth:
+            image_renderer: ImageRenderer = ImageRayDepthRenderer(
+                projection_mode=projection_mode,
+                print_warings=False,
+                min_ray_depth=0.0,
+                max_ray_depth=2.0,
+            )
+        else:
+            image_renderer = ImageColorRenderer(projection_mode=projection_mode)
         image_renderer.render(scene=scene, geometry=geometry)
         image = image_renderer.last_image()
         if image is not None:
-            image.save(f"{output_path}/{file_prefix}_{mode.name}.png")
+            image.save(
+                f"{output_path}/{file_prefix}_{projection_mode.name}.png"
+            )
             if show:
                 image.show()
 
@@ -171,13 +185,13 @@ def main() -> None:
     #       bend_factor=0.0 results in euclidean geometry.
     geo = SwirlGeometry(max_steps=16, max_ray_length=10.0, bend_factor=0.4)
 
-    # NOTE: Set show to False if images cannot be displayed.
     render(
         scene=scene,
         geometry=geo,
+        render_ray_depth=False,  # enble to render ray depth instead
         output_path="../images",
         file_prefix="demo_1",
-        show=True,
+        show=True,  # disable if images cannot be displayed
     )
 
 

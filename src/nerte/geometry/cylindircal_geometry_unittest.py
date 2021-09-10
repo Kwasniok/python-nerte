@@ -395,6 +395,7 @@ class CylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
         # rays pointing 'forwards'
         # towards the face and parallel to face normal
         self.intersecting_rays = [Ray(start=s, direction=v) for s in coords1]
+        self.ray_depths = [1.0, 1.0, 1.0]
         # rays pointing 'backwards'
         # away from the face and parallel to face normal
         self.non_intersecting_rays = [
@@ -412,17 +413,25 @@ class CylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
             Ray(start=s, direction=-v) for s in coords2
         ]
 
+        # convert to proper lists
+        self.intersecting_rays = list(self.intersecting_rays)
+        self.ray_depths = list(self.ray_depths)
+        self.non_intersecting_rays = list(self.non_intersecting_rays)
+
     def test_intersects1(self) -> None:
         """Tests if rays intersect as expected."""
-        for r in self.intersecting_rays:
+        for r, rd in zip(self.intersecting_rays, self.ray_depths):
             for f in self.faces:
-                self.assertTrue(self.geo.intersects(r, f))
+                info = self.geo.intersection_info(r, f)
+                self.assertTrue(info.hits())
+                self.assertEquiv(info.ray_depth(), rd)
 
     def test_intersects2(self) -> None:
         """Tests if rays do not intersect as expected."""
         for r in self.non_intersecting_rays:
             for f in self.faces:
-                self.assertFalse(self.geo.intersects(r, f))
+                info = self.geo.intersection_info(r, f)
+                self.assertTrue(info.misses())
 
 
 if __name__ == "__main__":

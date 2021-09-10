@@ -9,9 +9,10 @@ import math
 
 from nerte.algorithm.runge_kutta import runge_kutta_4_delta
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.linalg import AbstractVector, dot, cross, normalized
+from nerte.values.linalg import AbstractVector, dot, cross, length, normalized
 from nerte.values.face import Face
 from nerte.values.ray import Ray
+from nerte.values.intersection_info import IntersectionInfo
 from nerte.values.ray_delta import RayDelta, ray_as_delta, add_ray_delta
 from nerte.values.util.convert import coordinates_as_vector
 
@@ -27,12 +28,10 @@ class Geometry(ABC):
 
     # TODO: needs optimization: the ray is currently calculated for each
     #       use cache or allow for multiple faces at once?
-    # TODO: define proper interface for failures!
     @abstractmethod
-    def intersects(self, ray: Ray, face: Face) -> bool:
+    def intersection_info(self, ray: Ray, face: Face) -> IntersectionInfo:
         """
-        Returns True, iff the geodesic initiated by the ray intersects
-        with the face.
+        Returns information about the intersection test of the ray and face.
         """
         # pylint: disable=W0107
         pass
@@ -84,10 +83,13 @@ def _in_triangle(
     return f1 >= 0 and f2 >= 0 and f1 + f2 <= 1
 
 
-def intersects_ray(ray: Ray, is_ray_segment: bool, face: Face) -> bool:
+def intersection_ray_depth(ray: Ray, is_ray_segment: bool, face: Face) -> float:
     """
-    Returns True, iff the (straight) ray intersects with the face within
-    its length.
+    Returns relative ray depth of intersection point or math.inf if no
+    intersection occurred.
+
+    Note: If the returned value t is finite, the intersection occurred at
+          x = ray.start + ray.direction * t
     """
 
     # TODO: fix bug, when ray inside the face
@@ -134,14 +136,16 @@ def intersects_ray(ray: Ray, is_ray_segment: bool, face: Face) -> bool:
 
     if t < 0:
         # intersection is before ray segment started
-        return False
+        return math.inf
     if is_ray_segment and t > 1:
         # intersection after ray segment ended
-        return False
+        return math.inf
 
     # x = intersection point with respect to the triangles origin
     # return if x lies in the triangle spanned by b1 and b2
-    return _in_triangle(b1, b2, (s + u * t) - v0)
+    if _in_triangle(b1, b2, (s + u * t) - v0):
+        return t
+    return math.inf
 
 
 class CarthesianGeometry(Geometry):
@@ -153,8 +157,11 @@ class CarthesianGeometry(Geometry):
     def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
         return True
 
-    def intersects(self, ray: Ray, face: Face) -> bool:
-        return intersects_ray(ray=ray, is_ray_segment=False, face=face)
+    def intersection_info(self, ray: Ray, face: Face) -> IntersectionInfo:
+        ray_depth = intersection_ray_depth(
+            ray=ray, is_ray_segment=False, face=face
+        ) * length(ray.direction)
+        return IntersectionInfo(ray_depth=ray_depth)
 
     def ray_towards(self, start: Coordinates3D, target: Coordinates3D) -> Ray:
         vec_s = coordinates_as_vector(start)
@@ -211,7 +218,7 @@ class SegmentedRayGeometry(Geometry):
         """
         pass
 
-    def intersects(self, ray: Ray, face: Face) -> bool:
+    def intersection_info(self, ray: Ray, face: Face) -> IntersectionInfo:
         current_ray_segment = self.normalize_initial_ray(ray)
         for step in range(self.max_steps):
             if not self.is_valid_coordinate(current_ray_segment.start):
@@ -222,16 +229,24 @@ class SegmentedRayGeometry(Geometry):
                     f" created which has invalid starting coordinates."
                 )
 
-            if intersects_ray(
+            relative_segment_ray_depth = intersection_ray_depth(
                 ray=current_ray_segment, is_ray_segment=True, face=face
-            ):
-                return True
+            )
+            if relative_segment_ray_depth < math.inf:
+                total_ray_depth = (
+                    step + relative_segment_ray_depth
+                ) * self.ray_segment_length()
+                return IntersectionInfo(ray_depth=total_ray_depth)
             next_ray_segment = self.next_ray_segment(current_ray_segment)
             if next_ray_segment is not None:
                 current_ray_segment = next_ray_segment
             else:
-                return False
-        return False
+                return IntersectionInfo(
+                    miss_reasons=set(
+                        (IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD,)
+                    )
+                )
+        return IntersectionInfo(ray_depth=math.inf)
 
 
 class RungeKuttaGeometry(Geometry):
@@ -299,20 +314,23 @@ class RungeKuttaGeometry(Geometry):
         """
         pass
 
-    def intersects(self, ray: Ray, face: Face) -> bool:
+    def intersection_info(self, ray: Ray, face: Face) -> IntersectionInfo:
         steps = 0
-        total_ray_length = 0.0
+        total_ray_depth = 0.0
         ray = self.normalized(ray)
 
         while (
-            total_ray_length < self._max_ray_length and steps < self._max_steps
+            total_ray_depth < self._max_ray_length and steps < self._max_steps
         ):
-            steps += 1
 
             if not self.is_valid_coordinate(ray.start):
                 # ray has left the boundaries of the (local map of the)
                 # manifold
-                return False
+                return IntersectionInfo(
+                    miss_reasons=set(
+                        (IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD,)
+                    )
+                )
 
             # change in ray's configuration for a (small) step size
             # Note: The step size behaves like Δt where t is the
@@ -328,14 +346,21 @@ class RungeKuttaGeometry(Geometry):
             # representation of the change of the ray's position as a ray
             # segment
             ray_segment = Ray(start=ray.start, direction=ray_delta.coords_delta)
-            total_ray_length += self.length(ray_segment)
 
-            if intersects_ray(ray=ray_segment, is_ray_segment=True, face=face):
-                return True
+            relative_ray_segment_depth = intersection_ray_depth(
+                ray=ray_segment, is_ray_segment=True, face=face
+            )
+            if relative_ray_segment_depth < math.inf:
+                total_ray_depth += relative_ray_segment_depth * self.length(
+                    ray_segment
+                )
+                return IntersectionInfo(ray_depth=total_ray_depth)
 
+            steps += 1
+            total_ray_depth += self.length(ray_segment)
             ray = add_ray_delta(ray, ray_delta)
 
-        return False
+        return IntersectionInfo(ray_depth=math.inf)
 
     @abstractmethod
     def ray_towards(self, start: Coordinates3D, target: Coordinates3D) -> Ray:

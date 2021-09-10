@@ -79,10 +79,12 @@ class SwirlGeometryEuclideanEdgeCaseIntersectionTest(unittest.TestCase):
         """
         for r in self.intersecting_rays:
             for f in self.faces:
-                self.assertTrue(self.geo.intersects(r, f))
+                info = self.geo.intersection_info(r, f)
+                self.assertTrue(info.hits())
         for r in self.non_intersecting_rays:
             for f in self.faces:
-                self.assertFalse(self.geo.intersects(r, f))
+                info = self.geo.intersection_info(r, f)
+                self.assertTrue(info.misses())
 
 
 class SwirlGeometryNonEuclideanIntersectionTest(unittest.TestCase):
@@ -130,10 +132,12 @@ class SwirlGeometryNonEuclideanIntersectionTest(unittest.TestCase):
         """
         for r in self.intersecting_rays:
             for f in self.faces:
-                self.assertTrue(self.geo.intersects(r, f))
+                info = self.geo.intersection_info(r, f)
+                self.assertTrue(info.hits())
         for r in self.non_intersecting_rays:
             for f in self.faces:
-                self.assertFalse(self.geo.intersects(r, f))
+                info = self.geo.intersection_info(r, f)
+                self.assertTrue(info.misses())
 
 
 if __name__ == "__main__":
