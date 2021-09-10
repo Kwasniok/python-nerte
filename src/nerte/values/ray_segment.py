@@ -15,15 +15,24 @@ class RaySegment:
     NOTE: THe length of the directional vector is never zero.
     """
 
-    def __init__(self, start: Coordinates3D, direction: AbstractVector) -> None:
+    def __init__(
+        self,
+        start: Coordinates3D,
+        direction: AbstractVector,
+        is_finite: bool = True,
+    ) -> None:
         if is_zero_vector(direction):
             raise ValueError(
                 "Cannot construct ray with zero vector as direction."
             )
         self.start = start
         self.direction = direction
+        self.is_finite = is_finite
+        self.is_infinite = not is_finite
 
     def __repr__(self) -> str:
-        return "RaySegment({}, {})".format(
-            repr(self.start), repr(self.direction)
-        )
+        if self.is_finite:
+            return (
+                f"RaySegment(start={self.start}, direction={self.direction},)"
+            )
+        return f"RaySegment(start={self.start}, direction={self.direction}, is_finite=False)"

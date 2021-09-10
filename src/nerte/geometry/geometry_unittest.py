@@ -118,7 +118,7 @@ class IntersectionRayDepthTest(GeometryTestCase):
         # rays pointing 'forwards'
         # towards the face and parallel to face normal
         self.intersecting_rays = [
-            RaySegment(start=s, direction=v * 0.1) for s in ss1
+            RaySegment(start=s, direction=v * 0.1, is_finite=False) for s in ss1
         ]
         self.ray_depths = [10 / 3, 20 / 9, 20 / 9, 20 / 9]
         self.intersecting_ray_segments = [
@@ -131,7 +131,7 @@ class IntersectionRayDepthTest(GeometryTestCase):
         # rays pointing 'backwards'
         # away from the face and parallel to face normal
         self.non_intersecting_rays = [
-            RaySegment(start=s, direction=-v) for s in ss1
+            RaySegment(start=s, direction=-v, is_finite=False) for s in ss1
         ]
         self.non_intersecting_ray_segments += [
             RaySegment(start=s, direction=-v) for s in ss1
@@ -142,10 +142,10 @@ class IntersectionRayDepthTest(GeometryTestCase):
         ss2 = (s21, s22, s23)
         # rays parallel to face normal but starting 'outside' the face
         self.non_intersecting_rays += [
-            RaySegment(start=s, direction=v) for s in ss2
+            RaySegment(start=s, direction=v, is_finite=False) for s in ss2
         ]
         self.non_intersecting_rays += [
-            RaySegment(start=s, direction=-v) for s in ss2
+            RaySegment(start=s, direction=-v, is_finite=False) for s in ss2
         ]
         self.non_intersecting_ray_segments += [
             RaySegment(start=s, direction=v) for s in ss2
@@ -170,9 +170,7 @@ class IntersectionRayDepthTest(GeometryTestCase):
         """
         for ray, ray_depth in zip(self.intersecting_rays, self.ray_depths):
             for face in self.faces:
-                rd = intersection_ray_depth(
-                    ray=ray, is_ray_segment=False, face=face
-                )
+                rd = intersection_ray_depth(ray=ray, face=face)
                 self.assertTrue(0 <= rd < math.inf)
                 self.assertEquiv(rd, ray_depth)
 
@@ -184,9 +182,7 @@ class IntersectionRayDepthTest(GeometryTestCase):
             self.intersecting_ray_segments, self.ray_segment_depths
         ):
             for face in self.faces:
-                rd = intersection_ray_depth(
-                    ray=ray, is_ray_segment=True, face=face
-                )
+                rd = intersection_ray_depth(ray=ray, face=face)
                 self.assertTrue(0 <= rd < math.inf)
                 self.assertEquiv(rd, ray_depth)
 
@@ -196,9 +192,7 @@ class IntersectionRayDepthTest(GeometryTestCase):
         """
         for ray in self.non_intersecting_rays:
             for face in self.faces:
-                ray_depth = intersection_ray_depth(
-                    ray=ray, is_ray_segment=False, face=face
-                )
+                ray_depth = intersection_ray_depth(ray=ray, face=face)
                 self.assertTrue(ray_depth == math.inf)
 
     def test_intersetcs_ray_segments_misses(self) -> None:
@@ -207,9 +201,7 @@ class IntersectionRayDepthTest(GeometryTestCase):
         """
         for ray in self.non_intersecting_ray_segments:
             for face in self.faces:
-                ray_depth = intersection_ray_depth(
-                    ray=ray, is_ray_segment=True, face=face
-                )
+                ray_depth = intersection_ray_depth(ray=ray, face=face)
                 self.assertTrue(ray_depth == math.inf)
 
 

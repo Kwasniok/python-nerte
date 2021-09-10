@@ -92,9 +92,7 @@ def _in_triangle(
     return f1 >= 0 and f2 >= 0 and f1 + f2 <= 1
 
 
-def intersection_ray_depth(
-    ray: RaySegment, is_ray_segment: bool, face: Face
-) -> float:
+def intersection_ray_depth(ray: RaySegment, face: Face) -> float:
     """
     Returns relative ray depth of intersection point or math.inf if no
     intersection occurred.
@@ -146,7 +144,7 @@ def intersection_ray_depth(
     if t < 0:
         # intersection is before ray segment started
         return math.inf
-    if is_ray_segment and t > 1:
+    if ray.is_finite and t > 1:
         # intersection after ray segment ended
         return math.inf
 
@@ -169,9 +167,9 @@ class CarthesianGeometry(Geometry):
     def intersection_info(
         self, ray: RaySegment, face: Face
     ) -> IntersectionInfo:
-        ray_depth = intersection_ray_depth(
-            ray=ray, is_ray_segment=False, face=face
-        ) * length(ray.direction)
+        ray_depth = intersection_ray_depth(ray=ray, face=face) * length(
+            ray.direction
+        )
         return IntersectionInfo(ray_depth=ray_depth)
 
     def initial_ray_segment_towards(
@@ -179,7 +177,9 @@ class CarthesianGeometry(Geometry):
     ) -> RaySegment:
         vec_s = coordinates_as_vector(start)
         vec_t = coordinates_as_vector(target)
-        return RaySegment(start=start, direction=(vec_t - vec_s))
+        return RaySegment(
+            start=start, direction=(vec_t - vec_s), is_finite=False
+        )
 
 
 class SegmentedRayGeometry(Geometry):
@@ -245,7 +245,7 @@ class SegmentedRayGeometry(Geometry):
                 )
 
             relative_segment_ray_depth = intersection_ray_depth(
-                ray=current_ray_segment, is_ray_segment=True, face=face
+                ray=current_ray_segment, face=face
             )
             if relative_segment_ray_depth < math.inf:
                 total_ray_depth = (
@@ -367,7 +367,7 @@ class RungeKuttaGeometry(Geometry):
             )
 
             relative_ray_segment_depth = intersection_ray_depth(
-                ray=ray_segment, is_ray_segment=True, face=face
+                ray=ray_segment, face=face
             )
             if relative_ray_segment_depth < math.inf:
                 total_ray_depth += relative_ray_segment_depth * self.length(
