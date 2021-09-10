@@ -28,12 +28,11 @@ def _is_finite(mat: np.ndarray) -> np.ndarray:
 class ImageRayDepthRenderer(ImageRenderer):
     """Renderer which renders the ray depths."""
 
-    # TODO: tests
     def __init__(
         self,
         projection_mode: ProjectionMode,
-        min_ray_depth: Optional[float] = None,  # TODO: test
-        max_ray_depth: Optional[float] = None,  # TODO: test
+        min_ray_depth: Optional[float] = None,
+        max_ray_depth: Optional[float] = None,
     ):
         if min_ray_depth is not None and not 0.0 <= min_ray_depth < math.inf:
             raise ValueError(
@@ -62,6 +61,14 @@ class ImageRayDepthRenderer(ImageRenderer):
         self._min_ray_depth = min_ray_depth
         self._max_ray_depth = max_ray_depth
         self._max_finite_color_value = 0.5  # 0.0...1.0
+
+    def color_failure(self) -> Color:
+        """Returns color indicating intersection test failure."""
+        return self._color_failure
+
+    def color_no_intersection(self) -> Color:
+        """Returns color indicating that no intersection occured."""
+        return self._color_no_intersection
 
     def render_pixel_ray_depth(
         self,

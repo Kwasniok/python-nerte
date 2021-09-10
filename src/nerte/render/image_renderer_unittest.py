@@ -5,12 +5,11 @@
 # pylint: disable=C0144
 
 import unittest
+
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.manifolds.cartesian import Plane
-from nerte.values.face import Face
-from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
 from nerte.geometry.geometry import CarthesianGeometry

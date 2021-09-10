@@ -6,6 +6,8 @@
 
 import unittest
 
+import math
+
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
@@ -17,18 +19,65 @@ from nerte.world.camera import Camera
 from nerte.world.scene import Scene
 from nerte.geometry.geometry import CarthesianGeometry
 from nerte.render.projection import ProjectionMode
-from nerte.render.image_color_renderer import ImageColorRenderer
+from nerte.render.image_ray_depth_renderer import ImageRayDepthRenderer
 
 
-class ImageColorRendererConstructorTest(unittest.TestCase):
-    def test_image_color_renderer_costructor(self) -> None:
+class ImageRayDepthRendererConstructorTest(unittest.TestCase):
+    def setUp(self) -> None:
+        # ray depth parameters
+        self.valid_ray_depths = (None, 0.0, 1e-8, 1.0, 1e8)
+        self.invalid_ray_depths = (math.inf, math.nan, -1e-8, -1.0)
+
+    def test_image_ray_Depth_renderer_costructor(self) -> None:
         # pylint: disable=R0201
         """Tests constructor."""
+
+        # preconditions
+        self.assertTrue(len(self.valid_ray_depths) > 0)
+        self.assertTrue(len(self.invalid_ray_depths) > 0)
+
         for mode in ProjectionMode:
-            ImageColorRenderer(projection_mode=mode)
+            ImageRayDepthRenderer(projection_mode=mode)
+            for min_rd in self.valid_ray_depths:
+                ImageRayDepthRenderer(
+                    projection_mode=mode, min_ray_depth=min_rd
+                )
+            for max_rd in self.valid_ray_depths:
+                ImageRayDepthRenderer(
+                    projection_mode=mode, max_ray_depth=max_rd
+                )
+            for min_rd in self.valid_ray_depths:
+                for max_rd in self.valid_ray_depths:
+                    if (
+                        min_rd is not None
+                        and max_rd is not None
+                        and max_rd <= min_rd
+                    ):
+                        with self.assertRaises(ValueError):
+                            ImageRayDepthRenderer(
+                                projection_mode=mode,
+                                min_ray_depth=min_rd,
+                                max_ray_depth=max_rd,
+                            )
+                    else:
+                        ImageRayDepthRenderer(
+                            projection_mode=mode,
+                            min_ray_depth=min_rd,
+                            max_ray_depth=max_rd,
+                        )
+            for min_rd in self.invalid_ray_depths:
+                with self.assertRaises(ValueError):
+                    ImageRayDepthRenderer(
+                        projection_mode=mode, min_ray_depth=min_rd
+                    )
+            for max_rd in self.invalid_ray_depths:
+                with self.assertRaises(ValueError):
+                    ImageRayDepthRenderer(
+                        projection_mode=mode, max_ray_depth=max_rd
+                    )
 
 
-class ImageColorRendererRenderTest(unittest.TestCase):
+class ImageRayDepthRendererRenderTest(unittest.TestCase):
     def setUp(self) -> None:
         # object
         p0 = Coordinates3D((-1.0, -1.0, 0.0))
@@ -58,10 +107,11 @@ class ImageColorRendererRenderTest(unittest.TestCase):
         self.geometry = CarthesianGeometry()
 
         self.renderers = tuple(
-            ImageColorRenderer(projection_mode=mode) for mode in ProjectionMode
+            ImageRayDepthRenderer(projection_mode=mode)
+            for mode in ProjectionMode
         )
 
-    def test_image_color_renderer_render(self) -> None:
+    def test_image_ray_depth_renderer_render(self) -> None:
         """Tests render."""
         for renderer in self.renderers:
             self.assertTrue(renderer.last_image() is None)
@@ -70,6 +120,10 @@ class ImageColorRendererRenderTest(unittest.TestCase):
 
 
 class ImageColorRendererProjectionTest(unittest.TestCase):
+    def assertGrayPixel(self, rgb: tuple[int, int, int]) -> None:
+        """Asserts the RGB triple is gray."""
+        self.assertTrue(rgb[0] == rgb[1] == rgb[2])
+
     def setUp(self) -> None:
         # object
         p0 = Coordinates3D((-1.0, -1.0, 0.0))
@@ -101,10 +155,10 @@ class ImageColorRendererProjectionTest(unittest.TestCase):
         self.geometry = CarthesianGeometry()
 
         # renderers
-        self.renderer_ortho = ImageColorRenderer(
+        self.renderer_ortho = ImageRayDepthRenderer(
             projection_mode=ProjectionMode.ORTHOGRAPHIC,
         )
-        self.renderer_persp = ImageColorRenderer(
+        self.renderer_persp = ImageRayDepthRenderer(
             projection_mode=ProjectionMode.PERSPECTIVE,
         )
 
@@ -138,31 +192,37 @@ class ImageColorRendererProjectionTest(unittest.TestCase):
                 if not (x == 0 and y == 0)
             ]
 
-        self.gray_pixel = pixel_grid(0.2)
-        self.black_pixel = pixel_rect(0.3)
+        self.hit_pixel = pixel_grid(0.2)
+        self.no_intersection_pixel = pixel_rect(0.3)
 
-    def test_image_color_renderer_orthographic(self) -> None:
+    def test_image_ray_depth_renderer_orthographic(self) -> None:
         """Tests orthographic projection."""
-        self.renderer_ortho.render(scene=self.scene, geometry=self.geometry)
-        img = self.renderer_ortho.last_image()
+        renderer = self.renderer_ortho
+        renderer.render(scene=self.scene, geometry=self.geometry)
+        img = renderer.last_image()
         self.assertTrue(img is not None)
         if img is not None:
-            for pix in self.gray_pixel:
-                self.assertTrue(img.getpixel(pix) == Colors.GRAY.rgb)
-            for pix in self.black_pixel:
-                self.assertTrue(img.getpixel(pix) == Colors.BLACK.rgb)
+            for pix in self.hit_pixel:
+                self.assertGrayPixel(img.getpixel(pix))
+            for pix in self.no_intersection_pixel:
+                self.assertTrue(
+                    img.getpixel(pix) == renderer.color_no_intersection().rgb
+                )
 
-    def test_image_color_renderer_perspective(self) -> None:
+    def test_image_ray_depth_renderer_perspective(self) -> None:
         """Tests perspective projection."""
         # renderer
-        self.renderer_persp.render(scene=self.scene, geometry=self.geometry)
-        img = self.renderer_persp.last_image()
+        renderer = self.renderer_persp
+        renderer.render(scene=self.scene, geometry=self.geometry)
+        img = renderer.last_image()
         self.assertTrue(img is not None)
         if img is not None:
-            for pix in self.gray_pixel:
-                self.assertTrue(img.getpixel(pix) == Colors.GRAY.rgb)
-            for pix in self.black_pixel:
-                self.assertTrue(img.getpixel(pix) == Colors.BLACK.rgb)
+            for pix in self.hit_pixel:
+                self.assertGrayPixel(img.getpixel(pix))
+            for pix in self.no_intersection_pixel:
+                self.assertTrue(
+                    img.getpixel(pix) == renderer.color_no_intersection().rgb
+                )
 
 
 if __name__ == "__main__":
