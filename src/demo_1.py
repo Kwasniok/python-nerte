@@ -14,6 +14,8 @@ from nerte.geometry.geometry import Geometry
 from nerte.geometry.swirl_geometry import SwirlGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_renderer import ImageRenderer
+from nerte.render.image_color_renderer import ImageColorRenderer
+from nerte.render.image_ray_depth_renderer import ImageRayDepthRenderer
 from nerte.util.random_color_generator import RandomColorGenerator
 
 
@@ -152,10 +154,14 @@ def render(
 
     for projection_mode in ProjectionMode:
         print(f"rendering {projection_mode.name} projection ...")
-        image_renderer = ImageRenderer(
-            projection_mode=projection_mode,
-            render_ray_depth=render_ray_depth,
-        )
+        if render_ray_depth:
+            image_renderer: ImageRenderer = ImageRayDepthRenderer(
+                projection_mode=projection_mode,
+                min_ray_depth=0.0,
+                max_ray_depth=2.0,
+            )
+        else:
+            image_renderer = ImageColorRenderer(projection_mode=projection_mode)
         image_renderer.render(scene=scene, geometry=geometry)
         image = image_renderer.last_image()
         if image is not None:

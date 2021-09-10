@@ -17,6 +17,8 @@ from nerte.geometry.cylindircal_swirl_geometry import (
 )
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_renderer import ImageRenderer
+from nerte.render.image_color_renderer import ImageColorRenderer
+from nerte.render.image_ray_depth_renderer import ImageRayDepthRenderer
 from nerte.util.random_color_generator import RandomColorGenerator
 
 # pseudo-random color generator
@@ -122,9 +124,12 @@ def render(
     for projection_mode in ProjectionMode:
         # for mode in (ImageRenderer.Mode.PERSPECTIVE,):
         print(f"rendering {projection_mode.name} projection ...")
-        image_renderer = ImageRenderer(
-            projection_mode=projection_mode, render_ray_depth=render_ray_depth
-        )
+        if render_ray_depth:
+            image_renderer: ImageRenderer = ImageRayDepthRenderer(
+                projection_mode=projection_mode
+            )
+        else:
+            image_renderer = ImageColorRenderer(projection_mode=projection_mode)
         image_renderer.render(scene=scene, geometry=geometry)
         image = image_renderer.last_image()
         if image is not None:
