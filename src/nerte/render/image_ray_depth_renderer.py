@@ -170,12 +170,17 @@ class ImageRayDepthRenderer(ImageRenderer):
             # overwrite
             max_ray_depth = self._max_ray_depth
 
+        min_ray_depth, max_ray_depth = min(min_ray_depth, max_ray_depth), max(
+            min_ray_depth, max_ray_depth
+        )
+
+        if np.isinf(max_ray_depth):
+            # all pixels are either inf or nan (no normalization needed)
+            return ray_depths
+
         # normalize all finite values to [0.0, 1.0]
         ray_depth_values = (ray_depths - min_ray_depth) / (
             max_ray_depth - min_ray_depth
-        )
-        min_ray_depth, max_ray_depth = min(min_ray_depth, max_ray_depth), max(
-            min_ray_depth, max_ray_depth
         )
         # NOTE: Must use out prameter or inf and nan are not preserved!
         np.clip(
