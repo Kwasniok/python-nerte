@@ -10,7 +10,7 @@ import math
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector
-from nerte.values.ray import Ray
+from nerte.values.ray_segment import RaySegment
 from nerte.values.face import Face
 from nerte.geometry.swirl_geometry import SwirlGeometry
 
@@ -58,7 +58,7 @@ class SwirlGeometryEuclideanEdgeCaseIntersectionTest(unittest.TestCase):
             Coordinates3D((0.0, 0.0, 0.6)),  # one third of p3
         )
         self.intersecting_rays = tuple(
-            Ray(start=s, direction=v) for s in ss_hit
+            RaySegment(start=s, direction=v) for s in ss_hit
         )
         # rays pointing 'forwards' towards faces and parallel to
         # the face's normal
@@ -68,7 +68,7 @@ class SwirlGeometryEuclideanEdgeCaseIntersectionTest(unittest.TestCase):
             Coordinates3D((0.3, 0.3, -0.3)),
         )
         self.non_intersecting_rays = tuple(
-            Ray(start=s, direction=v) for s in ss_miss
+            RaySegment(start=s, direction=v) for s in ss_miss
         )
 
     def test_swirl_geometry_euclidean_edge_case_intersects(self) -> None:
@@ -111,7 +111,7 @@ class SwirlGeometryNonEuclideanIntersectionTest(unittest.TestCase):
             Coordinates3D((0.0, 0.0, 0.6)),  # one third of p3
         )
         self.intersecting_rays = tuple(
-            Ray(start=s, direction=v) for s in ss_hit
+            RaySegment(start=s, direction=v) for s in ss_hit
         )
         # rays pointing 'forwards' towards faces and initially parallel to
         # the face's normal
@@ -121,7 +121,7 @@ class SwirlGeometryNonEuclideanIntersectionTest(unittest.TestCase):
             Coordinates3D((0.3, 0.3, -0.3)),
         )
         self.non_intersecting_rays = tuple(
-            Ray(start=s, direction=v) for s in ss_miss
+            RaySegment(start=s, direction=v) for s in ss_miss
         )
 
     def test_swirl_geometry_euclidean_edge_case_intersects(self) -> None:

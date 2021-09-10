@@ -15,7 +15,7 @@ from nerte.world.object import Object
 from nerte.world.scene import Scene
 from nerte.geometry.geometry import Geometry
 from nerte.render.image_renderer import ImageRenderer
-from nerte.render.projection import ProjectionMode, ray_for_pixel
+from nerte.render.projection import ProjectionMode, ray_segment_for_pixel
 
 
 def _is_finite(mat: np.ndarray) -> np.ndarray:
@@ -83,7 +83,7 @@ class ImageRayDepthRenderer(ImageRenderer):
         """Returns the ray depth of the pixel."""
 
         # calculate light ray
-        ray = ray_for_pixel[self.projection_mode](
+        ray = ray_segment_for_pixel[self.projection_mode](
             camera, geometry, pixel_location
         )
 

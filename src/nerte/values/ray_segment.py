@@ -4,11 +4,11 @@ from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, is_zero_vector
 
 
-class Ray:
+class RaySegment:
     # pylint: disable=R0903
     """
-    Representation of a ray.
-    A ray has a starting point (coordinate) and a direction (vector).
+    Representation of a straigt ray segment.
+    A ray segment has a starting point (coordinate) and a direction (vector).
 
     NOTE: The length of the directional vector may be important or irrelevant
     depending on the usecase.
@@ -24,4 +24,6 @@ class Ray:
         self.direction = direction
 
     def __repr__(self) -> str:
-        return "Ray({}, {})".format(repr(self.start), repr(self.direction))
+        return "RaySegment({}, {})".format(
+            repr(self.start), repr(self.direction)
+        )

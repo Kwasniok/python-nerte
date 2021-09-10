@@ -13,8 +13,8 @@ import math
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, AbstractMatrix, Metric
-from nerte.values.ray import Ray
-from nerte.values.ray_delta import RayDelta
+from nerte.values.ray_segment import RaySegment
+from nerte.values.ray_segment_delta import RaySegmentDelta
 from nerte.values.face import Face
 from nerte.geometry.cylindircal_swirl_geometry import (
     SwirlCylindricRungeKuttaGeometry,
@@ -58,8 +58,8 @@ def _metric_equiv(x: Metric, y: Metric) -> bool:
     )
 
 
-# True, iff two ray-like objects are equivalent
-def _ray_equiv(x: RayDelta, y: RayDelta) -> bool:
+# True, iff two ray segments are equivalent
+def _ray_seg_equiv(x: RaySegmentDelta, y: RaySegmentDelta) -> bool:
     return _vec_equiv(x.coords_delta, y.coords_delta) and _vec_equiv(
         x.velocity_delta, y.velocity_delta
     )
@@ -123,16 +123,18 @@ class GeometryTestCase(unittest.TestCase):
                 f"Metric {x} is not equivalent to {y}."
             ) from ae
 
-    def assertEquivRay(self, x: RayDelta, y: RayDelta) -> None:
+    def assertEquivRaySegment(
+        self, x: RaySegmentDelta, y: RaySegmentDelta
+    ) -> None:
         """
         Asserts the equivalence of two ray deltas.
-        Note: This replaces assertTrue(x == y) for RayDelta.
+        Note: This replaces assertTrue(x == y) for RaySegmentDelta.
         """
         try:
-            self.assertTrue(_ray_equiv(x, y))
+            self.assertTrue(_ray_seg_equiv(x, y))
         except AssertionError as ae:
             raise AssertionError(
-                f"Rays or ray delta {x} is not equivalent to ray or ray delta {y}."
+                f"Ray segment {x} is not equivalent to {y}."
             ) from ae
 
 
@@ -325,7 +327,7 @@ class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(GeometryTestCase):
             max_ray_length=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
         )
 
-        def geodesic_equation(ray: RayDelta) -> RayDelta:
+        def geodesic_equation(ray: RaySegmentDelta) -> RaySegmentDelta:
             # pylint: disable=C0103
             # TODO: revert when mypy bug was fixed
             #       see https://github.com/python/mypy/issues/2220
@@ -338,7 +340,7 @@ class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(GeometryTestCase):
             v_phi = ray.velocity_delta[1]
             v_z = ray.velocity_delta[2]
             a = self.geo.swirl_strength()
-            return RayDelta(
+            return RaySegmentDelta(
                 ray.velocity_delta,
                 AbstractVector(
                     (
@@ -361,14 +363,14 @@ class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(GeometryTestCase):
 
         self.geodesic_equation = geodesic_equation
         self.xs = (
-            RayDelta(
+            RaySegmentDelta(
                 AbstractVector((1.0, 0.0, 0.0)), AbstractVector((0.0, 0.0, 1.0))
             ),
-            RayDelta(
+            RaySegmentDelta(
                 AbstractVector((2.0, math.pi / 2, 1.0)),
                 AbstractVector((1.0, -2.0, 3.0)),
             ),
-            RayDelta(
+            RaySegmentDelta(
                 AbstractVector((0.001, -math.pi / 2, -10.0)),
                 AbstractVector((1.0, -2.0, 3.0)),
             ),
@@ -378,7 +380,9 @@ class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(GeometryTestCase):
         """Tests geodesic equation."""
         geodesic_equation = self.geo.geodesic_equation()
         for x in self.xs:
-            self.assertEquivRay(geodesic_equation(x), self.geodesic_equation(x))
+            self.assertEquivRaySegment(
+                geodesic_equation(x), self.geodesic_equation(x)
+            )
 
 
 class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(
@@ -395,7 +399,7 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(
             Coordinates3D((1.0, math.pi - 1e-8, 0.0)),
             Coordinates3D((2.0, math.pi - 1e-8, 1.0)),
         )
-        self.rays = tuple(Ray(start=c, direction=v) for c in self.coords)
+        self.rays = tuple(RaySegment(start=c, direction=v) for c in self.coords)
         self.lengths = (
             14.0 ** 0.5,
             14.0 ** 0.5,
@@ -424,7 +428,7 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(
             Coordinates3D((1.0, 0.0, math.nan)),
         )
         self.invalid_rays = tuple(
-            Ray(start=c, direction=v) for c in invalid_coords
+            RaySegment(start=c, direction=v) for c in invalid_coords
         )
 
     def test_length(self) -> None:
@@ -474,13 +478,15 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
         v = AbstractVector((0.0, 0.0, 1.0))  # v = (v_r, v_𝜑, v_z)
         # rays pointing 'forwards'
         # towards the face and parallel to face normal
-        self.intersecting_rays = [Ray(start=s, direction=v) for s in coords1]
+        self.intersecting_rays = [
+            RaySegment(start=s, direction=v) for s in coords1
+        ]
         self.ray_depths = [1.0, 1.0, 1.0]  #
         self.ray_depth_relaltive_tolerance = [1e-3, 1e-3, 1e-3]
         # rays pointing 'backwards'
         # away from the face and parallel to face normal
         self.non_intersecting_rays = [
-            Ray(start=s, direction=-v) for s in coords1
+            RaySegment(start=s, direction=-v) for s in coords1
         ]
         coords2 = (
             Coordinates3D((0.9, -math.pi / 2, 0.0)),
@@ -488,10 +494,10 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
         )
         # rays parallel to face normal but starting 'outside' the face
         self.non_intersecting_rays += [
-            Ray(start=s, direction=v) for s in coords2
+            RaySegment(start=s, direction=v) for s in coords2
         ]
         self.non_intersecting_rays += [
-            Ray(start=s, direction=-v) for s in coords2
+            RaySegment(start=s, direction=-v) for s in coords2
         ]
 
         # convert to proper lists
@@ -550,12 +556,14 @@ class SwirlCylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
             Coordinates3D((0.3, +math.pi / 4, 0.0)),
         )
         # parallel (hit)
-        self.intersecting_rays = [Ray(start=s, direction=v) for s in coords1]
+        self.intersecting_rays = [
+            RaySegment(start=s, direction=v) for s in coords1
+        ]
         self.ray_depths = [1.38, 1.38, 1.38]  # TODO: needs confirmation
         self.ray_depth_relaltive_tolerance = [1e-2, 1e-2, 1e-2]
         # antiparallel (miss)
         self.non_intersecting_rays = [
-            Ray(start=s, direction=-v) for s in coords1
+            RaySegment(start=s, direction=-v) for s in coords1
         ]
         coords2 = (
             Coordinates3D((0.6, -math.pi / 2, 0.0)),  # (*)
@@ -564,11 +572,11 @@ class SwirlCylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
         )
         # parallel (miss)
         self.non_intersecting_rays += [
-            Ray(start=s, direction=v) for s in coords2
+            RaySegment(start=s, direction=v) for s in coords2
         ]
         # antiparallel (miss)
         self.non_intersecting_rays += [
-            Ray(start=s, direction=-v) for s in coords2
+            RaySegment(start=s, direction=-v) for s in coords2
         ]
 
         # convert to proper lists

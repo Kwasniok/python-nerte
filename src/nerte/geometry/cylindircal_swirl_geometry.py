@@ -9,8 +9,8 @@ import math
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.util.convert import coordinates_as_vector
-from nerte.values.ray import Ray
-from nerte.values.ray_delta import RayDelta
+from nerte.values.ray_segment import RaySegment
+from nerte.values.ray_segment_delta import RaySegmentDelta
 from nerte.values.linalg import AbstractVector, AbstractMatrix, Metric, length
 from nerte.geometry.geometry import RungeKuttaGeometry
 
@@ -39,7 +39,7 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
 
         self._swirl_strength = swirl_strength
 
-        def geodesic_equation(ray: RayDelta) -> RayDelta:
+        def geodesic_equation(ray: RaySegmentDelta) -> RaySegmentDelta:
             # pylint: disable=C0103
             # TODO: revert when mypy bug was fixed
             #       see https://github.com/python/mypy/issues/2220
@@ -52,7 +52,7 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
             v_phi = ray.velocity_delta[1]
             v_z = ray.velocity_delta[2]
             a = self.swirl_strength()
-            return RayDelta(
+            return RaySegmentDelta(
                 ray.velocity_delta,
                 AbstractVector(
                     (
@@ -100,7 +100,7 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
             and -math.inf < z < math.inf
         )
 
-    def length(self, ray: Ray) -> float:
+    def length(self, ray: RaySegment) -> float:
         if not self.is_valid_coordinate(ray.start):
             raise ValueError(
                 f"Cannot calculate length of ray."
@@ -109,11 +109,13 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
         metric = self.metric(ray.start)
         return length(ray.direction, metric=metric)
 
-    def geodesic_equation(self) -> Callable[[RayDelta], RayDelta]:
+    def geodesic_equation(self) -> Callable[[RaySegmentDelta], RaySegmentDelta]:
         return self._geodesic_equation
 
-    def ray_towards(self, start: Coordinates3D, target: Coordinates3D) -> Ray:
+    def initial_ray_segment_towards(
+        self, start: Coordinates3D, target: Coordinates3D
+    ) -> RaySegment:
         # TODO: This method is incorrect
         vec_s = coordinates_as_vector(start)
         vec_t = coordinates_as_vector(target)
-        return Ray(start=start, direction=(vec_t - vec_s))
+        return RaySegment(start=start, direction=(vec_t - vec_s))

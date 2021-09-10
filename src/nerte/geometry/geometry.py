@@ -11,9 +11,13 @@ from nerte.algorithm.runge_kutta import runge_kutta_4_delta
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, dot, cross, length, normalized
 from nerte.values.face import Face
-from nerte.values.ray import Ray
+from nerte.values.ray_segment import RaySegment
+from nerte.values.ray_segment_delta import (
+    RaySegmentDelta,
+    ray_segment_as_delta,
+    add_ray_segment_delta,
+)
 from nerte.values.intersection_info import IntersectionInfo
-from nerte.values.ray_delta import RayDelta, ray_as_delta, add_ray_delta
 from nerte.values.util.convert import coordinates_as_vector
 
 
@@ -29,7 +33,9 @@ class Geometry(ABC):
     # TODO: needs optimization: the ray is currently calculated for each
     #       use cache or allow for multiple faces at once?
     @abstractmethod
-    def intersection_info(self, ray: Ray, face: Face) -> IntersectionInfo:
+    def intersection_info(
+        self, ray: RaySegment, face: Face
+    ) -> IntersectionInfo:
         """
         Returns information about the intersection test of the ray and face.
         """
@@ -37,10 +43,13 @@ class Geometry(ABC):
         pass
 
     @abstractmethod
-    def ray_towards(self, start: Coordinates3D, target: Coordinates3D) -> Ray:
+    # TODO: change to ray generator
+    def initial_ray_segment_towards(
+        self, start: Coordinates3D, target: Coordinates3D
+    ) -> RaySegment:
         """
-        Returns a ray from the given starting position pointing towards the
-        given target.
+        Returns the initial ray segment from a ray, which starts at the given
+        position and passes the target.
 
         :raises: ValueError if no valid ray could be constructed
         """
@@ -83,7 +92,9 @@ def _in_triangle(
     return f1 >= 0 and f2 >= 0 and f1 + f2 <= 1
 
 
-def intersection_ray_depth(ray: Ray, is_ray_segment: bool, face: Face) -> float:
+def intersection_ray_depth(
+    ray: RaySegment, is_ray_segment: bool, face: Face
+) -> float:
     """
     Returns relative ray depth of intersection point or math.inf if no
     intersection occurred.
@@ -155,16 +166,20 @@ class CarthesianGeometry(Geometry):
     def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
         return True
 
-    def intersection_info(self, ray: Ray, face: Face) -> IntersectionInfo:
+    def intersection_info(
+        self, ray: RaySegment, face: Face
+    ) -> IntersectionInfo:
         ray_depth = intersection_ray_depth(
             ray=ray, is_ray_segment=False, face=face
         ) * length(ray.direction)
         return IntersectionInfo(ray_depth=ray_depth)
 
-    def ray_towards(self, start: Coordinates3D, target: Coordinates3D) -> Ray:
+    def initial_ray_segment_towards(
+        self, start: Coordinates3D, target: Coordinates3D
+    ) -> RaySegment:
         vec_s = coordinates_as_vector(start)
         vec_t = coordinates_as_vector(target)
-        return Ray(start=start, direction=(vec_t - vec_s))
+        return RaySegment(start=start, direction=(vec_t - vec_s))
 
 
 class SegmentedRayGeometry(Geometry):
@@ -195,7 +210,7 @@ class SegmentedRayGeometry(Geometry):
         return self._ray_segment_length
 
     @abstractmethod
-    def next_ray_segment(self, ray: Ray) -> Optional[Ray]:
+    def next_ray_segment(self, ray: RaySegment) -> Optional[RaySegment]:
         # pylint: disable=W0107
         """
         Returns the next ray segment (straight approximation of the geodesic
@@ -208,7 +223,7 @@ class SegmentedRayGeometry(Geometry):
         pass
 
     @abstractmethod
-    def normalize_initial_ray(self, ray: Ray) -> Ray:
+    def normalize_initial_ray_segment(self, ray: RaySegment) -> RaySegment:
         # pylint: disable=W0107
         """
         Returns the first ray segment (straight approximation of the geodesic
@@ -216,8 +231,10 @@ class SegmentedRayGeometry(Geometry):
         """
         pass
 
-    def intersection_info(self, ray: Ray, face: Face) -> IntersectionInfo:
-        current_ray_segment = self.normalize_initial_ray(ray)
+    def intersection_info(
+        self, ray: RaySegment, face: Face
+    ) -> IntersectionInfo:
+        current_ray_segment = self.normalize_initial_ray_segment(ray)
         for step in range(self.max_steps):
             if not self.is_valid_coordinate(current_ray_segment.start):
                 raise ValueError(
@@ -286,7 +303,7 @@ class RungeKuttaGeometry(Geometry):
         self._max_steps = max_steps
 
     @abstractmethod
-    def length(self, ray: Ray) -> float:
+    def length(self, ray: RaySegment) -> float:
         # pylint: disable=W0107
         """
         Returns the length of the vector with respect to the tangential space.
@@ -295,16 +312,16 @@ class RungeKuttaGeometry(Geometry):
         """
         pass
 
-    def normalized(self, ray: Ray) -> Ray:
+    def normalized(self, ray: RaySegment) -> RaySegment:
         """
         Returns the normalized vector with respect to the tangential space.
 
         :raises: ValueError if ray.start are invalid coordinates
         """
-        return Ray(ray.start, ray.direction / self.length(ray))
+        return RaySegment(ray.start, ray.direction / self.length(ray))
 
     @abstractmethod
-    def geodesic_equation(self) -> Callable[[RayDelta], RayDelta]:
+    def geodesic_equation(self) -> Callable[[RaySegmentDelta], RaySegmentDelta]:
         # pylint: disable=W0107
         """
         Returns the equation of motion for the geodesics encoded in a function
@@ -312,7 +329,9 @@ class RungeKuttaGeometry(Geometry):
         """
         pass
 
-    def intersection_info(self, ray: Ray, face: Face) -> IntersectionInfo:
+    def intersection_info(
+        self, ray: RaySegment, face: Face
+    ) -> IntersectionInfo:
         steps = 0
         total_ray_depth = 0.0
         ray = self.normalized(ray)
@@ -337,13 +356,15 @@ class RungeKuttaGeometry(Geometry):
             # TODO: check if Runge-Kutta-Nystrom is more suitable/efficient
             ray_delta = runge_kutta_4_delta(
                 self.geodesic_equation(),
-                ray_as_delta(ray),
+                ray_segment_as_delta(ray),
                 self._step_size,
             )
 
             # representation of the change of the ray's position as a ray
             # segment
-            ray_segment = Ray(start=ray.start, direction=ray_delta.coords_delta)
+            ray_segment = RaySegment(
+                start=ray.start, direction=ray_delta.coords_delta
+            )
 
             relative_ray_segment_depth = intersection_ray_depth(
                 ray=ray_segment, is_ray_segment=True, face=face
@@ -356,10 +377,12 @@ class RungeKuttaGeometry(Geometry):
 
             steps += 1
             total_ray_depth += self.length(ray_segment)
-            ray = add_ray_delta(ray, ray_delta)
+            ray = add_ray_segment_delta(ray, ray_delta)
 
         return IntersectionInfo(ray_depth=math.inf)
 
     @abstractmethod
-    def ray_towards(self, start: Coordinates3D, target: Coordinates3D) -> Ray:
+    def initial_ray_segment_towards(
+        self, start: Coordinates3D, target: Coordinates3D
+    ) -> RaySegment:
         pass

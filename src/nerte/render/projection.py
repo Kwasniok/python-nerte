@@ -3,7 +3,7 @@
 from enum import Enum
 
 from nerte.values.coordinates import Coordinates2D
-from nerte.values.ray import Ray
+from nerte.values.ray_segment import RaySegment
 from nerte.world.camera import Camera
 from nerte.geometry.geometry import Geometry
 
@@ -32,35 +32,38 @@ def detector_manifold_coords(
     return Coordinates2D((x0, x1))
 
 
-def orthographic_ray_for_pixel(
+def orthographic_ray_segment_for_pixel(
     camera: Camera, geometry: Geometry, pixel_location: tuple[int, int]
-) -> Ray:
+) -> RaySegment:
     # pylint: disable=W0613
     """
-    Returns the initial ray leaving the cameras detector for a given pixel on
-    the canvas in orthographic projection.
+    Returns the initial ray segment leaving the cameras detector for a given
+    pixel on the canvas in orthographic projection.
 
-    NOTE: All initial rays start on the detector's manifold and are normal to it.
+    NOTE: All initial ray segments start on the detector's manifold and are
+    normal to it.
     """
     coords_2d = detector_manifold_coords(camera, pixel_location)
     start = camera.detector_manifold.embed(coords_2d)
     direction = camera.detector_manifold.surface_normal(coords_2d)
-    return Ray(start=start, direction=direction)
+    return RaySegment(start=start, direction=direction)
 
 
-def perspective_ray_for_pixel(
+def perspective_ray_segment_for_pixel(
     camera: Camera, geometry: Geometry, pixel_location: tuple[int, int]
-) -> Ray:
+) -> RaySegment:
     """
-    Returns the initial ray leaving the cameras detector for a given pixel on
-    the canvas in perspective projection.
+    Returns the initial ray segment leaving the cameras detector for a given
+    pixel on the canvas in perspective projection.
 
-    NOTE: All initial rays start at the camera's location and pass through the
-          detector's manifold.
+    NOTE: All initial ray segments start at the camera's location and pass
+    through the detector's manifold.
     """
     coords_2d = detector_manifold_coords(camera, pixel_location)
     target = camera.detector_manifold.embed(coords_2d)
-    return geometry.ray_towards(start=camera.location, target=target)
+    return geometry.initial_ray_segment_towards(
+        start=camera.location, target=target
+    )
 
 
 class ProjectionMode(Enum):
@@ -70,7 +73,7 @@ class ProjectionMode(Enum):
     PERSPECTIVE = "PERSPECTIVE"
 
 
-ray_for_pixel = {
-    ProjectionMode.ORTHOGRAPHIC: orthographic_ray_for_pixel,
-    ProjectionMode.PERSPECTIVE: perspective_ray_for_pixel,
+ray_segment_for_pixel = {
+    ProjectionMode.ORTHOGRAPHIC: orthographic_ray_segment_for_pixel,
+    ProjectionMode.PERSPECTIVE: perspective_ray_segment_for_pixel,
 }

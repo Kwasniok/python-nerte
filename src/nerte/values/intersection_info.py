@@ -71,3 +71,16 @@ class IntersectionInfo:
         if self._ray_depth == math.inf:
             miss_reasons.add(IntersectionInfo.MissReason.NO_INTERSECTION)
         return miss_reasons
+
+
+class IntersectionInfos(Enum):
+
+    # TODO: add tests
+
+    NO_INTERSECTION = IntersectionInfo(
+        ray_depth=math.inf,
+        miss_reasons=set((IntersectionInfo.MissReason.NO_INTERSECTION,)),
+    )
+    RAY_LEFT_MANIFOLD = IntersectionInfo(
+        miss_reasons=set((IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD,))
+    )

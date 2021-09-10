@@ -4,7 +4,7 @@ import math
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.util.convert import coordinates_as_vector
-from nerte.values.ray import Ray
+from nerte.values.ray_segment import RaySegment
 from nerte.values.linalg import AbstractVector, cross, normalized
 from nerte.geometry.geometry import SegmentedRayGeometry
 
@@ -31,13 +31,15 @@ class SwirlGeometry(SegmentedRayGeometry):
     def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
         return True
 
-    def ray_towards(self, start: Coordinates3D, target: Coordinates3D) -> Ray:
+    def initial_ray_segment_towards(
+        self, start: Coordinates3D, target: Coordinates3D
+    ) -> RaySegment:
         # TODO: This method is crude and incorrect.
         vec_s = coordinates_as_vector(start)
         vec_t = coordinates_as_vector(target)
-        return Ray(start=start, direction=(vec_t - vec_s))
+        return RaySegment(start=start, direction=(vec_t - vec_s))
 
-    def next_ray_segment(self, ray: Ray) -> Ray:
+    def next_ray_segment(self, ray: RaySegment) -> RaySegment:
         # pylint: disable=C0103
 
         # old segment
@@ -60,10 +62,10 @@ class SwirlGeometry(SegmentedRayGeometry):
         # ensure ray segment length
         # NOTE: No exception handling, since d_new is never a zero vector
         d_new = normalized(d_new) * self.ray_segment_length()
-        return Ray(start=s_new, direction=d_new)
+        return RaySegment(start=s_new, direction=d_new)
 
-    def normalize_initial_ray(self, ray: Ray) -> Ray:
-        return Ray(
+    def normalize_initial_ray_segment(self, ray: RaySegment) -> RaySegment:
+        return RaySegment(
             start=ray.start,
             direction=normalized(ray.direction) * self.ray_segment_length(),
         )

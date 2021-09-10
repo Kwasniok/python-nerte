@@ -14,8 +14,8 @@ import math
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, length, normalized
-from nerte.values.ray import Ray
-from nerte.values.ray_delta import RayDelta
+from nerte.values.ray_segment import RaySegment
+from nerte.values.ray_segment_delta import RaySegmentDelta
 from nerte.values.face import Face
 from nerte.values.util.convert import coordinates_as_vector
 from nerte.geometry.geometry import (
@@ -99,7 +99,7 @@ class GeometryTestCase(unittest.TestCase):
 # TODO: add dedicated tests for intersection infos where ray leaves the manifold
 
 
-class IntersectionRayDepthRayTest(GeometryTestCase):
+class IntersectionRayDepthTest(GeometryTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -117,33 +117,41 @@ class IntersectionRayDepthRayTest(GeometryTestCase):
         v = AbstractVector((1.0, 1.0, 1.0))
         # rays pointing 'forwards'
         # towards the face and parallel to face normal
-        self.intersecting_rays = [Ray(start=s, direction=v * 0.1) for s in ss1]
+        self.intersecting_rays = [
+            RaySegment(start=s, direction=v * 0.1) for s in ss1
+        ]
         self.ray_depths = [10 / 3, 20 / 9, 20 / 9, 20 / 9]
         self.intersecting_ray_segments = [
-            Ray(start=s, direction=v * 1.0) for s in ss1
+            RaySegment(start=s, direction=v * 1.0) for s in ss1
         ]
         self.ray_segment_depths = [1 / 3, 2 / 9, 2 / 9, 2 / 9]
         self.non_intersecting_ray_segments = [
-            Ray(start=s, direction=v * 0.1) for s in ss1
+            RaySegment(start=s, direction=v * 0.1) for s in ss1
         ]
         # rays pointing 'backwards'
         # away from the face and parallel to face normal
-        self.non_intersecting_rays = [Ray(start=s, direction=-v) for s in ss1]
+        self.non_intersecting_rays = [
+            RaySegment(start=s, direction=-v) for s in ss1
+        ]
         self.non_intersecting_ray_segments += [
-            Ray(start=s, direction=-v) for s in ss1
+            RaySegment(start=s, direction=-v) for s in ss1
         ]
         s21 = Coordinates3D((0.0, 0.6, 0.6))  # 'complement' of p1
         s22 = Coordinates3D((0.6, 0.0, 0.6))  # 'complement' of p2
         s23 = Coordinates3D((0.6, 0.6, 0.0))  # 'complement' of p3
         ss2 = (s21, s22, s23)
         # rays parallel to face normal but starting 'outside' the face
-        self.non_intersecting_rays += [Ray(start=s, direction=v) for s in ss2]
-        self.non_intersecting_rays += [Ray(start=s, direction=-v) for s in ss2]
-        self.non_intersecting_ray_segments += [
-            Ray(start=s, direction=v) for s in ss2
+        self.non_intersecting_rays += [
+            RaySegment(start=s, direction=v) for s in ss2
+        ]
+        self.non_intersecting_rays += [
+            RaySegment(start=s, direction=-v) for s in ss2
         ]
         self.non_intersecting_ray_segments += [
-            Ray(start=s, direction=-v) for s in ss2
+            RaySegment(start=s, direction=v) for s in ss2
+        ]
+        self.non_intersecting_ray_segments += [
+            RaySegment(start=s, direction=-v) for s in ss2
         ]
 
         # convert to proper lists
@@ -222,7 +230,9 @@ class CarthesianGeometryIntersectsTest1(GeometryTestCase):
         s3 = Coordinates3D((0.0, 0.0, 0.3))  # one third of p3
         ss = (s0, s1, s2, s3)
         v = AbstractVector((1.0, 1.0, 1.0))
-        self.intersecting_rays = list(Ray(start=s, direction=v) for s in ss)
+        self.intersecting_rays = list(
+            RaySegment(start=s, direction=v) for s in ss
+        )
 
     def test_euclidean_intersects_1(self) -> None:
         """
@@ -254,7 +264,7 @@ class CarthesianGeometryIntersectsTest2(GeometryTestCase):
         ss = (s0, s1, s2, s3)
         v = AbstractVector((1.0, 1.0, 1.0))
         self.non_intersecting_rays = list(
-            Ray(start=s, direction=-v) for s in ss
+            RaySegment(start=s, direction=-v) for s in ss
         )
 
     def test_euclidean_intersects_2(self) -> None:
@@ -285,7 +295,9 @@ class CarthesianGeometryIntersectsTest3(GeometryTestCase):
         s3 = Coordinates3D((0.6, 0.6, 0.0))  # 'complement' of p3
         ss = (s1, s2, s3)
         v = AbstractVector((1.0, 1.0, 1.0))
-        self.non_intersecting_rays = list(Ray(start=s, direction=v) for s in ss)
+        self.non_intersecting_rays = list(
+            RaySegment(start=s, direction=v) for s in ss
+        )
 
     def test_euclidean_intersects_3(self) -> None:
         """
@@ -316,7 +328,7 @@ class CarthesianGeometryIntersectsTest4(GeometryTestCase):
         ss = (s1, s2, s3)
         v = AbstractVector((1.0, 1.0, 1.0))
         self.non_intersecting_rays = list(
-            Ray(start=s, direction=-v) for s in ss
+            RaySegment(start=s, direction=-v) for s in ss
         )
 
     def test_euclidean_intersects_4(self) -> None:
@@ -343,14 +355,14 @@ def _dummy_segmented_ray_geometry_class() -> Type[SegmentedRayGeometry]:
             x, _, _ = coordinates
             return -1 < x < 1
 
-        def ray_towards(
+        def initial_ray_segment_towards(
             self, start: Coordinates3D, target: Coordinates3D
-        ) -> Ray:
+        ) -> RaySegment:
             vec_s = coordinates_as_vector(start)
             vec_t = coordinates_as_vector(target)
-            return Ray(start=start, direction=(vec_t - vec_s))
+            return RaySegment(start=start, direction=(vec_t - vec_s))
 
-        def next_ray_segment(self, ray: Ray) -> Optional[Ray]:
+        def next_ray_segment(self, ray: RaySegment) -> Optional[RaySegment]:
             # old segment
             s_old = ray.start
             d_old = ray.direction
@@ -361,11 +373,11 @@ def _dummy_segmented_ray_geometry_class() -> Type[SegmentedRayGeometry]:
             d_new = d_old
             # new segment
             if self.is_valid_coordinate(s_new):
-                return Ray(start=s_new, direction=d_new)
+                return RaySegment(start=s_new, direction=d_new)
             return None
 
-        def normalize_initial_ray(self, ray: Ray) -> Ray:
-            return Ray(
+        def normalize_initial_ray_segment(self, ray: RaySegment) -> RaySegment:
+            return RaySegment(
                 start=ray.start,
                 direction=normalized(ray.direction) * self.ray_segment_length(),
             )
@@ -440,13 +452,13 @@ class SegmentedRayGeometryRayTowardsTest(GeometryTestCase):
         self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_length=1.0)
         self.coords1 = Coordinates3D((0.0, 0.0, 0.0))
         self.coords2 = Coordinates3D((1.0, 2.0, 3.0))
-        self.ray = Ray(
+        self.ray = RaySegment(
             start=self.coords1, direction=AbstractVector((1.0, 2.0, 3.0))
         )
 
-    def test_ray_towards(self) -> None:
+    def test_initial_ray_segment_towards(self) -> None:
         """Tests ray towards coordinate."""
-        ray = self.geo.ray_towards(self.coords1, self.coords2)
+        ray = self.geo.initial_ray_segment_towards(self.coords1, self.coords2)
         self.assertCoordinates3DEquiv(ray.start, self.ray.start)
         self.assertVectorEquiv(ray.direction, self.ray.direction)
 
@@ -456,11 +468,11 @@ class SegmentedRayGeometryNextRaySegmentTest(GeometryTestCase):
         DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
         self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_length=1.0)
         direction = AbstractVector((0.75, 2.0, 3.0))
-        self.ray1 = Ray(
+        self.ray1 = RaySegment(
             start=Coordinates3D((0.0, 0.0, 0.0)),
             direction=direction,
         )
-        self.ray2 = Ray(
+        self.ray2 = RaySegment(
             start=Coordinates3D((0.75, 2.0, 3.0)),
             direction=direction,
         )
@@ -483,19 +495,19 @@ class SegmentedRayGeometryNormalizedInitialRayTest(GeometryTestCase):
         DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
         self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_length=1.0)
         corrds0 = Coordinates3D((0.0, 0.0, 0.0))
-        self.ray = Ray(
+        self.ray = RaySegment(
             start=corrds0,
             direction=AbstractVector((1.0, 2.0, 3.0)),
         )
-        self.ray_normalized = Ray(
+        self.ray_normalized = RaySegment(
             start=corrds0,
             direction=normalized(AbstractVector((1.0, 2.0, 3.0)))
             * self.geo.ray_segment_length(),
         )
 
-    def test_normalize_initial_ray(self) -> None:
+    def test_normalize_initial_ray_segment(self) -> None:
         """Tests normalized initial ray segment."""
-        ray = self.geo.normalize_initial_ray(self.ray)
+        ray = self.geo.normalize_initial_ray_segment(self.ray)
         self.assertTrue(ray is not None)
         if ray is not None:
             self.assertCoordinates3DEquiv(ray.start, self.ray_normalized.start)
@@ -506,7 +518,7 @@ class SegmentedRayGeometryIntersectsTest(GeometryTestCase):
     def setUp(self) -> None:
         DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
         self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_length=1.0)
-        self.ray = Ray(
+        self.ray = RaySegment(
             start=Coordinates3D((0.0, 0.0, 0.0)),
             direction=AbstractVector((1.0, 1.0, 1.0)),
         )
@@ -518,7 +530,7 @@ class SegmentedRayGeometryIntersectsTest(GeometryTestCase):
         p1 = Coordinates3D((0.0, 10.0, 0.0))
         p2 = Coordinates3D((0.0, 0.0, 10.0))
         self.face2 = Face(p0, p1, p2)
-        self.invalid_ray = Ray(
+        self.invalid_ray = RaySegment(
             start=Coordinates3D((-7.0, -7.0, -7.0)),
             direction=AbstractVector((100.0, 100.0, 100.0)),
         )
@@ -550,26 +562,30 @@ def _make_dummy_runge_kutta_geometry() -> Type[RungeKuttaGeometry]:
             )
 
             # carthesian & euclidean geometry
-            def geodesic_equation(ray: RayDelta) -> RayDelta:
-                return RayDelta(ray.velocity_delta, AbstractVector((0, 0, 0)))
+            def geodesic_equation(ray: RaySegmentDelta) -> RaySegmentDelta:
+                return RaySegmentDelta(
+                    ray.velocity_delta, AbstractVector((0, 0, 0))
+                )
 
             self._geodesic_equation = geodesic_equation
 
         def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
             return True
 
-        def length(self, ray: Ray) -> float:
+        def length(self, ray: RaySegment) -> float:
             return length(ray.direction)
 
-        def geodesic_equation(self) -> Callable[[RayDelta], RayDelta]:
+        def geodesic_equation(
+            self,
+        ) -> Callable[[RaySegmentDelta], RaySegmentDelta]:
             return self._geodesic_equation
 
-        def ray_towards(
+        def initial_ray_segment_towards(
             self, start: Coordinates3D, target: Coordinates3D
-        ) -> Ray:
+        ) -> RaySegment:
             vec_s = coordinates_as_vector(start)
             vec_t = coordinates_as_vector(target)
-            return Ray(start=start, direction=(vec_t - vec_s))
+            return RaySegment(start=start, direction=(vec_t - vec_s))
 
     return DummyRungeKuttaGeometry
 
@@ -627,7 +643,7 @@ class RungeKuttaGeometryVectorTest(GeometryTestCase):
     def setUp(self) -> None:
         v = AbstractVector((1.0, -2.0, 3.0))
         self.coords = Coordinates3D((0.0, 0.0, 0.0))
-        self.ray = Ray(start=self.coords, direction=v)
+        self.ray = RaySegment(start=self.coords, direction=v)
         self.n = AbstractVector((1.0, -2.0, 3.0)) * (14.0) ** -0.5
         # geometry
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
@@ -670,7 +686,7 @@ class RungeKuttaGeometryIntersectsTest(GeometryTestCase):
         v = AbstractVector((1.0, 1.0, 1.0))
         # rays pointing 'forwards'
         # towards the face and parallel to face normal
-        self.intersecting_rays = [Ray(start=s, direction=v) for s in ss1]
+        self.intersecting_rays = [RaySegment(start=s, direction=v) for s in ss1]
         self.ray_depths = [
             (1 / 3) ** 0.5,
             2 * 3 ** (-3 / 2),
@@ -679,14 +695,20 @@ class RungeKuttaGeometryIntersectsTest(GeometryTestCase):
         ]
         # rays pointing 'backwards'
         # away from the face and parallel to face normal
-        self.non_intersecting_rays = [Ray(start=s, direction=-v) for s in ss1]
+        self.non_intersecting_rays = [
+            RaySegment(start=s, direction=-v) for s in ss1
+        ]
         s21 = Coordinates3D((0.0, 0.6, 0.6))  # 'complement' of p1
         s22 = Coordinates3D((0.6, 0.0, 0.6))  # 'complement' of p2
         s23 = Coordinates3D((0.6, 0.6, 0.0))  # 'complement' of p3
         ss2 = (s21, s22, s23)
         # rays parallel to face normal but starting 'outside' the face
-        self.non_intersecting_rays += [Ray(start=s, direction=v) for s in ss2]
-        self.non_intersecting_rays += [Ray(start=s, direction=-v) for s in ss2]
+        self.non_intersecting_rays += [
+            RaySegment(start=s, direction=v) for s in ss2
+        ]
+        self.non_intersecting_rays += [
+            RaySegment(start=s, direction=-v) for s in ss2
+        ]
 
         # convert to proper lists
         self.intersecting_rays = list(self.intersecting_rays)
