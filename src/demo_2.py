@@ -15,6 +15,7 @@ from nerte.geometry.geometry import Geometry
 from nerte.geometry.cylindircal_swirl_geometry import (
     SwirlCylindricRungeKuttaGeometry,
 )
+from nerte.render.projection import ProjectionMode
 from nerte.render.image_renderer import ImageRenderer
 from nerte.util.random_color_generator import RandomColorGenerator
 
@@ -117,14 +118,16 @@ def render(
     perspective projection.
     """
 
-    for mode in ImageRenderer.Mode:
+    for projection_mode in ProjectionMode:
         # for mode in (ImageRenderer.Mode.PERSPECTIVE,):
-        print(f"rendering {mode.name} projection ...")
-        image_renderer = ImageRenderer(mode=mode)
+        print(f"rendering {projection_mode.name} projection ...")
+        image_renderer = ImageRenderer(projection_mode=projection_mode)
         image_renderer.render(scene=scene, geometry=geometry)
         image = image_renderer.last_image()
         if image is not None:
-            image.save(f"{output_path}/{file_prefix}_{mode.name}.png")
+            image.save(
+                f"{output_path}/{file_prefix}_{projection_mode.name}.png"
+            )
             if show:
                 image.show()
 

@@ -15,6 +15,7 @@ from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
 from nerte.geometry.geometry import CarthesianGeometry
+from nerte.render.projection import ProjectionMode
 from nerte.render.image_renderer import ImageRenderer
 
 
@@ -49,7 +50,7 @@ class ImageRendererTest(unittest.TestCase):
 
     def test_image_renderer_render(self) -> None:
         """Tests render."""
-        r = ImageRenderer(mode=ImageRenderer.Mode.ORTHOGRAPHIC)
+        r = ImageRenderer(projection_mode=ProjectionMode.ORTHOGRAPHIC)
         self.assertTrue(r.last_image() is None)
         r.render(scene=self.scene, geometry=self.geometry)
         self.assertTrue(r.last_image() is not None)
@@ -88,10 +89,10 @@ class ImageRendererProjectionTest(unittest.TestCase):
 
         # renderers
         self.renderer_ortho = ImageRenderer(
-            mode=ImageRenderer.Mode.ORTHOGRAPHIC,
+            projection_mode=ProjectionMode.ORTHOGRAPHIC,
         )
         self.renderer_persp = ImageRenderer(
-            mode=ImageRenderer.Mode.PERSPECTIVE,
+            projection_mode=ProjectionMode.PERSPECTIVE,
         )
 
         # expected outcome in othographic and perspective projection:
