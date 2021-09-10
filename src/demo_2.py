@@ -142,7 +142,6 @@ def main() -> None:
         max_ray_length=math.inf,
         step_size=0.1,
         max_steps=50,
-        # swirl_strength=5.0,
         swirl_strength=5.0,
     )
 
