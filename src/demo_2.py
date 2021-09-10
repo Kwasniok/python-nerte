@@ -109,6 +109,7 @@ def make_scene(canvas_dimension: int) -> Scene:
 def render(
     scene: Scene,
     geometry: Geometry,
+    render_ray_depth: bool,
     output_path: str,
     file_prefix: str,
     show: bool,
@@ -121,7 +122,9 @@ def render(
     for projection_mode in ProjectionMode:
         # for mode in (ImageRenderer.Mode.PERSPECTIVE,):
         print(f"rendering {projection_mode.name} projection ...")
-        image_renderer = ImageRenderer(projection_mode=projection_mode)
+        image_renderer = ImageRenderer(
+            projection_mode=projection_mode, render_ray_depth=render_ray_depth
+        )
         image_renderer.render(scene=scene, geometry=geometry)
         image = image_renderer.last_image()
         if image is not None:
@@ -145,13 +148,13 @@ def main() -> None:
         swirl_strength=5.0,
     )
 
-    # NOTE: Set show to False if images cannot be displayed.
     render(
         scene=scene,
         geometry=geo,
+        render_ray_depth=False,  # enble to render ray depth instead
         output_path="../images",
         file_prefix="demo_2",
-        show=False,
+        show=True,  # disable if images cannot be displayed
     )
 
 
