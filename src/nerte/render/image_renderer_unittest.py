@@ -17,6 +17,22 @@ from nerte.render.projection import ProjectionMode
 from nerte.render.image_renderer import ImageRenderer
 
 
+class ImageRendererConstructorTest(unittest.TestCase):
+    def test_image_renderer_constructor(self) -> None:
+        """Tests constructor."""
+
+        r = ImageRenderer(projection_mode=ProjectionMode.ORTHOGRAPHIC)
+        self.assertTrue(r.is_printing_warings())
+        r = ImageRenderer(
+            projection_mode=ProjectionMode.ORTHOGRAPHIC, print_warings=True
+        )
+        self.assertTrue(r.is_printing_warings())
+        r = ImageRenderer(
+            projection_mode=ProjectionMode.ORTHOGRAPHIC, print_warings=False
+        )
+        self.assertFalse(r.is_printing_warings())
+
+
 class ImageRendererTest(unittest.TestCase):
     def setUp(self) -> None:
         # camera

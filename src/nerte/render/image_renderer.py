@@ -14,10 +14,17 @@ from nerte.render.projection import ProjectionMode
 class ImageRenderer(Renderer):
     """Renderer which stores the result in an image."""
 
-    def __init__(self, projection_mode: ProjectionMode):
+    def __init__(
+        self, projection_mode: ProjectionMode, print_warings: bool = True
+    ):
 
         self.projection_mode = projection_mode
         self._last_image: Optional[Image.Image] = None
+        self._print_warings = print_warings
+
+    def is_printing_warings(self) -> bool:
+        """Returns True, iff renderer should print warings."""
+        return self._print_warings
 
     def render(self, scene: Scene, geometry: Geometry) -> None:
         raise NotImplementedError(

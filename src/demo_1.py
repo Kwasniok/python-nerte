@@ -157,6 +157,7 @@ def render(
         if render_ray_depth:
             image_renderer: ImageRenderer = ImageRayDepthRenderer(
                 projection_mode=projection_mode,
+                print_warings=False,
                 min_ray_depth=0.0,
                 max_ray_depth=2.0,
             )

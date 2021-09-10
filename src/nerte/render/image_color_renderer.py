@@ -15,8 +15,12 @@ from nerte.render.projection import ProjectionMode, ray_for_pixel
 class ImageColorRenderer(ImageRenderer):
     """Renderer which renders the scene in the usual way."""
 
-    def __init__(self, projection_mode: ProjectionMode):
-        ImageRenderer.__init__(self, projection_mode)
+    def __init__(
+        self, projection_mode: ProjectionMode, print_warings: bool = False
+    ):
+        ImageRenderer.__init__(
+            self, projection_mode, print_warings=print_warings
+        )
         self._color_failure = Color(255, 0, 255)
 
     def render_pixel(
@@ -35,12 +39,13 @@ class ImageColorRenderer(ImageRenderer):
 
         # ray must start with valid coordinates
         if not geometry.is_valid_coordinate(ray.start):
-            print(
-                f"Info: Cannot render pixel {pixel_location} since its camera"
-                f" ray={ray} starts with invalid coordinates."
-                f"\n      The pixel color is set to {self._color_failure.rgb}"
-                f" instead."
-            )
+            if self.is_printing_warings():
+                print(
+                    f"Info: Cannot render pixel {pixel_location} since its camera"
+                    f" ray={ray} starts with invalid coordinates."
+                    f"\n      The pixel color is set to {self._color_failure.rgb}"
+                    f" instead."
+                )
             return self._color_failure
 
         # detect intersections with objects

@@ -31,6 +31,7 @@ class ImageRayDepthRenderer(ImageRenderer):
     def __init__(
         self,
         projection_mode: ProjectionMode,
+        print_warings: bool = False,
         min_ray_depth: Optional[float] = None,
         max_ray_depth: Optional[float] = None,
     ):
@@ -55,7 +56,9 @@ class ImageRayDepthRenderer(ImageRenderer):
                 f" min_ray_depth must be smaller than max_ray_depth."
             )
 
-        ImageRenderer.__init__(self, projection_mode)
+        ImageRenderer.__init__(
+            self, projection_mode, print_warings=print_warings
+        )
         self._color_failure = Color(255, 0, 255)
         self._color_no_intersection = Color(0, 0, 255)
         self._min_ray_depth = min_ray_depth
@@ -86,12 +89,13 @@ class ImageRayDepthRenderer(ImageRenderer):
 
         # ray must start with valid coordinates
         if not geometry.is_valid_coordinate(ray.start):
-            print(
-                f"Info: Cannot render pixel {pixel_location} since its camera"
-                f" ray={ray} starts with invalid coordinates."
-                f"\n      The pixel ray depth is set to {np.nan}"
-                f" instead."
-            )
+            if self.is_printing_warings():
+                print(
+                    f"Info: Cannot render pixel {pixel_location} since its camera"
+                    f" ray={ray} starts with invalid coordinates."
+                    f"\n      The pixel ray depth is set to {np.nan}"
+                    f" instead."
+                )
             return np.nan
 
         # detect intersections with objects

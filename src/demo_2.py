@@ -126,7 +126,8 @@ def render(
         print(f"rendering {projection_mode.name} projection ...")
         if render_ray_depth:
             image_renderer: ImageRenderer = ImageRayDepthRenderer(
-                projection_mode=projection_mode
+                projection_mode=projection_mode,
+                print_warings=False,
             )
         else:
             image_renderer = ImageColorRenderer(projection_mode=projection_mode)
