@@ -91,9 +91,6 @@ def intersection_ray_depth(ray: Ray, is_ray_segment: bool, face: Face) -> float:
     Note: If the returned value t is finite, the intersection occurred at
           x = ray.start + ray.direction * t
     """
-
-    # TODO: fix bug, when ray inside the face
-
     # pylint: disable=C0103
 
     # (tivially) convert face coordinates to vectors
@@ -126,11 +123,12 @@ def intersection_ray_depth(ray: Ray, is_ray_segment: bool, face: Face) -> float:
     b = dot(u, n)
 
     if b == 0:
-        if a != 0:
-            # no intersection possible
-            return False
-        # ray starts in plane
-        return True  # this is arbitrary
+        # ray is parallel to plane
+        if a == 0:
+            # ray starts inside plane
+            return 0.0  # this value somewhat arbitrary
+        # ray starts outside of plane
+        return math.inf  # no intersection possible
 
     t = a / b
 
