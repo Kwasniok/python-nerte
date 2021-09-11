@@ -15,6 +15,7 @@ class IntersectionInfo:
         NO_INTERSECTION = 1
         RAY_LEFT_MANIFOLD = 2
 
+    # reduce miss reasons to one optinal item
     def __init__(
         self,
         ray_depth: float = math.inf,
