@@ -8,7 +8,7 @@ import unittest
 
 import math
 
-from nerte.values.intersection_info import IntersectionInfo
+from nerte.values.intersection_info import IntersectionInfo, IntersectionInfos
 
 
 class IntersectionInfoConstructorTest(unittest.TestCase):
@@ -81,6 +81,15 @@ class IntersectionInfoPropertiesTest(unittest.TestCase):
                 self.assertFalse(info.hits())
                 self.assertTrue(info.misses())
                 self.assertTrue(info.miss_reasons() == miss_reasons)
+
+
+class IntersectionInfosPropertiesTest(unittest.TestCase):
+    def test_constants(self) -> None:
+        """Tests if constants are correct."""
+        self.assertTrue(IntersectionInfos.NO_INTERSECTION.value.misses())
+        self.assertTrue(
+            math.isinf(IntersectionInfos.NO_INTERSECTION.value.ray_depth())
+        )
 
 
 if __name__ == "__main__":
