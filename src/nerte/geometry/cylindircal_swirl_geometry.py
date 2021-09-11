@@ -96,6 +96,11 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
                 f"Cannot create ray from coordinates."
                 f" Start coordinates {start} are invalid."
             )
+        if not self.is_valid_coordinate(target):
+            raise ValueError(
+                f"Cannot create ray from coordinates."
+                f" Target coordinates {target} are invalid."
+            )
         # TODO: This method is incorrect
         vec_s = coordinates_as_vector(start)
         vec_t = coordinates_as_vector(target)

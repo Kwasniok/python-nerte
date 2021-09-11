@@ -63,6 +63,16 @@ def _make_dummy_runge_kutta_geometry() -> Type[RungeKuttaGeometry]:
         def ray_from_coords(
             self, start: Coordinates3D, target: Coordinates3D
         ) -> RungeKuttaGeometry.Ray:
+            if not self.is_valid_coordinate(start):
+                raise ValueError(
+                    f"Cannot create ray from coordinates."
+                    f" Start coordinates {start} are invalid."
+                )
+            if not self.is_valid_coordinate(target):
+                raise ValueError(
+                    f"Cannot create ray from coordinates."
+                    f" Target coordinates {target} are invalid."
+                )
             vec_s = coordinates_as_vector(start)
             vec_t = coordinates_as_vector(target)
             return RungeKuttaGeometry.Ray(
