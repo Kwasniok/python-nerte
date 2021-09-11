@@ -24,12 +24,12 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
 
     def __init__(
         self,
-        max_ray_length: float,
+        max_ray_depth: float,
         step_size: float,
         max_steps: int,
         swirl_strength: float,
     ):
-        RungeKuttaGeometry.__init__(self, max_ray_length, step_size, max_steps)
+        RungeKuttaGeometry.__init__(self, max_ray_depth, step_size, max_steps)
 
         if not -math.inf < swirl_strength < math.inf:
             raise ValueError(

@@ -36,68 +36,68 @@ class CylindricRungeKuttaGeometryConstructorTest(GeometryTestCase):
     def test_constructor(self) -> None:
         """Tests constructor."""
         CylindricRungeKuttaGeometry(
-            max_ray_length=1.0, step_size=1.0, max_steps=1
+            max_ray_depth=1.0, step_size=1.0, max_steps=1
         )
-        # invalid max_ray_length
+        # invalid max_ray_depth
         with self.assertRaises(ValueError):
             CylindricRungeKuttaGeometry(
-                max_ray_length=0.0,
+                max_ray_depth=0.0,
                 step_size=1.0,
                 max_steps=1,
             )
         with self.assertRaises(ValueError):
             CylindricRungeKuttaGeometry(
-                max_ray_length=-1.0,
+                max_ray_depth=-1.0,
                 step_size=1.0,
                 max_steps=1,
             )
         with self.assertRaises(ValueError):
             CylindricRungeKuttaGeometry(
-                max_ray_length=-math.inf,
+                max_ray_depth=-math.inf,
                 step_size=1.0,
                 max_steps=1,
             )
         with self.assertRaises(ValueError):
             CylindricRungeKuttaGeometry(
-                max_ray_length=-math.nan,
+                max_ray_depth=-math.nan,
                 step_size=1.0,
                 max_steps=1,
             )
         # invalid step_size
         with self.assertRaises(ValueError):
             CylindricRungeKuttaGeometry(
-                max_ray_length=1.0,
+                max_ray_depth=1.0,
                 step_size=0.0,
                 max_steps=1,
             )
         with self.assertRaises(ValueError):
             CylindricRungeKuttaGeometry(
-                max_ray_length=1.0,
+                max_ray_depth=1.0,
                 step_size=-1.0,
                 max_steps=1,
             )
         with self.assertRaises(ValueError):
             CylindricRungeKuttaGeometry(
-                max_ray_length=1.0,
+                max_ray_depth=1.0,
                 step_size=math.inf,
                 max_steps=1,
             )
         with self.assertRaises(ValueError):
             CylindricRungeKuttaGeometry(
-                max_ray_length=1.0,
+                max_ray_depth=1.0,
                 step_size=math.nan,
                 max_steps=1,
             )
         # invalid max_steps
         with self.assertRaises(ValueError):
             CylindricRungeKuttaGeometry(
-                max_ray_length=1.0,
+                max_ray_depth=1.0,
                 step_size=1,
                 max_steps=0,
             )
         with self.assertRaises(ValueError):
             CylindricRungeKuttaGeometry(
-                max_ray_length=1.0,
+                max_ray_depth=1.0,
                 step_size=1,
                 max_steps=-1,
             )
@@ -106,7 +106,7 @@ class CylindricRungeKuttaGeometryConstructorTest(GeometryTestCase):
 class CylindricRungeKuttaGeometryIsValidCoordinateTest(GeometryTestCase):
     def setUp(self) -> None:
         self.geo = CylindricRungeKuttaGeometry(
-            max_ray_length=1.0, step_size=1.0, max_steps=1
+            max_ray_depth=1.0, step_size=1.0, max_steps=1
         )
         self.valid_coords = (
             Coordinates3D((1.0, 0.0, 0.0)),
@@ -138,7 +138,7 @@ class CylindricRungeKuttaGeometryIsValidCoordinateTest(GeometryTestCase):
 class CylindricRungeKuttaGeometryRayFromTest(GeometryTestCase):
     def setUp(self) -> None:
         self.geo = CylindricRungeKuttaGeometry(
-            max_ray_length=1.0, step_size=0.1, max_steps=10
+            max_ray_depth=1.0, step_size=0.1, max_steps=10
         )
         self.coords1 = Coordinates3D((1.0, 0.0, 0.0))
         self.coords2 = Coordinates3D((1.0, math.pi / 2, 0.0))
@@ -200,7 +200,7 @@ class CylindricRungeKuttaGeometryVectorTest(GeometryTestCase):
         self.ns = tuple(v / length for length in self.lengths)
         # geometry (cylindirc & euclidean)
         self.geo = CylindricRungeKuttaGeometry(
-            max_ray_length=math.inf,
+            max_ray_depth=math.inf,
             step_size=1.0,
             max_steps=10,
         )
@@ -242,7 +242,7 @@ class CylindricRungeKuttaGeometryVectorTest(GeometryTestCase):
 class CylindricRungeKuttaGeometryGeodesicEquationTest(GeometryTestCase):
     def setUp(self) -> None:
         self.geo = CylindricRungeKuttaGeometry(
-            max_ray_length=1.0, step_size=1.0, max_steps=1
+            max_ray_depth=1.0, step_size=1.0, max_steps=1
         )
 
         def geodesic_equation(ray: RaySegmentDelta) -> RaySegmentDelta:
@@ -287,7 +287,7 @@ class CylindricRungeKuttaGeometryGeodesicEquationTest(GeometryTestCase):
 class CylindricRungeKuttaGeometryMetricTest(GeometryTestCase):
     def setUp(self) -> None:
         self.geo = CylindricRungeKuttaGeometry(
-            max_ray_length=1.0, step_size=1.0, max_steps=1
+            max_ray_depth=1.0, step_size=1.0, max_steps=1
         )
         self.coords = (
             Coordinates3D((1.0, 0.0, 0.0)),
@@ -330,7 +330,7 @@ class CylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
         self.faces = list(Face(*ps) for ps in permutations((pnt1, pnt2, pnt3)))
         # geometry (cylindirc & euclidean)
         geo = CylindricRungeKuttaGeometry(
-            max_ray_length=math.inf,
+            max_ray_depth=math.inf,
             step_size=0.1,
             max_steps=25,
         )

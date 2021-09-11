@@ -249,7 +249,7 @@ class ImageColorRendererProjectionFailureTest1(unittest.TestCase):
         self.scene = Scene(camera=cam)
         # geometry
         self.geometry = CylindricRungeKuttaGeometry(
-            max_ray_length=math.inf,
+            max_ray_depth=math.inf,
             step_size=0.1,
             max_steps=2,
         )
@@ -298,7 +298,7 @@ class ImageColorRendererProjectionFailureTest2(unittest.TestCase):
         self.scene = Scene(camera=cam)
         # geometry
         self.geometry = CylindricRungeKuttaGeometry(
-            max_ray_length=math.inf,
+            max_ray_depth=math.inf,
             step_size=0.1,
             max_steps=2,
         )

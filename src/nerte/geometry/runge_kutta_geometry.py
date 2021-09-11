@@ -77,7 +77,7 @@ class RungeKuttaGeometry(Geometry):
             tangent = self._initial_tangent
 
             while (
-                total_ray_depth < geometry.max_ray_length()
+                total_ray_depth < geometry.max_ray_depth()
                 and steps < geometry.max_steps()
             ):
 
@@ -120,15 +120,15 @@ class RungeKuttaGeometry(Geometry):
 
     def __init__(
         self,
-        max_ray_length: float,
+        max_ray_depth: float,
         step_size: float,
         max_steps: int,
     ):
-        if not max_ray_length > 0:
+        if not max_ray_depth > 0:
             raise ValueError(
                 f"Cannot create Runge-Kutta geometry."
                 f" Maximum of ray length must be positive (not"
-                f" {max_ray_length})."
+                f" {max_ray_depth})."
             )
         if not 0 < step_size < math.inf:
             raise ValueError(
@@ -142,18 +142,17 @@ class RungeKuttaGeometry(Geometry):
                 f"Cannot create Runge-Kutta geometry."
                 f" Maximum of steps must be positive (not {max_steps})."
             )
-        self._max_ray_length = max_ray_length
+        self._max_ray_depth = max_ray_depth
         self._step_size = step_size
         self._max_steps = max_steps
 
-    # TODO: rename to max_ray_depth
-    def max_ray_length(self) -> float:
+    def max_ray_depth(self) -> float:
         """
         Returns the maximal depth of a ray.
 
         Rays may only be simulated up to this limit.
         """
-        return self._max_ray_length
+        return self._max_ray_depth
 
     def step_size(self) -> float:
         """

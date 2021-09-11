@@ -41,12 +41,12 @@ def _make_dummy_runge_kutta_geometry() -> Type[RungeKuttaGeometry]:
 
         def __init__(
             self,
-            max_ray_length: float,
+            max_ray_depth: float,
             step_size: float,
             max_steps: int,
         ):
             RungeKuttaGeometry.__init__(
-                self, max_ray_length, step_size, max_steps
+                self, max_ray_depth, step_size, max_steps
             )
 
             # carthesian & euclidean geometry
@@ -112,64 +112,64 @@ class DummyRungeKuttaGeometryConstructorTest(GeometryTestCase):
         DummyRungeKuttaGeometryGeo = self.DummyRungeKuttaGeometryGeo
 
         DummyRungeKuttaGeometryGeo(
-            max_ray_length=1.0, step_size=0.1, max_steps=1
+            max_ray_depth=1.0, step_size=0.1, max_steps=1
         )
-        # invalid max_ray_length
+        # invalid max_ray_depth
         with self.assertRaises(ValueError):
             DummyRungeKuttaGeometryGeo(
-                max_ray_length=-1.0, step_size=0.1, max_steps=1
+                max_ray_depth=-1.0, step_size=0.1, max_steps=1
             )
         with self.assertRaises(ValueError):
             DummyRungeKuttaGeometryGeo(
-                max_ray_length=0.0, step_size=0.1, max_steps=1
+                max_ray_depth=0.0, step_size=0.1, max_steps=1
             )
         with self.assertRaises(ValueError):
             DummyRungeKuttaGeometryGeo(
-                max_ray_length=math.nan, step_size=0.1, max_steps=1
+                max_ray_depth=math.nan, step_size=0.1, max_steps=1
             )
         # invalid step_size
         with self.assertRaises(ValueError):
             DummyRungeKuttaGeometryGeo(
-                max_ray_length=1.0, step_size=0.0, max_steps=1
+                max_ray_depth=1.0, step_size=0.0, max_steps=1
             )
         with self.assertRaises(ValueError):
             DummyRungeKuttaGeometryGeo(
-                max_ray_length=1.0, step_size=-1.0, max_steps=1
+                max_ray_depth=1.0, step_size=-1.0, max_steps=1
             )
         with self.assertRaises(ValueError):
             DummyRungeKuttaGeometryGeo(
-                max_ray_length=1.0, step_size=math.inf, max_steps=1
+                max_ray_depth=1.0, step_size=math.inf, max_steps=1
             )
         with self.assertRaises(ValueError):
             DummyRungeKuttaGeometryGeo(
-                max_ray_length=1.0, step_size=math.nan, max_steps=1
+                max_ray_depth=1.0, step_size=math.nan, max_steps=1
             )
         # invalid max_steps
         with self.assertRaises(ValueError):
             DummyRungeKuttaGeometryGeo(
-                max_ray_length=1.0, step_size=1.0, max_steps=-1
+                max_ray_depth=1.0, step_size=1.0, max_steps=-1
             )
         with self.assertRaises(ValueError):
             DummyRungeKuttaGeometryGeo(
-                max_ray_length=1.0, step_size=0.1, max_steps=0
+                max_ray_depth=1.0, step_size=0.1, max_steps=0
             )
 
 
 class DummyRungeKuttaGeometryPropertiesTest(GeometryTestCase):
     def setUp(self) -> None:
         self.DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
-        self.max_ray_length = 1.0
+        self.max_ray_depth = 1.0
         self.step_size = 0.1
         self.max_steps = 1
         self.geometry = self.DummyRungeKuttaGeometryGeo(
-            max_ray_length=self.max_ray_length,
+            max_ray_depth=self.max_ray_depth,
             step_size=self.step_size,
             max_steps=self.max_steps,
         )
 
     def test_properties(self) -> None:
         """Tests the properties."""
-        self.assertTrue(self.geometry.max_ray_length() == self.max_ray_length)
+        self.assertTrue(self.geometry.max_ray_depth() == self.max_ray_depth)
         self.assertTrue(self.geometry.step_size() == self.step_size)
         self.assertTrue(self.geometry.max_steps() == self.max_steps)
 
@@ -178,7 +178,7 @@ class DummyRungeKuttaGeometryIsValidCoordinateTest(GeometryTestCase):
     def setUp(self) -> None:
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.geo = DummyRungeKuttaGeometryGeo(
-            max_ray_length=1.0, step_size=0.1, max_steps=10
+            max_ray_depth=1.0, step_size=0.1, max_steps=10
         )
         self.valid_coords = (Coordinates3D((0.0, 0.0, 0.0)),)
         self.invalid_coords = (
@@ -201,7 +201,7 @@ class RungeKuttaGeometryRayConstructorTest(GeometryTestCase):
     def setUp(self) -> None:
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.geo = DummyRungeKuttaGeometryGeo(
-            max_ray_length=1.0,
+            max_ray_depth=1.0,
             step_size=0.1,  # enforce multiple steps until hit
             max_steps=10,
         )
@@ -222,7 +222,7 @@ class RungeKuttaGeometryRayPropertiesTest(GeometryTestCase):
     def setUp(self) -> None:
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.geo = DummyRungeKuttaGeometryGeo(
-            max_ray_length=1.0,
+            max_ray_depth=1.0,
             step_size=0.1,  # enforce multiple steps until hit
             max_steps=10,
         )
@@ -255,7 +255,7 @@ class RungeKuttaGeometryRayIntersectsTest(GeometryTestCase):
         # geometry (carthesian & euclidean)
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.geo = DummyRungeKuttaGeometryGeo(
-            max_ray_length=1.0,
+            max_ray_depth=1.0,
             step_size=0.1,  # enforce multiple steps until hit
             max_steps=10,
         )
@@ -319,7 +319,7 @@ class DummyRungeKuttaGeometryRayFromTest(GeometryTestCase):
     def setUp(self) -> None:
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.geo = DummyRungeKuttaGeometryGeo(
-            max_ray_length=1.0, step_size=0.1, max_steps=10
+            max_ray_depth=1.0, step_size=0.1, max_steps=10
         )
         self.coords1 = Coordinates3D((0.0, 0.0, 0.0))
         self.coords2 = Coordinates3D((0.0, 1.0, 2.0))
@@ -361,7 +361,7 @@ class RungeKuttaGeometryVectorTest(GeometryTestCase):
         # geometry
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.geo = DummyRungeKuttaGeometryGeo(
-            max_ray_length=math.inf, step_size=1.0, max_steps=10
+            max_ray_depth=math.inf, step_size=1.0, max_steps=10
         )
 
     def test_dummy_runge_kutta_geometry_length(self) -> None:

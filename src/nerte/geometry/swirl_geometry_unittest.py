@@ -21,40 +21,40 @@ from nerte.geometry.swirl_geometry import SwirlGeometry
 class SwirlGeometryConstructorTest(GeometryTestCase):
     def test_constructor(self) -> None:
         """Tests constructor."""
-        SwirlGeometry(max_steps=1, max_ray_length=1.0, bend_factor=0.0)
+        SwirlGeometry(max_steps=1, max_ray_depth=1.0, bend_factor=0.0)
         # invalid max_steps
         with self.assertRaises(ValueError):
-            SwirlGeometry(max_steps=0, max_ray_length=1.0, bend_factor=0.0)
+            SwirlGeometry(max_steps=0, max_ray_depth=1.0, bend_factor=0.0)
         # invalid ray_segment_length
         with self.assertRaises(ValueError):
-            SwirlGeometry(max_steps=1, max_ray_length=0.0, bend_factor=0.0)
+            SwirlGeometry(max_steps=1, max_ray_depth=0.0, bend_factor=0.0)
         with self.assertRaises(ValueError):
-            SwirlGeometry(max_steps=1, max_ray_length=math.inf, bend_factor=0.0)
+            SwirlGeometry(max_steps=1, max_ray_depth=math.inf, bend_factor=0.0)
         with self.assertRaises(ValueError):
-            SwirlGeometry(max_steps=1, max_ray_length=math.nan, bend_factor=0.0)
+            SwirlGeometry(max_steps=1, max_ray_depth=math.nan, bend_factor=0.0)
         # invalid bend_factor
         with self.assertRaises(ValueError):
-            SwirlGeometry(max_steps=1, max_ray_length=1.0, bend_factor=math.inf)
+            SwirlGeometry(max_steps=1, max_ray_depth=1.0, bend_factor=math.inf)
         with self.assertRaises(ValueError):
-            SwirlGeometry(max_steps=1, max_ray_length=1.0, bend_factor=math.nan)
+            SwirlGeometry(max_steps=1, max_ray_depth=1.0, bend_factor=math.nan)
 
 
 class SwirlGeometryPropertiesTest(GeometryTestCase):
     def setUp(self) -> None:
         self.max_steps = 10
-        self.max_ray_length = 1.0
-        self.ray_segment_length = self.max_ray_length / self.max_steps
+        self.max_ray_depth = 1.0
+        self.ray_segment_length = self.max_ray_depth / self.max_steps
         self.bend_factor = 3.3
         self.geo = SwirlGeometry(
             max_steps=self.max_steps,
-            max_ray_length=self.max_ray_length,
+            max_ray_depth=self.max_ray_depth,
             bend_factor=self.bend_factor,
         )
 
     def test_properties(self) -> None:
         """Tests properties."""
         self.assertEquiv(self.geo.max_steps(), self.max_steps)
-        self.assertEquiv(self.geo.max_ray_length(), self.max_ray_length)
+        self.assertEquiv(self.geo.max_ray_depth(), self.max_ray_depth)
         self.assertEquiv(self.geo.ray_segment_length(), self.ray_segment_length)
         self.assertEquiv(self.geo.bend_factor, self.bend_factor)
 
@@ -62,7 +62,7 @@ class SwirlGeometryPropertiesTest(GeometryTestCase):
 class SwirlGeometryIsValidCoordinateTest(GeometryTestCase):
     def setUp(self) -> None:
         self.geo = SwirlGeometry(
-            max_steps=10, max_ray_length=1.0, bend_factor=0.0
+            max_steps=10, max_ray_depth=1.0, bend_factor=0.0
         )
         self.valid_coords = (Coordinates3D((0.0, 0.0, 0.0)),)
 
@@ -75,7 +75,7 @@ class SwirlGeometryIsValidCoordinateTest(GeometryTestCase):
 class SwirlGeometryRayFromTest(GeometryTestCase):
     def setUp(self) -> None:
         self.geo = SwirlGeometry(
-            max_steps=10, max_ray_length=1.0, bend_factor=0.0
+            max_steps=10, max_ray_depth=1.0, bend_factor=0.0
         )
         self.coords1 = Coordinates3D((0.0, 0.0, 0.0))
         self.coords2 = Coordinates3D((0.0, 1.0, 2.0))
@@ -102,7 +102,7 @@ class SwirlGeometryRayFromTest(GeometryTestCase):
 class SwirlGeometryNextRaySegmentTest(GeometryTestCase):
     def setUp(self) -> None:
         self.geo = SwirlGeometry(
-            max_steps=1, max_ray_length=1.0, bend_factor=0.0
+            max_steps=1, max_ray_depth=1.0, bend_factor=0.0
         )
         direction = AbstractVector((0.75, 2.0, 3.0))
         self.ray1 = RaySegment(
@@ -125,7 +125,7 @@ class SwirlGeometryNextRaySegmentTest(GeometryTestCase):
 class SwirlGeometryNormalizedInitialRayTest(GeometryTestCase):
     def setUp(self) -> None:
         self.geo = SwirlGeometry(
-            max_steps=10, max_ray_length=1.0, bend_factor=0.0
+            max_steps=10, max_ray_depth=1.0, bend_factor=0.0
         )
         corrds0 = Coordinates3D((0.0, 0.0, 0.0))
         self.ray = RaySegment(
@@ -156,7 +156,7 @@ class SwirlGeometryEuclideanEdgeCaseIntersectionTest(GeometryTestCase):
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.faces = tuple(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry (no bend == euclidean)
-        geo = SwirlGeometry(max_steps=10, max_ray_length=10.0, bend_factor=0.0)
+        geo = SwirlGeometry(max_steps=10, max_ray_depth=10.0, bend_factor=0.0)
         v = AbstractVector((1.0, 1.0, 1.0))
         # rays pointing 'forwards' towards faces and parallel to
         # the face's normal
@@ -205,7 +205,7 @@ class SwirlGeometryNonEuclideanIntersectionTest(GeometryTestCase):
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.faces = tuple(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry (some bend == non-euclidean)
-        geo = SwirlGeometry(max_steps=30, max_ray_length=10.0, bend_factor=0.5)
+        geo = SwirlGeometry(max_steps=30, max_ray_depth=10.0, bend_factor=0.5)
         v = AbstractVector((1.0, 1.0, 1.0))
         # NOTE: Some of the hitting and missing rays are swapped with respect to
         #       the euclidean case, because the light rays are bend.

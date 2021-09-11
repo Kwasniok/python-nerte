@@ -27,8 +27,8 @@ def _dummy_segmented_ray_geometry_class() -> Type[SegmentedRayGeometry]:
         Represenation of an euclidean geometry with semi-finite domain.
         """
 
-        def __init__(self, max_steps: int, max_ray_length: float):
-            SegmentedRayGeometry.__init__(self, max_steps, max_ray_length)
+        def __init__(self, max_steps: int, max_ray_depth: float):
+            SegmentedRayGeometry.__init__(self, max_steps, max_ray_depth)
 
         def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
             x, _, _ = coordinates
@@ -95,44 +95,44 @@ class SegmentedRayGeometryConstructorTest(GeometryTestCase):
 
     def test_constructor(self) -> None:
         """Tests constructor."""
-        self.DummySegmentedRayGeometry(max_steps=1, max_ray_length=1.0)
+        self.DummySegmentedRayGeometry(max_steps=1, max_ray_depth=1.0)
         # invalid max_step
         with self.assertRaises(ValueError):
-            self.DummySegmentedRayGeometry(max_steps=0, max_ray_length=1.0)
+            self.DummySegmentedRayGeometry(max_steps=0, max_ray_depth=1.0)
         with self.assertRaises(ValueError):
-            self.DummySegmentedRayGeometry(max_steps=-1, max_ray_length=1.0)
-        # invalid max_ray_length
+            self.DummySegmentedRayGeometry(max_steps=-1, max_ray_depth=1.0)
+        # invalid max_ray_depth
         with self.assertRaises(ValueError):
-            self.DummySegmentedRayGeometry(max_steps=1, max_ray_length=0.0)
+            self.DummySegmentedRayGeometry(max_steps=1, max_ray_depth=0.0)
         with self.assertRaises(ValueError):
-            self.DummySegmentedRayGeometry(max_steps=1, max_ray_length=-1.0)
+            self.DummySegmentedRayGeometry(max_steps=1, max_ray_depth=-1.0)
         with self.assertRaises(ValueError):
-            self.DummySegmentedRayGeometry(max_steps=1, max_ray_length=math.inf)
+            self.DummySegmentedRayGeometry(max_steps=1, max_ray_depth=math.inf)
         with self.assertRaises(ValueError):
-            self.DummySegmentedRayGeometry(max_steps=1, max_ray_length=math.nan)
+            self.DummySegmentedRayGeometry(max_steps=1, max_ray_depth=math.nan)
 
 
 class SegmentedRayGeometryPropertiesTest(GeometryTestCase):
     def setUp(self) -> None:
         DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
         self.max_steps = 10
-        self.max_ray_length = 1.0
-        self.ray_segment_length = self.max_ray_length / self.max_steps
+        self.max_ray_depth = 1.0
+        self.ray_segment_length = self.max_ray_depth / self.max_steps
         self.geo = DummySegmentedRayGeometry(
-            max_steps=self.max_steps, max_ray_length=self.max_ray_length
+            max_steps=self.max_steps, max_ray_depth=self.max_ray_depth
         )
 
     def test_properties(self) -> None:
         """Tests properties."""
         self.assertEquiv(self.geo.max_steps(), self.max_steps)
-        self.assertEquiv(self.geo.max_ray_length(), self.max_ray_length)
+        self.assertEquiv(self.geo.max_ray_depth(), self.max_ray_depth)
         self.assertEquiv(self.geo.ray_segment_length(), self.ray_segment_length)
 
 
 class SegmentedRayGeometryIsValidCoordinateTest(GeometryTestCase):
     def setUp(self) -> None:
         DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
-        self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_length=1.0)
+        self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
         self.valid_coords = (Coordinates3D((0.0, 0.0, 0.0)),)
         self.invalid_coords = (
             Coordinates3D((-3.0, 0.0, 0.0)),
@@ -153,7 +153,7 @@ class SegmentedRayGeometryIsValidCoordinateTest(GeometryTestCase):
 class SegmentedRayGeometryRayConstructorTest(GeometryTestCase):
     def setUp(self) -> None:
         DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
-        self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_length=1.0)
+        self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
         self.coords = Coordinates3D((0.0, 0.0, 0.0))
         self.direction = AbstractVector((0.0, 1.0, 2.0))
         self.initial_segment = self.geo.normalize_initial_ray_segment(
@@ -170,7 +170,7 @@ class SegmentedRayGeometryRayConstructorTest(GeometryTestCase):
 class SegmentedRayGeometryRayPropertiesTest(GeometryTestCase):
     def setUp(self) -> None:
         DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
-        self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_length=1.0)
+        self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
         coords = Coordinates3D((0.0, 0.0, 0.0))
         direction = AbstractVector((0.0, 1.0, 2.0))
         self.ray = SegmentedRayGeometry.Ray(
@@ -191,7 +191,7 @@ class SegmentedRayGeometryRayPropertiesTest(GeometryTestCase):
 class SegmentedRayGeometryRayIntersectsTest(GeometryTestCase):
     def setUp(self) -> None:
         DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
-        geo = DummySegmentedRayGeometry(max_steps=10, max_ray_length=1.0)
+        geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
         self.ray = geo.ray_from_tangent(
             start=Coordinates3D((0.0, 0.0, 0.0)),
             direction=AbstractVector((1.0, 1.0, 1.0)),
@@ -216,7 +216,7 @@ class SegmentedRayGeometryRayIntersectsTest(GeometryTestCase):
 class SegmentedRayGeometryRayFromTest(GeometryTestCase):
     def setUp(self) -> None:
         DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
-        self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_length=1.0)
+        self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
         self.coords1 = Coordinates3D((0.0, 0.0, 0.0))
         self.coords2 = Coordinates3D((0.0, 1.0, 2.0))
         self.invalid_coords = Coordinates3D((-3.0, 0.0, 0.0))
@@ -251,7 +251,7 @@ class SegmentedRayGeometryRayFromTest(GeometryTestCase):
 class SegmentedRayGeometryNextRaySegmentTest(GeometryTestCase):
     def setUp(self) -> None:
         DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
-        self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_length=1.0)
+        self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
         direction = AbstractVector((0.75, 2.0, 3.0))
         self.ray1 = RaySegment(
             start=Coordinates3D((0.0, 0.0, 0.0)),
@@ -278,7 +278,7 @@ class SegmentedRayGeometryNextRaySegmentTest(GeometryTestCase):
 class SegmentedRayGeometryNormalizedInitialRayTest(GeometryTestCase):
     def setUp(self) -> None:
         DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
-        self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_length=1.0)
+        self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
         corrds0 = Coordinates3D((0.0, 0.0, 0.0))
         self.ray = RaySegment(
             start=corrds0,

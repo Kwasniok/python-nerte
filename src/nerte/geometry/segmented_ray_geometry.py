@@ -70,34 +70,34 @@ class SegmentedRayGeometry(Geometry):
                     return IntersectionInfos.RAY_LEFT_MANIFOLD.value
             return IntersectionInfos.NO_INTERSECTION.value
 
-    def __init__(self, max_steps: int, max_ray_length: float):
+    def __init__(self, max_steps: int, max_ray_depth: float):
 
         if not max_steps > 0:
             raise ValueError(
                 "Cannot create segmented ray geometry. max_steps must be strictly"
                 + f" positive (given value is {max_steps})"
             )
-        if not 0.0 < max_ray_length < math.inf:
+        if not 0.0 < max_ray_depth < math.inf:
             raise ValueError(
-                "Cannot create segmented ray geometry. max_ray_length must be strictly"
-                + f" positive and finite (given value is {max_ray_length})"
+                "Cannot create segmented ray geometry. max_ray_depth must be strictly"
+                + f" positive and finite (given value is {max_ray_depth})"
             )
 
         self._max_steps = max_steps
-        self._max_ray_length = max_ray_length
-        self._ray_segment_length = max_ray_length / max_steps
+        self._max_ray_depth = max_ray_depth
+        self._ray_segment_length = max_ray_depth / max_steps
 
     def max_steps(self) -> int:
         """Returns limit for amount of ray segments to be generated."""
         return self._max_steps
 
-    def max_ray_length(self) -> float:
+    def max_ray_depth(self) -> float:
         """
         Returns limit for the rays length.
 
         Rays may be truncated at this length.
         """
-        return self._max_ray_length
+        return self._max_ray_depth
 
     def ray_segment_length(self) -> float:
         """Returns the length of each ray segment."""

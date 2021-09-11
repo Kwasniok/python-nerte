@@ -16,9 +16,9 @@ class SwirlGeometry(SegmentedRayGeometry):
     """
 
     def __init__(
-        self, max_steps: int, max_ray_length: float, bend_factor: float
+        self, max_steps: int, max_ray_depth: float, bend_factor: float
     ):
-        SegmentedRayGeometry.__init__(self, max_steps, max_ray_length)
+        SegmentedRayGeometry.__init__(self, max_steps, max_ray_depth)
 
         if math.isinf(bend_factor) or math.isnan(bend_factor):
             raise ValueError(

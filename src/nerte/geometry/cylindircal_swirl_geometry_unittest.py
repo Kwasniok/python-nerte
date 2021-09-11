@@ -38,33 +38,33 @@ class SwirlCylindricRungeKuttaGeometryConstructorTest(GeometryTestCase):
     def test_constructor(self) -> None:
         """Tests constructor."""
         SwirlCylindricRungeKuttaGeometry(
-            max_ray_length=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
+            max_ray_depth=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
         )
-        # invalid max_ray_length
+        # invalid max_ray_depth
         with self.assertRaises(ValueError):
             SwirlCylindricRungeKuttaGeometry(
-                max_ray_length=0.0,
+                max_ray_depth=0.0,
                 step_size=1.0,
                 max_steps=1,
                 swirl_strength=1.0,
             )
         with self.assertRaises(ValueError):
             SwirlCylindricRungeKuttaGeometry(
-                max_ray_length=-1.0,
+                max_ray_depth=-1.0,
                 step_size=1.0,
                 max_steps=1,
                 swirl_strength=1.0,
             )
         with self.assertRaises(ValueError):
             SwirlCylindricRungeKuttaGeometry(
-                max_ray_length=-math.inf,
+                max_ray_depth=-math.inf,
                 step_size=1.0,
                 max_steps=1,
                 swirl_strength=1.0,
             )
         with self.assertRaises(ValueError):
             SwirlCylindricRungeKuttaGeometry(
-                max_ray_length=-math.nan,
+                max_ray_depth=-math.nan,
                 step_size=1.0,
                 max_steps=1,
                 swirl_strength=1.0,
@@ -72,28 +72,28 @@ class SwirlCylindricRungeKuttaGeometryConstructorTest(GeometryTestCase):
         # invalid step_size
         with self.assertRaises(ValueError):
             SwirlCylindricRungeKuttaGeometry(
-                max_ray_length=1.0,
+                max_ray_depth=1.0,
                 step_size=0.0,
                 max_steps=1,
                 swirl_strength=1.0,
             )
         with self.assertRaises(ValueError):
             SwirlCylindricRungeKuttaGeometry(
-                max_ray_length=1.0,
+                max_ray_depth=1.0,
                 step_size=-1.0,
                 max_steps=1,
                 swirl_strength=1.0,
             )
         with self.assertRaises(ValueError):
             SwirlCylindricRungeKuttaGeometry(
-                max_ray_length=1.0,
+                max_ray_depth=1.0,
                 step_size=math.inf,
                 max_steps=1,
                 swirl_strength=1.0,
             )
         with self.assertRaises(ValueError):
             SwirlCylindricRungeKuttaGeometry(
-                max_ray_length=1.0,
+                max_ray_depth=1.0,
                 step_size=math.nan,
                 max_steps=1,
                 swirl_strength=1.0,
@@ -101,14 +101,14 @@ class SwirlCylindricRungeKuttaGeometryConstructorTest(GeometryTestCase):
         # invalid max_steps
         with self.assertRaises(ValueError):
             SwirlCylindricRungeKuttaGeometry(
-                max_ray_length=1.0,
+                max_ray_depth=1.0,
                 step_size=1,
                 max_steps=0,
                 swirl_strength=1.0,
             )
         with self.assertRaises(ValueError):
             SwirlCylindricRungeKuttaGeometry(
-                max_ray_length=1.0,
+                max_ray_depth=1.0,
                 step_size=1,
                 max_steps=-1,
                 swirl_strength=1.0,
@@ -116,21 +116,21 @@ class SwirlCylindricRungeKuttaGeometryConstructorTest(GeometryTestCase):
         # invalid swirl_strength
         with self.assertRaises(ValueError):
             SwirlCylindricRungeKuttaGeometry(
-                max_ray_length=1.0,
+                max_ray_depth=1.0,
                 step_size=1.0,
                 max_steps=1,
                 swirl_strength=math.inf,
             )
         with self.assertRaises(ValueError):
             SwirlCylindricRungeKuttaGeometry(
-                max_ray_length=1.0,
+                max_ray_depth=1.0,
                 step_size=1.0,
                 max_steps=1,
                 swirl_strength=-math.inf,
             )
         with self.assertRaises(ValueError):
             SwirlCylindricRungeKuttaGeometry(
-                max_ray_length=1.0,
+                max_ray_depth=1.0,
                 step_size=1.0,
                 max_steps=1,
                 swirl_strength=math.nan,
@@ -141,7 +141,7 @@ class SwirlCylindricRungeKuttaGeometryPropertiesTest(GeometryTestCase):
     def setUp(self) -> None:
         self.swirl_strength = 0.1234
         self.geo = SwirlCylindricRungeKuttaGeometry(
-            max_ray_length=1.0,
+            max_ray_depth=1.0,
             step_size=1.0,
             max_steps=1,
             swirl_strength=self.swirl_strength,
@@ -155,7 +155,7 @@ class SwirlCylindricRungeKuttaGeometryPropertiesTest(GeometryTestCase):
 class SwirlCylindricRungeKuttaGeometryIsValidCoordinateTest(GeometryTestCase):
     def setUp(self) -> None:
         self.geo = SwirlCylindricRungeKuttaGeometry(
-            max_ray_length=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
+            max_ray_depth=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
         )
         self.valid_coords = (
             Coordinates3D((1.0, 0.0, 0.0)),
@@ -189,7 +189,7 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
 ):
     def setUp(self) -> None:
         self.geo = SwirlCylindricRungeKuttaGeometry(
-            max_ray_length=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
+            max_ray_depth=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
         )
         self.coords1 = Coordinates3D((1.0, 0.0, 0.0))
         self.coords2 = Coordinates3D((1.0, math.pi / 2, 0.0))
@@ -253,7 +253,7 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(
         self.ns = tuple(v / length for length in self.lengths)
         # geometry (cylindirc & euclidean)
         self.geo = SwirlCylindricRungeKuttaGeometry(
-            max_ray_length=math.inf,
+            max_ray_depth=math.inf,
             step_size=1.0,
             max_steps=10,
             swirl_strength=0.0,
@@ -296,7 +296,7 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(
 class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(GeometryTestCase):
     def setUp(self) -> None:
         self.geo = SwirlCylindricRungeKuttaGeometry(
-            max_ray_length=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
+            max_ray_depth=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
         )
 
         def geodesic_equation(ray: RaySegmentDelta) -> RaySegmentDelta:
@@ -360,7 +360,7 @@ class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(GeometryTestCase):
 class SwirlCylindricRungeKuttaGeometryMetricTest(GeometryTestCase):
     def setUp(self) -> None:
         self.geo = SwirlCylindricRungeKuttaGeometry(
-            max_ray_length=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
+            max_ray_depth=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
         )
         self.coords = (
             Coordinates3D((1.0, 0.0, 0.0)),
@@ -405,7 +405,7 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
         self.faces = list(Face(*ps) for ps in permutations((pnt1, pnt2, pnt3)))
         # geometry (cylindirc & euclidean)
         geo = SwirlCylindricRungeKuttaGeometry(
-            max_ray_length=math.inf,
+            max_ray_depth=math.inf,
             step_size=0.1,
             max_steps=15,
             swirl_strength=0.0,
@@ -481,7 +481,7 @@ class SwirlCylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
         self.faces = list(Face(*ps) for ps in permutations((pnt1, pnt2, pnt3)))
         # geometry (cylindirc & non-euclidean)
         geo = SwirlCylindricRungeKuttaGeometry(
-            max_ray_length=math.inf,
+            max_ray_depth=math.inf,
             step_size=0.05,  # low resolution but good enough
             max_steps=30,  # expected ray length must exceed 1.0
             swirl_strength=5.0,  # non-euclidean / strong swirl

@@ -19,8 +19,8 @@ class CylindricRungeKuttaGeometry(RungeKuttaGeometry):
     Represenation of an euclidean geometry in cylindircal coordinates.
     """
 
-    def __init__(self, max_ray_length: float, step_size: float, max_steps: int):
-        RungeKuttaGeometry.__init__(self, max_ray_length, step_size, max_steps)
+    def __init__(self, max_ray_depth: float, step_size: float, max_steps: int):
+        RungeKuttaGeometry.__init__(self, max_ray_depth, step_size, max_steps)
 
         def geodesic_equation(ray: RaySegmentDelta) -> RaySegmentDelta:
             return RaySegmentDelta(
