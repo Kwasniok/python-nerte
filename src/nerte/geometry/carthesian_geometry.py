@@ -31,6 +31,7 @@ class CarthesianGeometry(Geometry):
             return IntersectionInfo(ray_depth=ray_depth)
 
         def as_segment(self) -> RaySegment:
+            """Returns ray converted to a ray segment."""
             return self._segment
 
     def __init__(self) -> None:
