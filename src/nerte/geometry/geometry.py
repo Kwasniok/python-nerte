@@ -34,7 +34,6 @@ class Geometry(ABC):
         # pylint: disable=W0107
         pass
 
-    # TODO: tests for all derived classes
     @abstractmethod
     def ray_from_coords(
         self, start: Coordinates3D, target: Coordinates3D
@@ -48,7 +47,6 @@ class Geometry(ABC):
         # pylint: disable=W0107
         pass
 
-    # TODO: tests for all derived classes
     @abstractmethod
     def ray_from_tangent(
         self, start: Coordinates3D, direction: AbstractVector
