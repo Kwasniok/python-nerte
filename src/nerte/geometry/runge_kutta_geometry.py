@@ -3,6 +3,8 @@ Module for representing a (non-euclidean) geometry where rays are propagated via
 the Runge-Kutta algortihm.
 """
 
+from typing import Optional
+
 from abc import abstractmethod
 from collections.abc import Callable
 
@@ -63,8 +65,16 @@ class RungeKuttaGeometry(Geometry):
         def __init__(
             self, geometry: "RungeKuttaGeometry", initial_tangent: RaySegment
         ) -> None:
+            initial_tangent = geometry.normalized(initial_tangent)
             self._geometry = geometry
-            self._initial_tangent = geometry.normalized(initial_tangent)
+            self._initial_tangent = initial_tangent
+            self._current_tangent = initial_tangent
+            self._segments_and_lengths: list[
+                Optional[tuple[RaySegment, float]]
+            ] = [None] * geometry.max_steps()
+            self._segments_cached = 0
+            self._cached_ray_depth = 0.0
+            self._cached_ray_left_manifold = False
 
         def __repr__(self) -> str:
             return (
@@ -76,51 +86,89 @@ class RungeKuttaGeometry(Geometry):
             """Returs the initial tangent of the ray at its starting point."""
             return self._initial_tangent
 
+        # TODO: test cache generation (for max_steps = 0 etc.)
+        def _cache_next_segment(self) -> None:
+            if self._cached_ray_left_manifold:
+                return
+            if self._segments_cached > self._geometry.max_steps():
+                raise RuntimeError(
+                    f"Cannot generate next ray segment for ray starting with"
+                    f" initial tangent {self._initial_tangent}."
+                    f" Generating segment {self._segments_cached + 1} would"
+                    f" exceed the step maximum of {self._geometry.max_steps()}."
+                )
+            if self._cached_ray_depth > self._geometry.max_ray_depth():
+                raise RuntimeError(
+                    f"Cannot generate next ray segment for ray starting with"
+                    f" initial tangent {self._initial_tangent}."
+                    f" Generating segment {self._segments_cached + 1} would"
+                    f" exceed the ray depth maximum of"
+                    f" {self._geometry.max_ray_depth()}."
+                )
+            tangent = self._current_tangent
+            if not self._geometry.is_valid_coordinate(tangent.start):
+                raise RuntimeError(
+                    f"Cannot generate next ray segment for ray starting with"
+                    f" initial tangent {self._initial_tangent}."
+                    f" Generating segment {self._segments_cached + 1} is not"
+                    f" possible, since it's initial tangent={tangent} has"
+                    f" invalid starting coordinates."
+                )
+            geometry = self._geometry
+            # calculate difference to next point/tangent on the ray
+            # Note: The step size behaves like Δt where t is the
+            #       parameter of the curve on which the light travels.
+            # Note: The smaller the step size, the better the approximation.
+            # TODO: check if Runge-Kutta-Nystrom is more suitable/efficient
+            tangent_delta = runge_kutta_4_delta(
+                geometry.geodesic_equation(),
+                ray_segment_as_delta(tangent),
+                geometry.step_size(),
+            )
+            segment = RaySegment(
+                start=tangent.start, direction=tangent_delta.coords_delta
+            )
+            segment_length = geometry.length(segment)
+            self._segments_and_lengths[self._segments_cached] = (
+                segment,
+                segment_length,
+            )
+            self._current_tangent = add_ray_segment_delta(
+                tangent, tangent_delta
+            )
+            self._segments_cached += 1
+            self._cached_ray_depth += segment_length
+            if not geometry.is_valid_coordinate(self._current_tangent.start):
+                self._cached_ray_left_manifold = True
+
         def intersection_info(self, face: Face) -> IntersectionInfo:
             geometry = self._geometry
-            steps = 0
-            total_ray_depth = 0.0
-            tangent = self._initial_tangent
 
+            step = 0
+            total_ray_depth = 0.0
             while (
                 total_ray_depth < geometry.max_ray_depth()
-                and steps < geometry.max_steps()
+                and step < geometry.max_steps()
             ):
+                if step == self._segments_cached:
+                    self._cache_next_segment()
+                sement_and_length = self._segments_and_lengths[step]
 
-                if not geometry.is_valid_coordinate(tangent.start):
+                if sement_and_length is None:
                     # ray has left the boundaries of the (local map of the)
                     # manifold
                     return IntersectionInfos.RAY_LEFT_MANIFOLD.value
 
-                # change in ray's configuration for a (small) step size
-                # Note: The step size behaves like Δt where t is the
-                #       parameter of the curve on which the light travels.
-                # Note: The smaller the step size, the better the approximation.
-                # TODO: check if Runge-Kutta-Nystrom is more suitable/efficient
-                tangent_delta = runge_kutta_4_delta(
-                    geometry.geodesic_equation(),
-                    ray_segment_as_delta(tangent),
-                    geometry.step_size(),
-                )
-
-                # representation of the change of the ray's position as a ray
-                # segment
-                segment = RaySegment(
-                    start=tangent.start, direction=tangent_delta.coords_delta
-                )
-
+                segment, segment_length = sement_and_length
                 relative_segment_depth = intersection_ray_depth(
                     ray=segment, face=face
                 )
                 if relative_segment_depth < math.inf:
-                    total_ray_depth += relative_segment_depth * geometry.length(
-                        segment
-                    )
+                    total_ray_depth += relative_segment_depth * segment_length
                     return IntersectionInfo(ray_depth=total_ray_depth)
 
-                steps += 1
-                total_ray_depth += geometry.length(segment)
-                tangent = add_ray_segment_delta(tangent, tangent_delta)
+                step += 1
+                total_ray_depth += segment_length
 
             return IntersectionInfos.NO_INTERSECTION.value
 
@@ -128,7 +176,7 @@ class RungeKuttaGeometry(Geometry):
         self,
         max_ray_depth: float,
         step_size: float,
-        max_steps: int,
+        max_steps: int,  # TODO: rename to max_segment_count
     ):
         if not max_ray_depth > 0:
             raise ValueError(

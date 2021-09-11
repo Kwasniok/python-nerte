@@ -19,6 +19,7 @@ from nerte.values.linalg import AbstractVector, length
 from nerte.values.ray_segment import RaySegment
 from nerte.values.ray_segment_delta import RaySegmentDelta
 from nerte.values.face import Face
+from nerte.values.intersection_info import IntersectionInfo
 from nerte.values.util.convert import coordinates_as_vector
 from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 
@@ -245,7 +246,6 @@ class RungeKuttaGeometryRayPropertiesTest(GeometryTestCase):
 
 class RungeKuttaGeometryRayIntersectsTest(GeometryTestCase):
     def setUp(self) -> None:
-        self.v = AbstractVector((1.0, 2.0, 3.0))
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
         p1 = Coordinates3D((1.0, 0.0, 0.0))
@@ -313,6 +313,78 @@ class RungeKuttaGeometryRayIntersectsTest(GeometryTestCase):
             for f in self.faces:
                 info = r.intersection_info(f)
                 self.assertTrue(info.misses())
+
+
+class RungeKuttaGeometryRayIntersectsRayLeftManifoldEventuallyTest(
+    GeometryTestCase
+):
+    def setUp(self) -> None:
+        # face with all permuations of its coordinates
+        # NOTE: Results are invariant under coordinate permutation!
+        p1 = Coordinates3D((2.0, 0.0, 0.0))
+        p2 = Coordinates3D((2.0, 1.0, 0.0))
+        p3 = Coordinates3D((2.0, 1.0, 1.0))
+        self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
+        # geometry (carthesian & euclidean)
+        DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
+        self.geo = DummyRungeKuttaGeometryGeo(
+            max_ray_depth=10.0,
+            step_size=0.1,  # enforce multiple steps until hit
+            max_steps=15,
+        )
+        self.ray = self.geo.ray_from_tangent(
+            start=Coordinates3D((0.0, 0.0, 0.0)),
+            direction=AbstractVector((1.0, 0.0, 0.0)),
+        )
+
+    def test_runge_kutta_geometry_intersects(self) -> None:
+        """
+        Tests if rays does not intersect because it left the manifold eventually.
+        """
+        for f in self.faces:
+            info = self.ray.intersection_info(f)
+            self.assertTrue(info.misses())
+            self.assertTrue(
+                IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD
+                in info.miss_reasons()
+            )
+
+
+class RungeKuttaGeometryRayIntersectsRayLeftManifoldImmediatelyTest(
+    GeometryTestCase
+):
+    def setUp(self) -> None:
+        # face with all permuations of its coordinates
+        # NOTE: Results are invariant under coordinate permutation!
+        p1 = Coordinates3D((2.0, 0.0, 0.0))
+        p2 = Coordinates3D((2.0, 1.0, 0.0))
+        p3 = Coordinates3D((2.0, 1.0, 1.0))
+        self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
+        # geometry (carthesian & euclidean)
+        DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
+        self.geo = DummyRungeKuttaGeometryGeo(
+            max_ray_depth=10.0,
+            step_size=0.1,  # enforce multiple steps until hit
+            max_steps=15,
+        )
+        self.ray = self.geo.ray_from_tangent(
+            start=Coordinates3D(
+                (0.99, 0.0, 0.0)  # starts close to manifold's boundary
+            ),
+            direction=AbstractVector((1.0, 0.0, 0.0)),
+        )
+
+    def test_runge_kutta_geometry_intersects(self) -> None:
+        """
+        Tests if rays does not intersect because it left the manifold immediately.
+        """
+        for f in self.faces:
+            info = self.ray.intersection_info(f)
+            self.assertTrue(info.misses())
+            self.assertTrue(
+                IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD
+                in info.miss_reasons()
+            )
 
 
 class DummyRungeKuttaGeometryRayFromTest(GeometryTestCase):
