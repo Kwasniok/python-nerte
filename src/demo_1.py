@@ -186,7 +186,7 @@ def main() -> None:
     # NOTE: max_steps controlls the accuracy of the approximation
     # NOTE: Increase the bend_factor to increase the 'swirl' effect.
     #       bend_factor=0.0 results in euclidean geometry.
-    geo = SwirlGeometry(max_steps=16, max_ray_length=10.0, bend_factor=0.4)
+    geo = SwirlGeometry(max_steps=16, max_ray_depth=10.0, bend_factor=0.4)
 
     render(
         scene=scene,
