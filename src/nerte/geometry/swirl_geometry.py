@@ -31,20 +31,37 @@ class SwirlGeometry(SegmentedRayGeometry):
     def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
         return True
 
-    def initial_ray_segment_towards(
+    def ray_from_coords(
         self, start: Coordinates3D, target: Coordinates3D
-    ) -> RaySegment:
+    ) -> SegmentedRayGeometry.Ray:
         # TODO: This method is crude and incorrect.
         vec_s = coordinates_as_vector(start)
         vec_t = coordinates_as_vector(target)
-        return RaySegment(start=start, direction=(vec_t - vec_s))
+        return SegmentedRayGeometry.Ray(
+            geometry=self,
+            initial_segment=RaySegment(start=start, direction=(vec_t - vec_s)),
+        )
 
-    def next_ray_segment(self, ray: RaySegment) -> RaySegment:
+    def ray_from_tangent(
+        self, start: Coordinates3D, direction: AbstractVector
+    ) -> SegmentedRayGeometry.Ray:
+        return SegmentedRayGeometry.Ray(
+            geometry=self,
+            initial_segment=RaySegment(start=start, direction=direction),
+        )
+
+    def normalize_initial_ray_segment(self, segment: RaySegment) -> RaySegment:
+        return RaySegment(
+            start=segment.start,
+            direction=normalized(segment.direction) * self.ray_segment_length(),
+        )
+
+    def next_ray_segment(self, segment: RaySegment) -> RaySegment:
         # pylint: disable=C0103
 
         # old segment
-        s_old = ray.start
-        d_old = ray.direction
+        s_old = segment.start
+        d_old = segment.direction
         # new segment
         # advance starting point
         s_new = Coordinates3D(
@@ -63,9 +80,3 @@ class SwirlGeometry(SegmentedRayGeometry):
         # NOTE: No exception handling, since d_new is never a zero vector
         d_new = normalized(d_new) * self.ray_segment_length()
         return RaySegment(start=s_new, direction=d_new)
-
-    def normalize_initial_ray_segment(self, ray: RaySegment) -> RaySegment:
-        return RaySegment(
-            start=ray.start,
-            direction=normalized(ray.direction) * self.ray_segment_length(),
-        )

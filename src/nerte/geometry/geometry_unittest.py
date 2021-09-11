@@ -74,7 +74,7 @@ class GeometryTestCase(unittest.TestCase):
             ) from ae
 
 
-# no test for abstract class/interface Geometry
+# no test for abstract class/interface Geometry & Geometry.Ray
 
 # TODO: add dedicated tests for intersection infos where ray leaves the manifold
 

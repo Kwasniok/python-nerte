@@ -39,18 +39,6 @@ class CylindricRungeKuttaGeometry(RungeKuttaGeometry):
 
         self._geodesic_equation = geodesic_equation
 
-    def metric(self, coords: Coordinates3D) -> Metric:
-        # pylint: disable=R0201,C0103
-        """Returns the local metric for the given coordinates."""
-        r, _, _ = coords
-        return Metric(
-            AbstractMatrix(
-                AbstractVector((1, 0, 0)),
-                AbstractVector((0, r ** 2, 0)),
-                AbstractVector((0, 0, 1)),
-            )
-        )
-
     def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
         # pylint: disable=C0103
         r, phi, z = coordinates
@@ -58,6 +46,22 @@ class CylindricRungeKuttaGeometry(RungeKuttaGeometry):
             0 < r < math.inf
             and -math.pi < phi < math.pi
             and -math.inf < z < math.inf
+        )
+
+    def ray_from_coords(
+        self, start: Coordinates3D, target: Coordinates3D
+    ) -> RungeKuttaGeometry.Ray:
+        if not self.is_valid_coordinate(start):
+            raise ValueError(
+                f"Cannot create ray from coordinates."
+                f" Start coordinates {start} are invalid."
+            )
+        # TODO: This method is incorrect
+        vec_s = coordinates_as_vector(start)
+        vec_t = coordinates_as_vector(target)
+        return RungeKuttaGeometry.Ray(
+            geometry=self,
+            initial_tangent=RaySegment(start=start, direction=(vec_t - vec_s)),
         )
 
     def length(self, ray: RaySegment) -> float:
@@ -72,10 +76,14 @@ class CylindricRungeKuttaGeometry(RungeKuttaGeometry):
     def geodesic_equation(self) -> Callable[[RaySegmentDelta], RaySegmentDelta]:
         return self._geodesic_equation
 
-    def initial_ray_segment_towards(
-        self, start: Coordinates3D, target: Coordinates3D
-    ) -> RaySegment:
-        # TODO: This method is incorrect
-        vec_s = coordinates_as_vector(start)
-        vec_t = coordinates_as_vector(target)
-        return RaySegment(start=start, direction=(vec_t - vec_s))
+    def metric(self, coords: Coordinates3D) -> Metric:
+        # pylint: disable=R0201,C0103
+        """Returns the local metric for the given coordinates."""
+        r, _, _ = coords
+        return Metric(
+            AbstractMatrix(
+                AbstractVector((1, 0, 0)),
+                AbstractVector((0, r ** 2, 0)),
+                AbstractVector((0, 0, 1)),
+            )
+        )

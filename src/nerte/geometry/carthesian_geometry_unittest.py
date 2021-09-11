@@ -27,7 +27,7 @@ class CarthesianGeometryIntersectsTest1(GeometryTestCase):
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry
-        self.geo = CarthesianGeometry()
+        geo = CarthesianGeometry()
         # rays pointing 'forwards' towards faces and parallel to face normal
         s0 = Coordinates3D((0.0, 0.0, 0.0))
         s1 = Coordinates3D((0.3, 0.0, 0.0))  # one third of p1
@@ -36,7 +36,7 @@ class CarthesianGeometryIntersectsTest1(GeometryTestCase):
         ss = (s0, s1, s2, s3)
         v = AbstractVector((1.0, 1.0, 1.0))
         self.intersecting_rays = list(
-            RaySegment(start=s, direction=v) for s in ss
+            geo.ray_from_tangent(start=s, direction=v) for s in ss
         )
 
     def test_euclidean_intersects_1(self) -> None:
@@ -47,7 +47,7 @@ class CarthesianGeometryIntersectsTest1(GeometryTestCase):
         """
         for r in self.intersecting_rays:
             for f in self.faces:
-                info = self.geo.intersection_info(r, f)
+                info = r.intersection_info(f)
                 self.assertTrue(info.hits())
 
 
@@ -60,7 +60,7 @@ class CarthesianGeometryIntersectsTest2(GeometryTestCase):
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry
-        self.geo = CarthesianGeometry()
+        geo = CarthesianGeometry()
         # rays pointing 'backwards' and are parallel to face's normal
         s0 = Coordinates3D((0.0, 0.0, 0.0))
         s1 = Coordinates3D((0.3, 0.0, 0.0))  # one third of p1
@@ -69,7 +69,7 @@ class CarthesianGeometryIntersectsTest2(GeometryTestCase):
         ss = (s0, s1, s2, s3)
         v = AbstractVector((1.0, 1.0, 1.0))
         self.non_intersecting_rays = list(
-            RaySegment(start=s, direction=-v) for s in ss
+            geo.ray_from_tangent(start=s, direction=-v) for s in ss
         )
 
     def test_euclidean_intersects_2(self) -> None:
@@ -80,7 +80,7 @@ class CarthesianGeometryIntersectsTest2(GeometryTestCase):
         """
         for r in self.non_intersecting_rays:
             for f in self.faces:
-                info = self.geo.intersection_info(r, f)
+                info = r.intersection_info(f)
                 self.assertTrue(info.misses())
 
 
@@ -93,7 +93,7 @@ class CarthesianGeometryIntersectsTest3(GeometryTestCase):
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry
-        self.geo = CarthesianGeometry()
+        geo = CarthesianGeometry()
         # rays miss the face and are parallel to face's normal
         s1 = Coordinates3D((0.0, 0.6, 0.6))  # 'complement' of p1
         s2 = Coordinates3D((0.6, 0.0, 0.6))  # 'complement' of p2
@@ -101,7 +101,7 @@ class CarthesianGeometryIntersectsTest3(GeometryTestCase):
         ss = (s1, s2, s3)
         v = AbstractVector((1.0, 1.0, 1.0))
         self.non_intersecting_rays = list(
-            RaySegment(start=s, direction=v) for s in ss
+            geo.ray_from_tangent(start=s, direction=v) for s in ss
         )
 
     def test_euclidean_intersects_3(self) -> None:
@@ -111,7 +111,7 @@ class CarthesianGeometryIntersectsTest3(GeometryTestCase):
         """
         for r in self.non_intersecting_rays:
             for f in self.faces:
-                info = self.geo.intersection_info(r, f)
+                info = r.intersection_info(f)
                 self.assertTrue(info.misses())
 
 
@@ -124,7 +124,7 @@ class CarthesianGeometryIntersectsTest4(GeometryTestCase):
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry
-        self.geo = CarthesianGeometry()
+        geo = CarthesianGeometry()
         # rays completely miss the face by pointing away from it
         # and are parallel to face's normal
         s1 = Coordinates3D((0.0, 0.6, 0.6))  # 'complement' of p1
@@ -133,7 +133,7 @@ class CarthesianGeometryIntersectsTest4(GeometryTestCase):
         ss = (s1, s2, s3)
         v = AbstractVector((1.0, 1.0, 1.0))
         self.non_intersecting_rays = list(
-            RaySegment(start=s, direction=-v) for s in ss
+            geo.ray_from_tangent(start=s, direction=-v) for s in ss
         )
 
     def test_euclidean_intersects_4(self) -> None:
@@ -143,7 +143,7 @@ class CarthesianGeometryIntersectsTest4(GeometryTestCase):
         """
         for r in self.non_intersecting_rays:
             for f in self.faces:
-                info = self.geo.intersection_info(r, f)
+                info = r.intersection_info(f)
                 self.assertTrue(info.misses())
 
 

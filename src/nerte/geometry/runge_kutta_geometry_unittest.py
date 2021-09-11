@@ -60,6 +60,18 @@ def _make_dummy_runge_kutta_geometry() -> Type[RungeKuttaGeometry]:
         def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
             return True
 
+        def ray_from_coords(
+            self, start: Coordinates3D, target: Coordinates3D
+        ) -> RungeKuttaGeometry.Ray:
+            vec_s = coordinates_as_vector(start)
+            vec_t = coordinates_as_vector(target)
+            return RungeKuttaGeometry.Ray(
+                geometry=self,
+                inital_tangent=RaySegment(
+                    start=start, direction=(vec_t - vec_s)
+                ),
+            )
+
         def length(self, ray: RaySegment) -> float:
             return length(ray.direction)
 
@@ -68,19 +80,12 @@ def _make_dummy_runge_kutta_geometry() -> Type[RungeKuttaGeometry]:
         ) -> Callable[[RaySegmentDelta], RaySegmentDelta]:
             return self._geodesic_equation
 
-        def initial_ray_segment_towards(
-            self, start: Coordinates3D, target: Coordinates3D
-        ) -> RaySegment:
-            vec_s = coordinates_as_vector(start)
-            vec_t = coordinates_as_vector(target)
-            return RaySegment(start=start, direction=(vec_t - vec_s))
-
     return DummyRungeKuttaGeometry
 
 
 class RungeKuttaGeometryInterfaceTest(GeometryTestCase):
     def test_runge_kutta_geometry_interface(self) -> None:
-        """Tests the Runge-Kutta based geomety interface with a dummy."""
+        """Tests the Runge-Kutta based geometry interface with a dummy."""
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
 
         DummyRungeKuttaGeometryGeo(
@@ -174,7 +179,9 @@ class RungeKuttaGeometryIntersectsTest(GeometryTestCase):
         v = AbstractVector((1.0, 1.0, 1.0))
         # rays pointing 'forwards'
         # towards the face and parallel to face normal
-        self.intersecting_rays = [RaySegment(start=s, direction=v) for s in ss1]
+        self.intersecting_rays = [
+            self.geo.ray_from_tangent(start=s, direction=v) for s in ss1
+        ]
         self.ray_depths = [
             (1 / 3) ** 0.5,
             2 * 3 ** (-3 / 2),
@@ -184,7 +191,7 @@ class RungeKuttaGeometryIntersectsTest(GeometryTestCase):
         # rays pointing 'backwards'
         # away from the face and parallel to face normal
         self.non_intersecting_rays = [
-            RaySegment(start=s, direction=-v) for s in ss1
+            self.geo.ray_from_tangent(start=s, direction=-v) for s in ss1
         ]
         s21 = Coordinates3D((0.0, 0.6, 0.6))  # 'complement' of p1
         s22 = Coordinates3D((0.6, 0.0, 0.6))  # 'complement' of p2
@@ -192,10 +199,10 @@ class RungeKuttaGeometryIntersectsTest(GeometryTestCase):
         ss2 = (s21, s22, s23)
         # rays parallel to face normal but starting 'outside' the face
         self.non_intersecting_rays += [
-            RaySegment(start=s, direction=v) for s in ss2
+            self.geo.ray_from_tangent(start=s, direction=v) for s in ss2
         ]
         self.non_intersecting_rays += [
-            RaySegment(start=s, direction=-v) for s in ss2
+            self.geo.ray_from_tangent(start=s, direction=-v) for s in ss2
         ]
 
         # convert to proper lists
@@ -211,12 +218,12 @@ class RungeKuttaGeometryIntersectsTest(GeometryTestCase):
         """
         for r, rd in zip(self.intersecting_rays, self.ray_depths):
             for f in self.faces:
-                info = self.geo.intersection_info(r, f)
+                info = r.intersection_info(f)
                 self.assertTrue(info.hits())
                 self.assertEquiv(info.ray_depth(), rd)
         for r in self.non_intersecting_rays:
             for f in self.faces:
-                info = self.geo.intersection_info(r, f)
+                info = r.intersection_info(f)
                 self.assertTrue(info.misses())
 
 

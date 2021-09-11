@@ -15,32 +15,46 @@ from nerte.values.util.convert import coordinates_as_vector
 class Geometry(ABC):
     """Interface of a geometry."""
 
+    class Ray(ABC):
+        # pylint: disable=R0903
+        """Interface for rays embedded in a geometry."""
+
+        @abstractmethod
+        def intersection_info(self, face: Face) -> IntersectionInfo:
+            """
+            Returns information about the intersection test of a ray
+            with a face.
+            """
+            # pylint: disable=W0107
+            pass
+
     @abstractmethod
     def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
         """Returns True, iff coordinates are within the valid domain."""
         # pylint: disable=W0107
         pass
 
-    # TODO: needs optimization: the ray is currently calculated for each
-    #       use cache or allow for multiple faces at once?
+    # TODO: tests for all derived classes
     @abstractmethod
-    def intersection_info(
-        self, ray: RaySegment, face: Face
-    ) -> IntersectionInfo:
+    def ray_from_coords(
+        self, start: Coordinates3D, target: Coordinates3D
+    ) -> Ray:
         """
-        Returns information about the intersection test of the ray and face.
+        Returns the ray, which starts at the given position and passes through
+        the target eventually.
+
+        :raises: ValueError if no valid ray could be constructed
         """
         # pylint: disable=W0107
         pass
 
+    # TODO: tests for all derived classes
     @abstractmethod
-    # TODO: change to ray generator
-    def initial_ray_segment_towards(
-        self, start: Coordinates3D, target: Coordinates3D
-    ) -> RaySegment:
+    def ray_from_tangent(
+        self, start: Coordinates3D, direction: AbstractVector
+    ) -> Ray:
         """
-        Returns the initial ray segment from a ray, which starts at the given
-        position and passes the target.
+        Returns the ray, whith the given starting point and direction.
 
         :raises: ValueError if no valid ray could be constructed
         """

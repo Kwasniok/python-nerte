@@ -385,7 +385,7 @@ class CylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
         pnt3 = Coordinates3D((1.0, +math.pi, +1.0))
         self.faces = list(Face(*ps) for ps in permutations((pnt1, pnt2, pnt3)))
         # geometry (cylindirc & euclidean)
-        self.geo = CylindricRungeKuttaGeometry(
+        geo = CylindricRungeKuttaGeometry(
             max_ray_length=math.inf,
             step_size=0.1,
             max_steps=25,
@@ -399,13 +399,13 @@ class CylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
         # rays pointing 'forwards'
         # towards the face and parallel to face normal
         self.intersecting_rays = [
-            RaySegment(start=s, direction=v) for s in coords1
+            geo.ray_from_tangent(start=s, direction=v) for s in coords1
         ]
         self.ray_depths = [1.0, 1.0, 1.0]
         # rays pointing 'backwards'
         # away from the face and parallel to face normal
         self.non_intersecting_rays = [
-            RaySegment(start=s, direction=-v) for s in coords1
+            geo.ray_from_tangent(start=s, direction=-v) for s in coords1
         ]
         coords2 = (
             Coordinates3D((0.9, -math.pi / 2, 0.0)),
@@ -413,10 +413,10 @@ class CylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
         )
         # rays parallel to face normal but starting 'outside' the face
         self.non_intersecting_rays += [
-            RaySegment(start=s, direction=v) for s in coords2
+            geo.ray_from_tangent(start=s, direction=v) for s in coords2
         ]
         self.non_intersecting_rays += [
-            RaySegment(start=s, direction=-v) for s in coords2
+            geo.ray_from_tangent(start=s, direction=-v) for s in coords2
         ]
 
         # convert to proper lists
@@ -428,7 +428,7 @@ class CylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
         """Tests if rays intersect as expected."""
         for r, rd in zip(self.intersecting_rays, self.ray_depths):
             for f in self.faces:
-                info = self.geo.intersection_info(r, f)
+                info = r.intersection_info(f)
                 self.assertTrue(info.hits())
                 self.assertEquiv(info.ray_depth(), rd)
 
@@ -436,7 +436,7 @@ class CylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
         """Tests if rays do not intersect as expected."""
         for r in self.non_intersecting_rays:
             for f in self.faces:
-                info = self.geo.intersection_info(r, f)
+                info = r.intersection_info(f)
                 self.assertTrue(info.misses())
 
 

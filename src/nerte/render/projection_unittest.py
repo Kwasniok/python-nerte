@@ -6,7 +6,7 @@
 
 import unittest
 
-from typing import Union
+from typing import Union, cast
 
 import math
 
@@ -20,10 +20,10 @@ from nerte.world.camera import Camera
 from nerte.geometry.carthesian_geometry import CarthesianGeometry
 from nerte.render.projection import (
     detector_manifold_coords,
-    orthographic_ray_segment_for_pixel,
-    perspective_ray_segment_for_pixel,
+    orthographic_ray_for_pixel,
+    perspective_ray_for_pixel,
     ProjectionMode,
-    ray_segment_for_pixel,
+    ray_for_pixel,
 )
 
 # True, iff two floats are equivalent
@@ -73,7 +73,21 @@ class ProjectionTestCase(unittest.TestCase):
             self.assertTrue(_ray_seg_equiv(x, y))
         except AssertionError as ae:
             raise AssertionError(
-                f"RaySegment {x} is not equivalent to ray {y}."
+                f"Ray segment {x} is not equivalent to {y}."
+            ) from ae
+
+    def assertEquivCartRay(
+        self, x: CarthesianGeometry.Ray, y: CarthesianGeometry.Ray
+    ) -> None:
+        """
+        Asserts the equivalence of two carthesian rays.
+        Note: This replaces assertTrue(x == y) for CarthesianGeometry.Ray.
+        """
+        try:
+            self.assertEquivRaySegment(x.as_segment(), y.as_segment())
+        except AssertionError as ae:
+            raise AssertionError(
+                f"Carthesian ray {x} is not equivalent to {y}."
             ) from ae
 
 
@@ -180,8 +194,8 @@ class OrthographicProjectionTest(ProjectionTestCase):
             (dim + 1, 1),
         )
         # orthographic ray from detecor manifold coordinates
-        def make_ray(coords2d: Coordinates2D) -> RaySegment:
-            return RaySegment(
+        def make_ray(coords2d: Coordinates2D) -> CarthesianGeometry.Ray:
+            return self.geometry.ray_from_tangent(
                 start=manifold.embed(coords2d),
                 direction=manifold.surface_normal(coords2d),
             )
@@ -191,7 +205,7 @@ class OrthographicProjectionTest(ProjectionTestCase):
             for loc in self.pixel_locations
         )
 
-    def test_orthographic_ray_segment_for_pixel(self) -> None:
+    def test_orthographic_ray_for_pixel(self) -> None:
         """Tests orthographic projection for pixel."""
 
         # preconditions
@@ -199,14 +213,16 @@ class OrthographicProjectionTest(ProjectionTestCase):
         self.assertTrue(len(self.pixel_locations) == len(self.pixel_rays))
 
         for pix_loc, pix_ray in zip(self.pixel_locations, self.pixel_rays):
-            ray = orthographic_ray_segment_for_pixel(
+            ray = orthographic_ray_for_pixel(
                 camera=self.camera,
                 geometry=self.geometry,
                 pixel_location=pix_loc,
             )
-            self.assertEquivRaySegment(ray, pix_ray)
+            self.assertIsInstance(ray, CarthesianGeometry.Ray)
+            cart_ray = cast(CarthesianGeometry.Ray, ray)
+            self.assertEquivCartRay(cart_ray, pix_ray)
 
-    def test_orthographic_ray_segment_for_pixel_invalid_values(self) -> None:
+    def test_orthographic_ray_for_pixel_invalid_values(self) -> None:
         """Tests orthographic projection for pixel's invalid values."""
 
         # preconditions
@@ -214,7 +230,7 @@ class OrthographicProjectionTest(ProjectionTestCase):
 
         for pix_loc in self.invalid_pixel_locations:
             with self.assertRaises(ValueError):
-                orthographic_ray_segment_for_pixel(
+                orthographic_ray_for_pixel(
                     camera=self.camera,
                     geometry=self.geometry,
                     pixel_location=pix_loc,
@@ -257,8 +273,10 @@ class PerspectiveProjectionTest(ProjectionTestCase):
             (dim + 1, 1),
         )
         # perspective ray from detecor manifold coordinates
-        def make_ray(coords2d: Coordinates2D) -> RaySegment:
-            return self.geometry.initial_ray_segment_towards(
+        def make_ray(
+            coords2d: Coordinates2D,
+        ) -> CarthesianGeometry.Ray:
+            return self.geometry.ray_from_coords(
                 start=self.camera.location,
                 target=self.camera.detector_manifold.embed(coords2d),
             )
@@ -268,7 +286,7 @@ class PerspectiveProjectionTest(ProjectionTestCase):
             for loc in self.pixel_locations
         )
 
-    def test_perspective_ray_segment_for_pixel(self) -> None:
+    def test_perspective_ray_for_pixel(self) -> None:
         """Tests perspective projection for pixel."""
 
         # preconditions
@@ -276,14 +294,16 @@ class PerspectiveProjectionTest(ProjectionTestCase):
         self.assertTrue(len(self.pixel_locations) == len(self.pixel_rays))
 
         for pix_loc, pix_ray in zip(self.pixel_locations, self.pixel_rays):
-            ray = perspective_ray_segment_for_pixel(
+            ray = perspective_ray_for_pixel(
                 camera=self.camera,
                 geometry=self.geometry,
                 pixel_location=pix_loc,
             )
-            self.assertEquivRaySegment(ray, pix_ray)
+            self.assertIsInstance(ray, CarthesianGeometry.Ray)
+            cart_ray = cast(CarthesianGeometry.Ray, ray)
+            self.assertEquivCartRay(cart_ray, pix_ray)
 
-    def test_perspective_ray_segment_for_pixel_invalid_values(self) -> None:
+    def test_perspective_ray_for_pixel_invalid_values(self) -> None:
         """Tests perspective projection for pixel's invalid values."""
 
         # preconditions
@@ -291,7 +311,7 @@ class PerspectiveProjectionTest(ProjectionTestCase):
 
         for pix_loc in self.invalid_pixel_locations:
             with self.assertRaises(ValueError):
-                perspective_ray_segment_for_pixel(
+                perspective_ray_for_pixel(
                     camera=self.camera,
                     geometry=self.geometry,
                     pixel_location=pix_loc,
@@ -299,17 +319,17 @@ class PerspectiveProjectionTest(ProjectionTestCase):
 
 
 class RaySegmentForPixelTest(ProjectionTestCase):
-    def test_ray_segment_for_pixel(self) -> None:
+    def test_ray_for_pixel(self) -> None:
         # pylint: disable=W0143
         """Test ray generator selector."""
 
         self.assertTrue(
-            ray_segment_for_pixel[ProjectionMode.ORTHOGRAPHIC]
-            == orthographic_ray_segment_for_pixel
+            ray_for_pixel[ProjectionMode.ORTHOGRAPHIC]
+            == orthographic_ray_for_pixel
         )
         self.assertTrue(
-            ray_segment_for_pixel[ProjectionMode.PERSPECTIVE]
-            == perspective_ray_segment_for_pixel
+            ray_for_pixel[ProjectionMode.PERSPECTIVE]
+            == perspective_ray_for_pixel
         )
 
 

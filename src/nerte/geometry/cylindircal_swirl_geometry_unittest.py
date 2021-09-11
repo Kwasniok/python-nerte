@@ -464,7 +464,7 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
         pnt3 = Coordinates3D((1.0, +math.pi, +1.0))
         self.faces = list(Face(*ps) for ps in permutations((pnt1, pnt2, pnt3)))
         # geometry (cylindirc & euclidean)
-        self.geo = SwirlCylindricRungeKuttaGeometry(
+        geo = SwirlCylindricRungeKuttaGeometry(
             max_ray_length=math.inf,
             step_size=0.1,
             max_steps=15,
@@ -479,14 +479,14 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
         # rays pointing 'forwards'
         # towards the face and parallel to face normal
         self.intersecting_rays = [
-            RaySegment(start=s, direction=v) for s in coords1
+            geo.ray_from_tangent(start=s, direction=v) for s in coords1
         ]
         self.ray_depths = [1.0, 1.0, 1.0]  #
         self.ray_depth_relaltive_tolerance = [1e-3, 1e-3, 1e-3]
         # rays pointing 'backwards'
         # away from the face and parallel to face normal
         self.non_intersecting_rays = [
-            RaySegment(start=s, direction=-v) for s in coords1
+            geo.ray_from_tangent(start=s, direction=-v) for s in coords1
         ]
         coords2 = (
             Coordinates3D((0.9, -math.pi / 2, 0.0)),
@@ -494,10 +494,10 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
         )
         # rays parallel to face normal but starting 'outside' the face
         self.non_intersecting_rays += [
-            RaySegment(start=s, direction=v) for s in coords2
+            geo.ray_from_tangent(start=s, direction=v) for s in coords2
         ]
         self.non_intersecting_rays += [
-            RaySegment(start=s, direction=-v) for s in coords2
+            geo.ray_from_tangent(start=s, direction=-v) for s in coords2
         ]
 
         # convert to proper lists
@@ -516,7 +516,7 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
             self.ray_depth_relaltive_tolerance,
         ):
             for f in self.faces:
-                info = self.geo.intersection_info(r, f)
+                info = r.intersection_info(f)
                 self.assertTrue(info.hits())
                 self.assertEquiv(info.ray_depth(), rd, rel_tol=rt)
 
@@ -524,7 +524,7 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
         """Tests if rays do not intersect as expected."""
         for r in self.non_intersecting_rays:
             for f in self.faces:
-                info = self.geo.intersection_info(r, f)
+                info = r.intersection_info(f)
                 self.assertTrue(info.misses())
 
 
@@ -540,7 +540,7 @@ class SwirlCylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
         pnt3 = Coordinates3D((1.0, +math.pi, +1.0))
         self.faces = list(Face(*ps) for ps in permutations((pnt1, pnt2, pnt3)))
         # geometry (cylindirc & non-euclidean)
-        self.geo = SwirlCylindricRungeKuttaGeometry(
+        geo = SwirlCylindricRungeKuttaGeometry(
             max_ray_length=math.inf,
             step_size=0.05,  # low resolution but good enough
             max_steps=30,  # expected ray length must exceed 1.0
@@ -557,13 +557,13 @@ class SwirlCylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
         )
         # parallel (hit)
         self.intersecting_rays = [
-            RaySegment(start=s, direction=v) for s in coords1
+            geo.ray_from_tangent(start=s, direction=v) for s in coords1
         ]
         self.ray_depths = [1.38, 1.38, 1.38]  # TODO: needs confirmation
         self.ray_depth_relaltive_tolerance = [1e-2, 1e-2, 1e-2]
         # antiparallel (miss)
         self.non_intersecting_rays = [
-            RaySegment(start=s, direction=-v) for s in coords1
+            geo.ray_from_tangent(start=s, direction=-v) for s in coords1
         ]
         coords2 = (
             Coordinates3D((0.6, -math.pi / 2, 0.0)),  # (*)
@@ -572,11 +572,11 @@ class SwirlCylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
         )
         # parallel (miss)
         self.non_intersecting_rays += [
-            RaySegment(start=s, direction=v) for s in coords2
+            geo.ray_from_tangent(start=s, direction=v) for s in coords2
         ]
         # antiparallel (miss)
         self.non_intersecting_rays += [
-            RaySegment(start=s, direction=-v) for s in coords2
+            geo.ray_from_tangent(start=s, direction=-v) for s in coords2
         ]
 
         # convert to proper lists
@@ -595,7 +595,7 @@ class SwirlCylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
             self.ray_depth_relaltive_tolerance,
         ):
             for f in self.faces:
-                info = self.geo.intersection_info(r, f)
+                info = r.intersection_info(f)
                 self.assertTrue(info.hits())
                 self.assertEquiv(info.ray_depth(), rd, rel_tol=rt)
 
@@ -603,7 +603,7 @@ class SwirlCylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
         """Tests if rays do not intersect as expected."""
         for r in self.non_intersecting_rays:
             for f in self.faces:
-                info = self.geo.intersection_info(r, f)
+                info = r.intersection_info(f)
                 self.assertTrue(info.misses())
 
 
