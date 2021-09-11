@@ -5,7 +5,6 @@ depth.
 
 from typing import Optional
 
-import traceback
 import math
 import numpy as np
 from PIL import Image
@@ -16,7 +15,7 @@ from nerte.world.object import Object
 from nerte.world.scene import Scene
 from nerte.geometry.geometry import Geometry
 from nerte.render.image_renderer import ImageRenderer
-from nerte.render.projection import ProjectionMode, ray_for_pixel
+from nerte.render.projection import ProjectionMode
 
 
 def _is_finite(mat: np.ndarray) -> np.ndarray:
@@ -60,54 +59,14 @@ class ImageRayDepthRenderer(ImageRenderer):
         ImageRenderer.__init__(
             self, projection_mode, print_warings=print_warings
         )
-        self._color_failure = Color(255, 0, 255)
-        self._color_no_intersection = Color(0, 0, 255)
         self._min_ray_depth = min_ray_depth
         self._max_ray_depth = max_ray_depth
         self._max_finite_color_value = 0.5  # 0.0...1.0
-
-    def color_failure(self) -> Color:
-        """Returns color indicating intersection test failure."""
-        return self._color_failure
+        self._color_no_intersection = Color(0, 0, 255)
 
     def color_no_intersection(self) -> Color:
         """Returns color indicating that no intersection occured."""
         return self._color_no_intersection
-
-    def _ray_for_pixel(
-        self,
-        camera: Camera,
-        geometry: Geometry,
-        pixel_location: tuple[int, int],
-    ) -> Optional[Geometry.Ray]:
-        """
-        Helper function for render_pixel.
-
-        Returns a ray if it can be created and may print details about the
-        failure otherwise.
-
-        Note: Failed ray creation must be benoted with a pixel colored in
-              self.color_failure()!
-        """
-        try:
-            return ray_for_pixel[self.projection_mode](
-                camera, geometry, pixel_location
-            )
-        except ValueError:
-            # e.g. ray did not start with valid coordinates
-            if self.is_printing_warings():
-                indentaion = " " * 12
-                trace_back_msg = traceback.format_exc()
-                trace_back_msg = indentaion + trace_back_msg.replace(
-                    "\n", "\n" + indentaion
-                )
-                print(
-                    f"Info: Cannot render pixel {pixel_location}."
-                    f" Pixel color is set to {self.color_failure()} instead."
-                    f" The reason is:"
-                    f"\n\n{trace_back_msg}."
-                )
-        return None
 
     def render_pixel_ray_depth(
         self,
@@ -123,7 +82,7 @@ class ImageRayDepthRenderer(ImageRenderer):
         Note: No intersections is indicated by inf.
         """
 
-        ray = self._ray_for_pixel(camera, geometry, pixel_location)
+        ray = self.ray_for_pixel(camera, geometry, pixel_location)
         if ray is None:
             return np.nan
 
