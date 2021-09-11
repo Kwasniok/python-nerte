@@ -18,7 +18,7 @@ from nerte.values.ray_segment_delta import (
     ray_segment_as_delta,
     add_ray_segment_delta,
 )
-from nerte.values.intersection_info import IntersectionInfo
+from nerte.values.intersection_info import IntersectionInfo, IntersectionInfos
 from nerte.geometry.geometry import Geometry, intersection_ray_depth
 
 
@@ -84,11 +84,7 @@ class RungeKuttaGeometry(Geometry):
                 if not geometry.is_valid_coordinate(tangent.start):
                     # ray has left the boundaries of the (local map of the)
                     # manifold
-                    return IntersectionInfo(
-                        miss_reasons=set(
-                            (IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD,)
-                        )
-                    )
+                    return IntersectionInfos.RAY_LEFT_MANIFOLD.value
 
                 # change in ray's configuration for a (small) step size
                 # Note: The step size behaves like Δt where t is the
@@ -120,7 +116,7 @@ class RungeKuttaGeometry(Geometry):
                 total_ray_depth += geometry.length(segment)
                 tangent = add_ray_segment_delta(tangent, tangent_delta)
 
-            return IntersectionInfo(ray_depth=math.inf)
+            return IntersectionInfos.NO_INTERSECTION.value
 
     def __init__(
         self,

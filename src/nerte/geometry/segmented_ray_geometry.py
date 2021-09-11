@@ -13,7 +13,7 @@ from nerte.values.coordinates import Coordinates3D
 from nerte.values.face import Face
 from nerte.values.linalg import AbstractVector
 from nerte.values.ray_segment import RaySegment
-from nerte.values.intersection_info import IntersectionInfo
+from nerte.values.intersection_info import IntersectionInfo, IntersectionInfos
 from nerte.geometry.geometry import Geometry, intersection_ray_depth
 
 
@@ -67,12 +67,8 @@ class SegmentedRayGeometry(Geometry):
                 if next_ray_segment is not None:
                     segment = next_ray_segment
                 else:
-                    return IntersectionInfo(
-                        miss_reasons=set(
-                            (IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD,)
-                        )
-                    )
-            return IntersectionInfo(ray_depth=math.inf)
+                    return IntersectionInfos.RAY_LEFT_MANIFOLD.value
+            return IntersectionInfos.NO_INTERSECTION.value
 
     def __init__(self, max_steps: int, max_ray_length: float):
 
