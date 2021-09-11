@@ -17,6 +17,7 @@ from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, normalized
 from nerte.values.ray_segment import RaySegment
 from nerte.values.face import Face
+from nerte.values.intersection_info import IntersectionInfo
 from nerte.values.util.convert import coordinates_as_vector
 from nerte.geometry.segmented_ray_geometry import SegmentedRayGeometry
 
@@ -199,18 +200,80 @@ class SegmentedRayGeometryRayIntersectsTest(GeometryTestCase):
         p0 = Coordinates3D((1.0, 0.0, 0.0))
         p1 = Coordinates3D((0.0, 1.0, 0.0))
         p2 = Coordinates3D((0.0, 0.0, 1.0))
-        self.face1 = Face(p0, p1, p2)
+        self.face_near = Face(p0, p1, p2)
         p0 = Coordinates3D((10.0, 0.0, 0.0))
         p1 = Coordinates3D((0.0, 10.0, 0.0))
         p2 = Coordinates3D((0.0, 0.0, 10.0))
-        self.face2 = Face(p0, p1, p2)
+        self.face_far = Face(p0, p1, p2)
 
-    def test_intersects(self) -> None:
+    def test_hits_near_face(self) -> None:
         """Tests ray and face intersection."""
-        info = self.ray.intersection_info(self.face1)
+        info = self.ray.intersection_info(self.face_near)
         self.assertTrue(info.hits())
-        info = self.ray.intersection_info(self.face2)
+
+    def test_misses_far_face(self) -> None:
+        """Tests ray and face intersection."""
+        info = self.ray.intersection_info(self.face_far)
         self.assertTrue(info.misses())
+        self.assertFalse(
+            IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD in info.miss_reasons()
+        )
+
+
+class SegmentedRayGeometryRayIntersectsRayEventuallyLeftManifoldTest(
+    GeometryTestCase
+):
+    def setUp(self) -> None:
+        DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
+        geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=10.0)
+        self.ray = geo.ray_from_tangent(
+            start=Coordinates3D((0.0, 0.0, 0.0)),
+            direction=AbstractVector((1.0, 0.0, 0.0)),
+        )
+        p0 = Coordinates3D((1.0, 0.0, 1.0))
+        p1 = Coordinates3D((1.0, 1.0, 1.0))
+        p2 = Coordinates3D((0.0, 1.0, 1.0))
+        self.face = Face(p0, p1, p2)
+
+    def test_ray_leaves_manifold_eventually(self) -> None:
+        """
+        Tests ray and face intersection where some ray segment points outside
+        of the manifolds baounadires but not the first one.
+        """
+        info = self.ray.intersection_info(self.face)
+        self.assertTrue(info.misses())
+        self.assertTrue(
+            IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD in info.miss_reasons()
+        )
+
+
+class SegmentedRayGeometryRayIntersectsRayImmediatelyLeftManifoldTest(
+    GeometryTestCase
+):
+    def setUp(self) -> None:
+        DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
+        geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=10.0)
+        self.ray = geo.ray_from_tangent(
+            start=Coordinates3D(
+                (0.99, 0.0, 0.0)  # close to manifold boundaries
+            ),
+            direction=AbstractVector((1.0, 0.0, 0.0)),
+        )
+        p0 = Coordinates3D((1.0, 0.0, 1.0))
+        p1 = Coordinates3D((1.0, 1.0, 1.0))
+        p2 = Coordinates3D((0.0, 1.0, 1.0))
+        self.face = Face(p0, p1, p2)
+
+    def test_ray_leaves_manifold_immediately(self) -> None:
+        """
+        Tests ray and face intersection where first ray segment points outside
+        of the manifolds baounadires.
+        """
+        info = self.ray.intersection_info(self.face)
+        self.assertTrue(info.misses())
+        self.assertTrue(
+            IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD in info.miss_reasons()
+        )
 
 
 class SegmentedRayGeometryRayFromTest(GeometryTestCase):
