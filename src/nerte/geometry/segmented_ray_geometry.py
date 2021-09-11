@@ -19,8 +19,11 @@ from nerte.geometry.geometry import Geometry, intersection_ray_depth
 
 class SegmentedRayGeometry(Geometry):
     """
-    Represenation of a non-euclidean geometry where rays are bend in space
-    ans approximated with staright short ray segments.
+    Crude represenation of a non-euclidean geometry where rays are bend in a
+    Carthesian space.
+
+    Note: This geometry exists as an intermdeiate level towards more
+          sophisticated models of non-euclidean geometries.
     """
 
     class Ray(Geometry.Ray):
