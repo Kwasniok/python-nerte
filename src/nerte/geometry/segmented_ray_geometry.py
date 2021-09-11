@@ -49,6 +49,11 @@ class SegmentedRayGeometry(Geometry):
             self._steps_cached = 1
             self._cached_ray_left_manifold = False
 
+        def __repr__(self) -> str:
+            return (
+                f"SegmentedRayGeometry.Ray(initial_segment={self._segments[0]})"
+            )
+
         def initial_segment(self) -> RaySegment:
             """Returns the inital ray segment."""
             return self._segments[0]

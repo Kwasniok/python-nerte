@@ -66,6 +66,12 @@ class RungeKuttaGeometry(Geometry):
             self._geometry = geometry
             self._initial_tangent = geometry.normalized(initial_tangent)
 
+        def __repr__(self) -> str:
+            return (
+                f"SegmentedRayGeometry.Ray("
+                f"initial_tangent={self._initial_tangent})"
+            )
+
         def initial_tangent(self) -> RaySegment:
             """Returs the initial tangent of the ray at its starting point."""
             return self._initial_tangent
