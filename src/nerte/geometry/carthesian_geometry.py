@@ -12,7 +12,6 @@ from nerte.geometry.geometry import Geometry, intersection_ray_depth
 class CarthesianGeometry(Geometry):
     """Represenation of the euclidean geometry in Carthesian coordinates."""
 
-    # TODO: tests
     class Ray(Geometry.Ray):
         """Represenation of a ray in euclidean geometry in Carthesian coordinates."""
 
