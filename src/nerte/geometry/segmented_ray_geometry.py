@@ -25,6 +25,13 @@ class SegmentedRayGeometry(Geometry):
 
     # TODO: tests
     class Ray(Geometry.Ray):
+        """
+        Represenation of a ray in a segmented ray geometry.
+
+        Each ray is a polygonal chain where each segment has a constant tangent,
+        which is equal to the change in position from one point to the other.
+        """
+
         def __init__(
             self, geometry: "SegmentedRayGeometry", initial_segment: RaySegment
         ) -> None:
@@ -34,6 +41,7 @@ class SegmentedRayGeometry(Geometry):
             )
 
         def initial_segment(self) -> RaySegment:
+            """Returns the inital ray segment."""
             return self._initial_segment
 
         def intersection_info(self, face: Face) -> IntersectionInfo:
@@ -85,9 +93,15 @@ class SegmentedRayGeometry(Geometry):
         self._ray_segment_length = max_ray_length / max_steps
 
     def max_steps(self) -> int:
+        """Returns limit for amount of ray segments to be generated."""
         return self._max_steps
 
     def max_ray_length(self) -> float:
+        """
+        Returns limit for the rays length.
+
+        Rays may be truncated at this length.
+        """
         return self._max_ray_length
 
     def ray_segment_length(self) -> float:
