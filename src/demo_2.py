@@ -130,7 +130,10 @@ def render(
                 print_warings=False,
             )
         else:
-            image_renderer = ImageColorRenderer(projection_mode=projection_mode)
+            image_renderer = ImageColorRenderer(
+                projection_mode=projection_mode,
+                print_warings=False,
+            )
         image_renderer.render(scene=scene, geometry=geometry)
         image = image_renderer.last_image()
         if image is not None:

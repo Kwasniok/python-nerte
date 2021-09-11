@@ -162,7 +162,10 @@ def render(
                 max_ray_depth=2.0,
             )
         else:
-            image_renderer = ImageColorRenderer(projection_mode=projection_mode)
+            image_renderer = ImageColorRenderer(
+                projection_mode=projection_mode,
+                print_warings=False,
+            )
         image_renderer.render(scene=scene, geometry=geometry)
         image = image_renderer.last_image()
         if image is not None:

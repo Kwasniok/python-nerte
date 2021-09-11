@@ -16,7 +16,7 @@ class ImageColorRenderer(ImageRenderer):
     """Renderer which renders the scene in the usual way."""
 
     def __init__(
-        self, projection_mode: ProjectionMode, print_warings: bool = False
+        self, projection_mode: ProjectionMode, print_warings: bool = True
     ):
         ImageRenderer.__init__(
             self, projection_mode, print_warings=print_warings

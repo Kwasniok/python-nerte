@@ -31,7 +31,7 @@ class ImageRayDepthRenderer(ImageRenderer):
     def __init__(
         self,
         projection_mode: ProjectionMode,
-        print_warings: bool = False,
+        print_warings: bool = True,
         min_ray_depth: Optional[float] = None,
         max_ray_depth: Optional[float] = None,
     ):
