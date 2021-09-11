@@ -151,7 +151,7 @@ def main() -> None:
     #       This will also increase rendering time!
     scene = make_scene(canvas_dimension=100)
     geo = SwirlCylindricRungeKuttaGeometry(
-        max_ray_length=math.inf,
+        max_ray_depth=math.inf,
         step_size=0.1,
         max_steps=50,
         swirl_strength=5.0,
