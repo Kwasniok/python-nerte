@@ -35,25 +35,53 @@ class SegmentedRayGeometry(Geometry):
             self, geometry: "SegmentedRayGeometry", initial_segment: RaySegment
         ) -> None:
             self._geometry = geometry
-            self._initial_segment = geometry.normalize_initial_ray_segment(
+            self._segments = [None] * geometry.max_steps()
+            self._segments[0] = geometry.normalize_initial_ray_segment(
                 initial_segment
             )
+            self._steps_cached = 1
+            self._cached_ray_left_manifold = False
 
         def initial_segment(self) -> RaySegment:
             """Returns the inital ray segment."""
-            return self._initial_segment
+            return self._segments[0]
+
+        # TODO: test cache generation (for max_steps = 0 etc.)
+        def _cache_next_segment(self) -> None:
+            if self._cached_ray_left_manifold:
+                return
+            if self._steps_cached >= self._geometry.max_steps():
+                raise RuntimeError(
+                    f"Cannot generate next ray segment for ray starting with"
+                    f" initial segment {self._segments[0]}."
+                    f" At step {self._steps_cached + 1} would exceed the maximum of"
+                    f" {self._geometry.max_steps()}."
+                )
+            segment = self._segments[self._steps_cached - 1]
+            if not self._geometry.is_valid_coordinate(segment.start):
+                raise RuntimeError(
+                    f"Cannot generate next ray segment for ray starting with"
+                    f" initial segment {self._segments[0]}."
+                    f" At step={self._steps_cached + 1} a ray segment={segment} was"
+                    f" created which has invalid starting coordinates."
+                )
+            next_segment = self._geometry.next_ray_segment(segment)
+            if next_segment is None:
+                self._cached_ray_left_manifold = True
+            else:
+                self._segments[self._steps_cached] = next_segment
+                self._steps_cached += 1
 
         def intersection_info(self, face: Face) -> IntersectionInfo:
             geometry = self._geometry
-            segment = self._initial_segment
+
             for step in range(geometry.max_steps()):
-                if not geometry.is_valid_coordinate(segment.start):
-                    raise ValueError(
-                        f"Cannot test for intersection for"
-                        f" ray={self._initial_segment} and face={face}."
-                        f"At step={step} a ray segment={segment} was"
-                        f" created which has invalid starting coordinates."
-                    )
+                if step == self._steps_cached:
+                    self._cache_next_segment()
+                segment = self._segments[step]
+
+                if segment is None:
+                    return IntersectionInfos.RAY_LEFT_MANIFOLD.value
 
                 relative_segment_ray_depth = intersection_ray_depth(
                     ray=segment, face=face
@@ -63,11 +91,7 @@ class SegmentedRayGeometry(Geometry):
                         step + relative_segment_ray_depth
                     ) * geometry.ray_segment_length()
                     return IntersectionInfo(ray_depth=total_ray_depth)
-                next_ray_segment = geometry.next_ray_segment(segment)
-                if next_ray_segment is not None:
-                    segment = next_ray_segment
-                else:
-                    return IntersectionInfos.RAY_LEFT_MANIFOLD.value
+
             return IntersectionInfos.NO_INTERSECTION.value
 
     def __init__(self, max_steps: int, max_ray_depth: float):
