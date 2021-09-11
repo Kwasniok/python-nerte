@@ -23,7 +23,6 @@ class SegmentedRayGeometry(Geometry):
     ans approximated with staright short ray segments.
     """
 
-    # TODO: tests
     class Ray(Geometry.Ray):
         """
         Represenation of a ray in a segmented ray geometry.
