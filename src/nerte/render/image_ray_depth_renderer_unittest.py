@@ -18,7 +18,7 @@ from nerte.values.color import Colors
 from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
-from nerte.geometry.geometry import CarthesianGeometry
+from nerte.geometry.carthesian_geometry import CarthesianGeometry
 from nerte.geometry.cylindircal_geometry import CylindricRungeKuttaGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_ray_depth_renderer import ImageRayDepthRenderer

@@ -12,7 +12,7 @@ from nerte.values.util.convert import coordinates_as_vector
 from nerte.values.ray_segment import RaySegment
 from nerte.values.ray_segment_delta import RaySegmentDelta
 from nerte.values.linalg import AbstractVector, AbstractMatrix, Metric, length
-from nerte.geometry.geometry import RungeKuttaGeometry
+from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 
 
 class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):

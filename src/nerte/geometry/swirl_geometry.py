@@ -6,7 +6,7 @@ from nerte.values.coordinates import Coordinates3D
 from nerte.values.util.convert import coordinates_as_vector
 from nerte.values.ray_segment import RaySegment
 from nerte.values.linalg import AbstractVector, cross, normalized
-from nerte.geometry.geometry import SegmentedRayGeometry
+from nerte.geometry.segmented_ray_geometry import SegmentedRayGeometry
 
 
 class SwirlGeometry(SegmentedRayGeometry):

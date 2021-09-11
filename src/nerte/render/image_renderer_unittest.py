@@ -12,7 +12,7 @@ from nerte.values.linalg import AbstractVector
 from nerte.values.manifolds.cartesian import Plane
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
-from nerte.geometry.geometry import CarthesianGeometry
+from nerte.geometry.carthesian_geometry import CarthesianGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_renderer import ImageRenderer
 

@@ -17,7 +17,7 @@ from nerte.values.linalg import AbstractVector
 from nerte.values.manifolds.cartesian import Plane as PlaneCartesian
 from nerte.values.manifolds.cylindrical import Plane as PlaneCylindric
 from nerte.world.camera import Camera
-from nerte.geometry.geometry import CarthesianGeometry
+from nerte.geometry.carthesian_geometry import CarthesianGeometry
 from nerte.render.projection import (
     detector_manifold_coords,
     orthographic_ray_segment_for_pixel,
