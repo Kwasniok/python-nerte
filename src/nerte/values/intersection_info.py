@@ -74,6 +74,12 @@ class IntersectionInfo:
 
 
 class IntersectionInfos(Enum):
+    """
+    Enumerates some of the most common intersection information as constants.
+
+    Note: Prefer to use these constant over creating new objects if possible,
+          to save resources.
+    """
 
     # TODO: add tests
 
