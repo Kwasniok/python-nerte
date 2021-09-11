@@ -12,10 +12,53 @@ from itertools import permutations
 from nerte.geometry.geometry_unittest import GeometryTestCase
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.linalg import AbstractVector
-from nerte.values.ray_segment import RaySegment
+from nerte.values.linalg import AbstractVector, normalized
 from nerte.values.face import Face
+from nerte.values.ray_segment import RaySegment
 from nerte.geometry.carthesian_geometry import CarthesianGeometry
+
+
+class CarthesianGeometryConstructorTest(GeometryTestCase):
+    def test_constructor(self) -> None:
+        # pylint: disable=R0201
+        """Test the constructor."""
+        CarthesianGeometry()
+
+
+class CarthesianGeometryIsValidCoordinateTest(GeometryTestCase):
+    def setUp(self) -> None:
+        self.geo = CarthesianGeometry()
+        self.valid_coords = (Coordinates3D((0.0, 0.0, 0.0)),)
+
+    def test_is_valid_coordinate(self) -> None:
+        """Tests coordinate validity."""
+        for coords in self.valid_coords:
+            self.assertTrue(self.geo.is_valid_coordinate(coords))
+
+
+class CarthesianGeometryRayFromTest(GeometryTestCase):
+    def setUp(self) -> None:
+        self.geo = CarthesianGeometry()
+        self.coords1 = Coordinates3D((0.0, 0.0, 0.0))
+        self.coords2 = Coordinates3D((0.0, 1.0, 2.0))
+        self.direction = AbstractVector((0.0, 1.0, 2.0))  # equiv to cords2
+        self.init_seg = RaySegment(
+            start=self.coords1, direction=normalized(self.direction)
+        )
+
+    def test_ray_from_coords(self) -> None:
+        """Tests ray from coordinates."""
+        ray = self.geo.ray_from_coords(self.coords1, self.coords2)
+        init_seg = ray.as_segment()
+        self.assertCoordinates3DEquiv(init_seg.start, self.init_seg.start)
+        self.assertVectorEquiv(init_seg.direction, self.init_seg.direction)
+
+    def test_ray_from_tangent(self) -> None:
+        """Tests ray from tangent."""
+        ray = self.geo.ray_from_tangent(self.coords1, self.direction)
+        init_seg = ray.as_segment()
+        self.assertCoordinates3DEquiv(init_seg.start, self.init_seg.start)
+        self.assertVectorEquiv(init_seg.direction, self.init_seg.direction)
 
 
 class CarthesianGeometryIntersectsTest1(GeometryTestCase):

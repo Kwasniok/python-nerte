@@ -49,7 +49,6 @@ class RungeKuttaGeometry(Geometry):
     non-trivial.
     """
 
-    # TODO: tests
     class Ray(Geometry.Ray):
         """
         Representation of a ray in a Runge-Kutta geometry.

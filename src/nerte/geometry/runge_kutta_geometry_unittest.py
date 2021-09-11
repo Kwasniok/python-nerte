@@ -58,7 +58,8 @@ def _make_dummy_runge_kutta_geometry() -> Type[RungeKuttaGeometry]:
             self._geodesic_equation = geodesic_equation
 
         def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
-            return True
+            x, _, _ = coordinates
+            return -1 < x < 1
 
         def ray_from_coords(
             self, start: Coordinates3D, target: Coordinates3D
@@ -77,7 +78,7 @@ def _make_dummy_runge_kutta_geometry() -> Type[RungeKuttaGeometry]:
             vec_t = coordinates_as_vector(target)
             return RungeKuttaGeometry.Ray(
                 geometry=self,
-                inital_tangent=RaySegment(
+                initial_tangent=RaySegment(
                     start=start, direction=(vec_t - vec_s)
                 ),
             )
@@ -93,10 +94,22 @@ def _make_dummy_runge_kutta_geometry() -> Type[RungeKuttaGeometry]:
     return DummyRungeKuttaGeometry
 
 
-class RungeKuttaGeometryInterfaceTest(GeometryTestCase):
-    def test_runge_kutta_geometry_interface(self) -> None:
-        """Tests the Runge-Kutta based geometry interface with a dummy."""
-        DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
+class RungeKuttaGeometryImplementaionTest(GeometryTestCase):
+    def test_runge_kutta_geometry_implementation(self) -> None:
+        # pylint: disable=R0201
+        """
+        Tests the Runge-Kutta based geometry interface implementation with a dummy.
+        """
+        _make_dummy_runge_kutta_geometry()
+
+
+class DummyRungeKuttaGeometryConstructorTest(GeometryTestCase):
+    def setUp(self) -> None:
+        self.DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
+
+    def test_constructor(self) -> None:
+        """Test the constructor."""
+        DummyRungeKuttaGeometryGeo = self.DummyRungeKuttaGeometryGeo
 
         DummyRungeKuttaGeometryGeo(
             max_ray_length=1.0, step_size=0.1, max_steps=1
@@ -142,30 +155,95 @@ class RungeKuttaGeometryInterfaceTest(GeometryTestCase):
             )
 
 
-class RungeKuttaGeometryVectorTest(GeometryTestCase):
+class DummyRungeKuttaGeometryPropertiesTest(GeometryTestCase):
     def setUp(self) -> None:
-        v = AbstractVector((1.0, -2.0, 3.0))
-        self.coords = Coordinates3D((0.0, 0.0, 0.0))
-        self.ray = RaySegment(start=self.coords, direction=v)
-        self.n = AbstractVector((1.0, -2.0, 3.0)) * (14.0) ** -0.5
-        # geometry
-        DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
-        self.geo = DummyRungeKuttaGeometryGeo(
-            max_ray_length=math.inf, step_size=1.0, max_steps=10
+        self.DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
+        self.max_ray_length = 1.0
+        self.step_size = 0.1
+        self.max_steps = 1
+        self.geometry = self.DummyRungeKuttaGeometryGeo(
+            max_ray_length=self.max_ray_length,
+            step_size=self.step_size,
+            max_steps=self.max_steps,
         )
 
-    def test_dummy_runge_kutta_geometry_length(self) -> None:
-        """Tests dummy Runge-Kutta geometry vector length."""
-        self.assertEquiv(self.geo.length(self.ray), 14.0 ** 0.5)
-
-    def test_dummy_runge_kutta_geometry_normalized(self) -> None:
-        """Tests dummy Runge-Kutta geometry vector normalization."""
-        ray_normalized = self.geo.normalized(self.ray)
-        self.assertCoordinates3DEquiv(ray_normalized.start, self.coords)
-        self.assertVectorEquiv(ray_normalized.direction, self.n)
+    def test_properties(self) -> None:
+        """Tests the properties."""
+        self.assertTrue(self.geometry.max_ray_length() == self.max_ray_length)
+        self.assertTrue(self.geometry.step_size() == self.step_size)
+        self.assertTrue(self.geometry.max_steps() == self.max_steps)
 
 
-class RungeKuttaGeometryIntersectsTest(GeometryTestCase):
+class DummyRungeKuttaGeometryIsValidCoordinateTest(GeometryTestCase):
+    def setUp(self) -> None:
+        DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
+        self.geo = DummyRungeKuttaGeometryGeo(
+            max_ray_length=1.0, step_size=0.1, max_steps=10
+        )
+        self.valid_coords = (Coordinates3D((0.0, 0.0, 0.0)),)
+        self.invalid_coords = (
+            Coordinates3D((-3.0, 0.0, 0.0)),
+            Coordinates3D((3.0, 0.0, 0.0)),
+            Coordinates3D((-math.inf, 0.0, 0.0)),
+            Coordinates3D((math.inf, 0.0, 0.0)),
+            Coordinates3D((math.nan, 0.0, 0.0)),
+        )
+
+    def test_is_valid_coordinate(self) -> None:
+        """Tests coordinate validity."""
+        for coords in self.valid_coords:
+            self.assertTrue(self.geo.is_valid_coordinate(coords))
+        for coords in self.invalid_coords:
+            self.assertFalse(self.geo.is_valid_coordinate(coords))
+
+
+class RungeKuttaGeometryRayConstructorTest(GeometryTestCase):
+    def setUp(self) -> None:
+        DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
+        self.geo = DummyRungeKuttaGeometryGeo(
+            max_ray_length=1.0,
+            step_size=0.1,  # enforce multiple steps until hit
+            max_steps=10,
+        )
+        self.coords = Coordinates3D((0.0, 0.0, 0.0))
+        self.direction = AbstractVector((0.0, 1.0, 2.0))
+        self.initial_tangent = self.geo.normalized(
+            RaySegment(start=self.coords, direction=self.direction)
+        )
+
+    def test_constructor(self) -> None:
+        """Tests the constructor."""
+        RungeKuttaGeometry.Ray(
+            geometry=self.geo, initial_tangent=self.initial_tangent
+        )
+
+
+class RungeKuttaGeometryRayPropertiesTest(GeometryTestCase):
+    def setUp(self) -> None:
+        DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
+        self.geo = DummyRungeKuttaGeometryGeo(
+            max_ray_length=1.0,
+            step_size=0.1,  # enforce multiple steps until hit
+            max_steps=10,
+        )
+        coords = Coordinates3D((0.0, 0.0, 0.0))
+        direction = AbstractVector((0.0, 1.0, 2.0))
+        self.ray = RungeKuttaGeometry.Ray(
+            geometry=self.geo,
+            initial_tangent=RaySegment(start=coords, direction=direction),
+        )
+        self.initial_tangent = self.geo.normalized(
+            RaySegment(start=coords, direction=direction)
+        )
+
+    def test_properties(self) -> None:
+        """Tests the properties."""
+        self.assertEquivRaySegment(
+            self.ray.initial_tangent(), self.initial_tangent
+        )
+
+
+class RungeKuttaGeometryRayIntersectsTest(GeometryTestCase):
     def setUp(self) -> None:
         self.v = AbstractVector((1.0, 2.0, 3.0))
         # face with all permuations of its coordinates
@@ -235,6 +313,66 @@ class RungeKuttaGeometryIntersectsTest(GeometryTestCase):
             for f in self.faces:
                 info = r.intersection_info(f)
                 self.assertTrue(info.misses())
+
+
+class DummyRungeKuttaGeometryRayFromTest(GeometryTestCase):
+    def setUp(self) -> None:
+        DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
+        self.geo = DummyRungeKuttaGeometryGeo(
+            max_ray_length=1.0, step_size=0.1, max_steps=10
+        )
+        self.coords1 = Coordinates3D((0.0, 0.0, 0.0))
+        self.coords2 = Coordinates3D((0.0, 1.0, 2.0))
+        self.invalid_coords = Coordinates3D((-3.0, 0.0, 0.0))
+        self.direction = AbstractVector((0.0, 1.0, 2.0))  # equiv to cords2
+        self.init_seg = self.geo.normalized(
+            RaySegment(start=self.coords1, direction=self.direction)
+        )
+
+    def test_ray_from_coords(self) -> None:
+        """Tests ray from coordinates."""
+        ray = self.geo.ray_from_coords(self.coords1, self.coords2)
+        init_seg = ray.initial_tangent()
+        self.assertCoordinates3DEquiv(init_seg.start, self.init_seg.start)
+        self.assertVectorEquiv(init_seg.direction, self.init_seg.direction)
+        with self.assertRaises(ValueError):
+            self.geo.ray_from_coords(self.invalid_coords, self.coords2)
+        with self.assertRaises(ValueError):
+            self.geo.ray_from_coords(self.coords1, self.invalid_coords)
+        with self.assertRaises(ValueError):
+            self.geo.ray_from_coords(self.invalid_coords, self.invalid_coords)
+
+    def test_ray_from_tangent(self) -> None:
+        """Tests ray from tangent."""
+        ray = self.geo.ray_from_tangent(self.coords1, self.direction)
+        init_seg = ray.initial_tangent()
+        self.assertCoordinates3DEquiv(init_seg.start, self.init_seg.start)
+        self.assertVectorEquiv(init_seg.direction, self.init_seg.direction)
+        with self.assertRaises(ValueError):
+            self.geo.ray_from_tangent(self.invalid_coords, self.direction)
+
+
+class RungeKuttaGeometryVectorTest(GeometryTestCase):
+    def setUp(self) -> None:
+        v = AbstractVector((1.0, -2.0, 3.0))
+        self.coords = Coordinates3D((0.0, 0.0, 0.0))
+        self.ray = RaySegment(start=self.coords, direction=v)
+        self.n = AbstractVector((1.0, -2.0, 3.0)) * (14.0) ** -0.5
+        # geometry
+        DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
+        self.geo = DummyRungeKuttaGeometryGeo(
+            max_ray_length=math.inf, step_size=1.0, max_steps=10
+        )
+
+    def test_dummy_runge_kutta_geometry_length(self) -> None:
+        """Tests dummy Runge-Kutta geometry vector length."""
+        self.assertEquiv(self.geo.length(self.ray), 14.0 ** 0.5)
+
+    def test_dummy_runge_kutta_geometry_normalized(self) -> None:
+        """Tests dummy Runge-Kutta geometry vector normalization."""
+        ray_normalized = self.geo.normalized(self.ray)
+        self.assertCoordinates3DEquiv(ray_normalized.start, self.coords)
+        self.assertVectorEquiv(ray_normalized.direction, self.n)
 
 
 if __name__ == "__main__":

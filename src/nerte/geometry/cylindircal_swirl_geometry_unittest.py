@@ -6,10 +6,12 @@
 
 import unittest
 
-from typing import TypeVar, Callable, Optional
+from typing import TypeVar, Callable
 
 from itertools import permutations
 import math
+
+from nerte.geometry.geometry_unittest import GeometryTestCase
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, AbstractMatrix, Metric
@@ -32,113 +34,7 @@ def _iterate(f: Callable[[T], T], n: int, x0: T) -> T:
     return x
 
 
-# True, iff two floats are equivalent
-def _equiv(x: float, y: float, rel_tol: Optional[float] = None) -> bool:
-    if rel_tol is None:
-        return math.isclose(x, y)
-    return math.isclose(x, y, rel_tol=rel_tol)
-
-
-# True, iff two vectors are equivalent
-def _vec_equiv(x: AbstractVector, y: AbstractVector) -> bool:
-    return _equiv(x[0], y[0]) and _equiv(x[1], y[1]) and _equiv(x[2], y[2])
-
-
-# True, iff two coordinates are equivalent
-def _coords_equiv(x: Coordinates3D, y: Coordinates3D) -> bool:
-    return _equiv(x[0], y[0]) and _equiv(x[1], y[1]) and _equiv(x[2], y[2])
-
-
-# True, iff two metrics are equivalent
-def _metric_equiv(x: Metric, y: Metric) -> bool:
-    return (
-        _vec_equiv(x.matrix()[0], y.matrix()[0])
-        and _vec_equiv(x.matrix()[1], y.matrix()[1])
-        and _vec_equiv(x.matrix()[2], y.matrix()[2])
-    )
-
-
-# True, iff two ray segments are equivalent
-def _ray_seg_equiv(x: RaySegmentDelta, y: RaySegmentDelta) -> bool:
-    return _vec_equiv(x.coords_delta, y.coords_delta) and _vec_equiv(
-        x.velocity_delta, y.velocity_delta
-    )
-
-
-class GeometryTestCase(unittest.TestCase):
-    def assertEquiv(
-        self, x: float, y: float, rel_tol: Optional[float] = None
-    ) -> None:
-        """
-        Asserts the equivalence of two floats.
-        Note: This replaces assertTrue(x == y) for float.
-        """
-        try:
-            self.assertTrue(_equiv(x, y, rel_tol=rel_tol))
-        except AssertionError as ae:
-            if rel_tol is None:
-                raise AssertionError(
-                    f"Scalar {x} is not equivalent to {y}."
-                ) from ae
-            raise AssertionError(
-                f"Scalar {x} is not equivalent to {y}."
-                f" Relative tolerance is {rel_tol}."
-            ) from ae
-
-    def assertVectorEquiv(self, x: AbstractVector, y: AbstractVector) -> None:
-        """
-        Asserts ths equivalence of two vectors.
-        Note: This replaces assertTrue(x == y) for vectors.
-        """
-        try:
-            self.assertTrue(_vec_equiv(x, y))
-        except AssertionError as ae:
-            raise AssertionError(
-                f"Vector {x} is not equivalent to {y}."
-            ) from ae
-
-    def assertCoordinates3DEquiv(
-        self, x: Coordinates3D, y: Coordinates3D
-    ) -> None:
-        """
-        Asserts ths equivalence of two three dimensional coordinates.
-        Note: This replaces assertTrue(x == y) for three dimensional coordinates.
-        """
-        try:
-            self.assertTrue(_coords_equiv(x, y))
-        except AssertionError as ae:
-            raise AssertionError(
-                f"Coordinates {x} is not equivalent to {y}."
-            ) from ae
-
-    def assertMetricEquiv(self, x: Metric, y: Metric) -> None:
-        """
-        Asserts ths equivalence of two metrics.
-        Note: This replaces assertTrue(x == y) for metrics.
-        """
-        try:
-            self.assertTrue(_metric_equiv(x, y))
-        except AssertionError as ae:
-            raise AssertionError(
-                f"Metric {x} is not equivalent to {y}."
-            ) from ae
-
-    def assertEquivRaySegment(
-        self, x: RaySegmentDelta, y: RaySegmentDelta
-    ) -> None:
-        """
-        Asserts the equivalence of two ray deltas.
-        Note: This replaces assertTrue(x == y) for RaySegmentDelta.
-        """
-        try:
-            self.assertTrue(_ray_seg_equiv(x, y))
-        except AssertionError as ae:
-            raise AssertionError(
-                f"Ray segment {x} is not equivalent to {y}."
-            ) from ae
-
-
-class SwirlCylindricRungeKuttaGeometryTest(GeometryTestCase):
+class SwirlCylindricRungeKuttaGeometryConstructorTest(GeometryTestCase):
     def test_constructor(self) -> None:
         """Tests constructor."""
         SwirlCylindricRungeKuttaGeometry(
@@ -288,101 +184,48 @@ class SwirlCylindricRungeKuttaGeometryIsValidCoordinateTest(GeometryTestCase):
             self.assertFalse(self.geo.is_valid_coordinate(coords))
 
 
-class SwirlCylindricRungeKuttaGeometryMetricTest(GeometryTestCase):
+class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
+    GeometryTestCase
+):
     def setUp(self) -> None:
         self.geo = SwirlCylindricRungeKuttaGeometry(
             max_ray_length=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
         )
-        self.coords = (
-            Coordinates3D((1.0, 0.0, 0.0)),
-            Coordinates3D((1.0, 0.0, -1.0)),
-            Coordinates3D((1.0, -math.pi + 0.001, -1e8)),
-            Coordinates3D((1.0, +math.pi - 0.001, +1e8)),
-            Coordinates3D((2.0, 0.0, 0.0)),
-            Coordinates3D((2.0, 0.0, -1.0)),
-            Coordinates3D((2.0, -math.pi + 0.001, -1e8)),
-            Coordinates3D((2.0, +math.pi - 0.001, +1e8)),
+        self.coords1 = Coordinates3D((1.0, 0.0, 0.0))
+        self.coords2 = Coordinates3D((1.0, math.pi / 2, 0.0))
+        self.invalid_coords = (
+            Coordinates3D((0.0, 0.0, 0.0)),
+            Coordinates3D((1.0, -math.pi, 0.0)),
+            Coordinates3D((1.0, +math.pi, 0.0)),
+        )
+        self.direction = AbstractVector((0.0, 1.0, 0.0))  # equiv to cords2
+        self.init_seg = self.geo.normalized(
+            RaySegment(start=self.coords1, direction=self.direction)
         )
 
-        def metric(coords: Coordinates3D) -> Metric:
-            return Metric(
-                AbstractMatrix(
-                    AbstractVector((1.0, 0.0, 0.0)),
-                    AbstractVector((0.0, coords[0] ** 2, 0.0)),
-                    AbstractVector((0.0, 0.0, 1.0)),
-                )
-            )
+    def test_ray_from_coords(self) -> None:
+        """Tests ray from coordinates."""
+        ray = self.geo.ray_from_coords(self.coords1, self.coords2)
+        init_seg = ray.initial_tangent()
+        self.assertCoordinates3DEquiv(init_seg.start, self.init_seg.start)
+        self.assertVectorEquiv(init_seg.direction, self.init_seg.direction)
+        for invalid_coords in self.invalid_coords:
+            with self.assertRaises(ValueError):
+                self.geo.ray_from_coords(invalid_coords, self.coords2)
+            with self.assertRaises(ValueError):
+                self.geo.ray_from_coords(self.coords1, invalid_coords)
+            with self.assertRaises(ValueError):
+                self.geo.ray_from_coords(invalid_coords, invalid_coords)
 
-        self.metrics = tuple(metric(coords) for coords in self.coords)
-
-    def test_metric(self) -> None:
-        """Tests (local) metric."""
-        for coords, metric in zip(self.coords, self.metrics):
-            self.assertMetricEquiv(self.geo.metric(coords), metric)
-
-
-class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(GeometryTestCase):
-    def setUp(self) -> None:
-        self.geo = SwirlCylindricRungeKuttaGeometry(
-            max_ray_length=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
-        )
-
-        def geodesic_equation(ray: RaySegmentDelta) -> RaySegmentDelta:
-            # pylint: disable=C0103
-            # TODO: revert when mypy bug was fixed
-            #       see https://github.com/python/mypy/issues/2220
-            # r, _, z = ray.coords_delta
-            # v_r, v_phi, v_z = ray.velocity_delta
-            # a = self._swirl_strength
-            r = ray.coords_delta[0]
-            z = ray.coords_delta[2]
-            v_r = ray.velocity_delta[0]
-            v_phi = ray.velocity_delta[1]
-            v_z = ray.velocity_delta[2]
-            a = self.geo.swirl_strength()
-            return RaySegmentDelta(
-                ray.velocity_delta,
-                AbstractVector(
-                    (
-                        r * (a * z * v_r + a * r * v_z + v_phi) ** 2,
-                        -(
-                            (2 * v_r * v_phi) / r
-                            + 2 * a ** 2 * r * v_phi * z * (r * v_z + v_r * z)
-                            + a ** 3 * r * z * (r * v_z + v_r * z) ** 2
-                            + a
-                            * (
-                                4 * v_r * v_z
-                                + (2 * v_r ** 2 * z) / r
-                                + r * v_phi ** 2 * z
-                            )
-                        ),
-                        0,
-                    )
-                ),
-            )
-
-        self.geodesic_equation = geodesic_equation
-        self.xs = (
-            RaySegmentDelta(
-                AbstractVector((1.0, 0.0, 0.0)), AbstractVector((0.0, 0.0, 1.0))
-            ),
-            RaySegmentDelta(
-                AbstractVector((2.0, math.pi / 2, 1.0)),
-                AbstractVector((1.0, -2.0, 3.0)),
-            ),
-            RaySegmentDelta(
-                AbstractVector((0.001, -math.pi / 2, -10.0)),
-                AbstractVector((1.0, -2.0, 3.0)),
-            ),
-        )
-
-    def test_geodesic_equation(self) -> None:
-        """Tests geodesic equation."""
-        geodesic_equation = self.geo.geodesic_equation()
-        for x in self.xs:
-            self.assertEquivRaySegment(
-                geodesic_equation(x), self.geodesic_equation(x)
-            )
+    def test_ray_from_tangent(self) -> None:
+        """Tests ray from tangent."""
+        ray = self.geo.ray_from_tangent(self.coords1, self.direction)
+        init_seg = ray.initial_tangent()
+        self.assertCoordinates3DEquiv(init_seg.start, self.init_seg.start)
+        self.assertVectorEquiv(init_seg.direction, self.init_seg.direction)
+        for invalid_coords in self.invalid_coords:
+            with self.assertRaises(ValueError):
+                self.geo.ray_from_tangent(invalid_coords, self.direction)
 
 
 class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(
@@ -448,6 +291,103 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(
         for ray in self.invalid_rays:
             with self.assertRaises(ValueError):
                 self.geo.normalized(ray)
+
+
+class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(GeometryTestCase):
+    def setUp(self) -> None:
+        self.geo = SwirlCylindricRungeKuttaGeometry(
+            max_ray_length=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
+        )
+
+        def geodesic_equation(ray: RaySegmentDelta) -> RaySegmentDelta:
+            # pylint: disable=C0103
+            # TODO: revert when mypy bug was fixed
+            #       see https://github.com/python/mypy/issues/2220
+            # r, _, z = ray.coords_delta
+            # v_r, v_phi, v_z = ray.velocity_delta
+            # a = self._swirl_strength
+            r = ray.coords_delta[0]
+            z = ray.coords_delta[2]
+            v_r = ray.velocity_delta[0]
+            v_phi = ray.velocity_delta[1]
+            v_z = ray.velocity_delta[2]
+            a = self.geo.swirl_strength()
+            return RaySegmentDelta(
+                ray.velocity_delta,
+                AbstractVector(
+                    (
+                        r * (a * z * v_r + a * r * v_z + v_phi) ** 2,
+                        -(
+                            (2 * v_r * v_phi) / r
+                            + 2 * a ** 2 * r * v_phi * z * (r * v_z + v_r * z)
+                            + a ** 3 * r * z * (r * v_z + v_r * z) ** 2
+                            + a
+                            * (
+                                4 * v_r * v_z
+                                + (2 * v_r ** 2 * z) / r
+                                + r * v_phi ** 2 * z
+                            )
+                        ),
+                        0,
+                    )
+                ),
+            )
+
+        self.geodesic_equation = geodesic_equation
+        self.xs = (
+            RaySegmentDelta(
+                AbstractVector((1.0, 0.0, 0.0)), AbstractVector((0.0, 0.0, 1.0))
+            ),
+            RaySegmentDelta(
+                AbstractVector((2.0, math.pi / 2, 1.0)),
+                AbstractVector((1.0, -2.0, 3.0)),
+            ),
+            RaySegmentDelta(
+                AbstractVector((0.001, -math.pi / 2, -10.0)),
+                AbstractVector((1.0, -2.0, 3.0)),
+            ),
+        )
+
+    def test_geodesic_equation(self) -> None:
+        """Tests geodesic equation."""
+        geodesic_equation = self.geo.geodesic_equation()
+        for x in self.xs:
+            self.assertEquivRaySegmentDelta(
+                geodesic_equation(x), self.geodesic_equation(x)
+            )
+
+
+class SwirlCylindricRungeKuttaGeometryMetricTest(GeometryTestCase):
+    def setUp(self) -> None:
+        self.geo = SwirlCylindricRungeKuttaGeometry(
+            max_ray_length=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
+        )
+        self.coords = (
+            Coordinates3D((1.0, 0.0, 0.0)),
+            Coordinates3D((1.0, 0.0, -1.0)),
+            Coordinates3D((1.0, -math.pi + 0.001, -1e8)),
+            Coordinates3D((1.0, +math.pi - 0.001, +1e8)),
+            Coordinates3D((2.0, 0.0, 0.0)),
+            Coordinates3D((2.0, 0.0, -1.0)),
+            Coordinates3D((2.0, -math.pi + 0.001, -1e8)),
+            Coordinates3D((2.0, +math.pi - 0.001, +1e8)),
+        )
+
+        def metric(coords: Coordinates3D) -> Metric:
+            return Metric(
+                AbstractMatrix(
+                    AbstractVector((1.0, 0.0, 0.0)),
+                    AbstractVector((0.0, coords[0] ** 2, 0.0)),
+                    AbstractVector((0.0, 0.0, 1.0)),
+                )
+            )
+
+        self.metrics = tuple(metric(coords) for coords in self.coords)
+
+    def test_metric(self) -> None:
+        """Tests (local) metric."""
+        for coords, metric in zip(self.coords, self.metrics):
+            self.assertMetricEquiv(self.geo.metric(coords), metric)
 
 
 class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
