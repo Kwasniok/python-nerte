@@ -163,7 +163,7 @@ class RungeKuttaGeometry(Geometry):
         """
         return self._step_size
 
-    def max_steps(self) -> float:
+    def max_steps(self) -> int:
         """
         Returns the limit of approximation steps.
 
