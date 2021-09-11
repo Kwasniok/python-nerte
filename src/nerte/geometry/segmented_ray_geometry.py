@@ -14,10 +14,6 @@ from nerte.values.face import Face
 from nerte.values.linalg import AbstractVector
 from nerte.values.ray_segment import RaySegment
 from nerte.values.intersection_info import IntersectionInfo, IntersectionInfos
-from nerte.values.util.convert import (
-    coordinates_as_vector,
-    vector_as_coordinates,
-)
 from nerte.geometry.geometry import Geometry, intersection_ray_depth
 
 
@@ -45,7 +41,10 @@ class SegmentedRayGeometry(Geometry):
                 initial_segment
             )
             self._geometry = geometry
-            self._segments = [None] * geometry.max_steps()
+            # TODO: find type-safe container
+            self._segments: list[Optional[RaySegment]] = [
+                None
+            ] * geometry.max_steps()
             self._segments[0] = initial_segment
             self._steps_cached = 1
             self._cached_ray_left_manifold = False
