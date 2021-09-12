@@ -1,5 +1,7 @@
 """This demo script renders a test scene in non-euclidean geometry."""
 
+import os
+
 from enum import IntEnum
 
 from nerte.values.coordinates import Coordinates3D
@@ -167,6 +169,7 @@ def render(
                 print_warings=False,
             )
         image_renderer.render(scene=scene, geometry=geometry)
+        os.makedirs("../images", exist_ok=True)
         image = image_renderer.last_image()
         if image is not None:
             image.save(
