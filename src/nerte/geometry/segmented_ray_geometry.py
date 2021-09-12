@@ -93,7 +93,7 @@ class SegmentedRayGeometry(Geometry):
                 segment = self._segments[step]
 
                 if segment is None:
-                    return IntersectionInfos.RAY_LEFT_MANIFOLD.value
+                    return IntersectionInfos.RAY_LEFT_MANIFOLD
 
                 relative_segment_ray_depth = intersection_ray_depth(
                     ray=segment, face=face
@@ -104,7 +104,7 @@ class SegmentedRayGeometry(Geometry):
                     ) * geometry.ray_segment_length()
                     return IntersectionInfo(ray_depth=total_ray_depth)
 
-            return IntersectionInfos.NO_INTERSECTION.value
+            return IntersectionInfos.NO_INTERSECTION
 
     def __init__(self, max_steps: int, max_ray_depth: float):
 

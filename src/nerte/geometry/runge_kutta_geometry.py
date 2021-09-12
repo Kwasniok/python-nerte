@@ -157,7 +157,7 @@ class RungeKuttaGeometry(Geometry):
                 if sement_and_length is None:
                     # ray has left the boundaries of the (local map of the)
                     # manifold
-                    return IntersectionInfos.RAY_LEFT_MANIFOLD.value
+                    return IntersectionInfos.RAY_LEFT_MANIFOLD
 
                 segment, segment_length = sement_and_length
                 relative_segment_depth = intersection_ray_depth(
@@ -170,7 +170,7 @@ class RungeKuttaGeometry(Geometry):
                 step += 1
                 total_ray_depth += segment_length
 
-            return IntersectionInfos.NO_INTERSECTION.value
+            return IntersectionInfos.NO_INTERSECTION
 
     def __init__(
         self,

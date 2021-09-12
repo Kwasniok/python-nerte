@@ -19,8 +19,13 @@ class IntersectionInfo:
     def __init__(
         self,
         ray_depth: float = math.inf,
-        miss_reasons: Optional[set[MissReason]] = None,
+        miss_reason: Optional[MissReason] = None,
     ) -> None:
+        """
+        Defaults to no intersection, provide a finite ray depth or an alternative miss reason.
+
+        Note: An infinite ray depth implies no intersection.
+        """
         # pylint: disable=C0113
         # NOTE: ray_depth < 0.0 would not handle ray_depth=math.nan correclty
         if not ray_depth >= 0.0:
@@ -28,21 +33,21 @@ class IntersectionInfo:
                 f"Cannot create intersection info with non-positive"
                 f" ray_depth={ray_depth}."
             )
-        if (
-            ray_depth < math.inf
-            and miss_reasons is not None
-            and len(miss_reasons) > 0
-        ):
+        if ray_depth < math.inf and miss_reason is not None:
             raise ValueError(
                 f"Cannot create intersection info with finite"
-                f" ray_depth={ray_depth} and miss_reasons={miss_reasons}."
+                f" ray_depth={ray_depth} and miss_reason={miss_reason}."
                 f" This information is conflicting."
             )
+        if math.isinf(ray_depth) and miss_reason is None:
+            miss_reason = IntersectionInfo.MissReason.NO_INTERSECTION
         self._ray_depth = ray_depth
-        self._miss_reasons = miss_reasons
+        self._miss_reason = miss_reason
 
     def __repr__(self) -> str:
-        return f"IntersectionInfo(ray_depth={self._ray_depth}, miss_reasons={self._miss_reasons})"
+        if self._miss_reason is None:
+            return f"IntersectionInfo(ray_depth={self._ray_depth})"
+        return f"IntersectionInfo(ray_depth={self._ray_depth}, miss_reason={self._miss_reason})"
 
     def hits(self) -> bool:
         """Returns True, iff the ray hits the face."""
@@ -60,34 +65,26 @@ class IntersectionInfo:
         """
         return self._ray_depth
 
-    def miss_reasons(self) -> set[MissReason]:
+    def miss_reason(self) -> Optional[MissReason]:
         """
-        Returns a set of reasons why the intersection failed.
-
-        NOTE: The set is empty if the ray hit the face.
+        Returns the reason why the intersection failed if it exists or None if
+        an intersection exists.
         """
-        miss_reasons = set()
-        if self._miss_reasons is not None:
-            miss_reasons |= self._miss_reasons
-        if self._ray_depth == math.inf:
-            miss_reasons.add(IntersectionInfo.MissReason.NO_INTERSECTION)
-        return miss_reasons
+        return self._miss_reason
 
 
-class IntersectionInfos(Enum):
+class IntersectionInfos:
+    # pylint: disable=R0903
     """
-    Enumerates some of the most common intersection information as constants.
+    Bundles some of the most common intersection information as constants.
 
     Note: Prefer to use these constant over creating new objects if possible,
           to save resources.
     """
 
-    # TODO: add tests
-
     NO_INTERSECTION = IntersectionInfo(
-        ray_depth=math.inf,
-        miss_reasons=set((IntersectionInfo.MissReason.NO_INTERSECTION,)),
+        miss_reason=IntersectionInfo.MissReason.NO_INTERSECTION,
     )
     RAY_LEFT_MANIFOLD = IntersectionInfo(
-        miss_reasons=set((IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD,))
+        miss_reason=IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD,
     )

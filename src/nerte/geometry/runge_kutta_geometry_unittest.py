@@ -344,9 +344,9 @@ class RungeKuttaGeometryRayIntersectsRayLeftManifoldEventuallyTest(
         for f in self.faces:
             info = self.ray.intersection_info(f)
             self.assertTrue(info.misses())
-            self.assertTrue(
-                IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD
-                in info.miss_reasons()
+            self.assertIs(
+                info.miss_reason(),
+                IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD,
             )
 
 
@@ -381,9 +381,9 @@ class RungeKuttaGeometryRayIntersectsRayLeftManifoldImmediatelyTest(
         for f in self.faces:
             info = self.ray.intersection_info(f)
             self.assertTrue(info.misses())
-            self.assertTrue(
-                IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD
-                in info.miss_reasons()
+            self.assertIs(
+                info.miss_reason(),
+                IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD,
             )
 
 
