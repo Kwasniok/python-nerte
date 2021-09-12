@@ -41,7 +41,8 @@ class SegmentedRayGeometry(Geometry):
                 initial_segment
             )
             self._geometry = geometry
-            # TODO: find type-safe container
+            # NOTE: a type-safe container of an preallocated list with an
+            #       initialized first argument may be preferable here
             self._segments: list[Optional[RaySegment]] = [
                 None
             ] * geometry.max_steps()
@@ -56,6 +57,10 @@ class SegmentedRayGeometry(Geometry):
 
         def initial_segment(self) -> RaySegment:
             """Returns the inital ray segment."""
+            if self._segments[0] is None:
+                raise RuntimeError(
+                    "Segmented ray is missing its initial segment."
+                )
             return self._segments[0]
 
         # TODO: test cache generation (for max_steps = 0 etc.)
@@ -70,6 +75,12 @@ class SegmentedRayGeometry(Geometry):
                     f" {self._geometry.max_steps()}."
                 )
             segment = self._segments[self._steps_cached - 1]
+            if segment is None:
+                raise RuntimeError(
+                    f"Encountered invalid segment cache for segmented ray with"
+                    f" initial segment {self._segments[0]} at step"
+                    f" {self._steps_cached}."
+                )
             if not self._geometry.is_valid_coordinate(segment.start):
                 raise RuntimeError(
                     f"Cannot generate next ray segment for ray starting with"
