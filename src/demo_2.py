@@ -1,4 +1,6 @@
 """This demo script renders a test scene using cylindrical coordinates."""
+
+import os
 import math
 
 from nerte.values.coordinates import Coordinates3D
@@ -130,8 +132,12 @@ def render(
                 print_warings=False,
             )
         else:
-            image_renderer = ImageColorRenderer(projection_mode=projection_mode)
+            image_renderer = ImageColorRenderer(
+                projection_mode=projection_mode,
+                print_warings=False,
+            )
         image_renderer.render(scene=scene, geometry=geometry)
+        os.makedirs("../images", exist_ok=True)
         image = image_renderer.last_image()
         if image is not None:
             image.save(
@@ -148,7 +154,7 @@ def main() -> None:
     #       This will also increase rendering time!
     scene = make_scene(canvas_dimension=100)
     geo = SwirlCylindricRungeKuttaGeometry(
-        max_ray_length=math.inf,
+        max_ray_depth=math.inf,
         step_size=0.1,
         max_steps=50,
         swirl_strength=5.0,

@@ -9,10 +9,10 @@ import math
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.util.convert import coordinates_as_vector
-from nerte.values.ray import Ray
-from nerte.values.ray_delta import RayDelta
+from nerte.values.ray_segment import RaySegment
+from nerte.values.ray_segment_delta import RaySegmentDelta
 from nerte.values.linalg import AbstractVector, AbstractMatrix, Metric, length
-from nerte.geometry.geometry import RungeKuttaGeometry
+from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 
 
 class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
@@ -24,12 +24,12 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
 
     def __init__(
         self,
-        max_ray_length: float,
+        max_ray_depth: float,
         step_size: float,
         max_steps: int,
         swirl_strength: float,
     ):
-        RungeKuttaGeometry.__init__(self, max_ray_length, step_size, max_steps)
+        RungeKuttaGeometry.__init__(self, max_ray_depth, step_size, max_steps)
 
         if not -math.inf < swirl_strength < math.inf:
             raise ValueError(
@@ -39,7 +39,7 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
 
         self._swirl_strength = swirl_strength
 
-        def geodesic_equation(ray: RayDelta) -> RayDelta:
+        def geodesic_equation(ray: RaySegmentDelta) -> RaySegmentDelta:
             # pylint: disable=C0103
             # TODO: revert when mypy bug was fixed
             #       see https://github.com/python/mypy/issues/2220
@@ -52,7 +52,7 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
             v_phi = ray.velocity_delta[1]
             v_z = ray.velocity_delta[2]
             a = self.swirl_strength()
-            return RayDelta(
+            return RaySegmentDelta(
                 ray.velocity_delta,
                 AbstractVector(
                     (
@@ -79,6 +79,48 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
         """Returns the swirl strength."""
         return self._swirl_strength
 
+    def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
+        # pylint: disable=C0103
+        r, phi, z = coordinates
+        return (
+            0 < r < math.inf
+            and -math.pi < phi < math.pi
+            and -math.inf < z < math.inf
+        )
+
+    def ray_from_coords(
+        self, start: Coordinates3D, target: Coordinates3D
+    ) -> RungeKuttaGeometry.Ray:
+        if not self.is_valid_coordinate(start):
+            raise ValueError(
+                f"Cannot create ray from coordinates."
+                f" Start coordinates {start} are invalid."
+            )
+        if not self.is_valid_coordinate(target):
+            raise ValueError(
+                f"Cannot create ray from coordinates."
+                f" Target coordinates {target} are invalid."
+            )
+        # TODO: This method is incorrect
+        vec_s = coordinates_as_vector(start)
+        vec_t = coordinates_as_vector(target)
+        return RungeKuttaGeometry.Ray(
+            geometry=self,
+            initial_tangent=RaySegment(start=start, direction=(vec_t - vec_s)),
+        )
+
+    def length(self, ray: RaySegment) -> float:
+        if not self.is_valid_coordinate(ray.start):
+            raise ValueError(
+                f"Cannot calculate length of ray."
+                f" Coordinates {ray.start} are invalid."
+            )
+        metric = self.metric(ray.start)
+        return length(ray.direction, metric=metric)
+
+    def geodesic_equation(self) -> Callable[[RaySegmentDelta], RaySegmentDelta]:
+        return self._geodesic_equation
+
     def metric(self, coords: Coordinates3D) -> Metric:
         # pylint: disable=R0201,C0103
         """Returns the local metric for the given coordinates."""
@@ -90,30 +132,3 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
                 AbstractVector((0, 0, 1)),
             )
         )
-
-    def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
-        # pylint: disable=C0103
-        r, phi, z = coordinates
-        return (
-            0 < r < math.inf
-            and -math.pi < phi < math.pi
-            and -math.inf < z < math.inf
-        )
-
-    def length(self, ray: Ray) -> float:
-        if not self.is_valid_coordinate(ray.start):
-            raise ValueError(
-                f"Cannot calculate length of ray."
-                f" Coordinates {ray.start} are invalid."
-            )
-        metric = self.metric(ray.start)
-        return length(ray.direction, metric=metric)
-
-    def geodesic_equation(self) -> Callable[[RayDelta], RayDelta]:
-        return self._geodesic_equation
-
-    def ray_towards(self, start: Coordinates3D, target: Coordinates3D) -> Ray:
-        # TODO: This method is incorrect
-        vec_s = coordinates_as_vector(start)
-        vec_t = coordinates_as_vector(target)
-        return Ray(start=start, direction=(vec_t - vec_s))

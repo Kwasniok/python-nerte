@@ -15,7 +15,7 @@ from nerte.world.object import Object
 from nerte.world.scene import Scene
 from nerte.geometry.geometry import Geometry
 from nerte.render.image_renderer import ImageRenderer
-from nerte.render.projection import ProjectionMode, ray_for_pixel
+from nerte.render.projection import ProjectionMode
 
 
 def _is_finite(mat: np.ndarray) -> np.ndarray:
@@ -31,7 +31,7 @@ class ImageRayDepthRenderer(ImageRenderer):
     def __init__(
         self,
         projection_mode: ProjectionMode,
-        print_warings: bool = False,
+        print_warings: bool = True,
         min_ray_depth: Optional[float] = None,
         max_ray_depth: Optional[float] = None,
     ):
@@ -59,15 +59,10 @@ class ImageRayDepthRenderer(ImageRenderer):
         ImageRenderer.__init__(
             self, projection_mode, print_warings=print_warings
         )
-        self._color_failure = Color(255, 0, 255)
-        self._color_no_intersection = Color(0, 0, 255)
         self._min_ray_depth = min_ray_depth
         self._max_ray_depth = max_ray_depth
         self._max_finite_color_value = 0.5  # 0.0...1.0
-
-    def color_failure(self) -> Color:
-        """Returns color indicating intersection test failure."""
-        return self._color_failure
+        self._color_no_intersection = Color(0, 0, 255)
 
     def color_no_intersection(self) -> Color:
         """Returns color indicating that no intersection occured."""
@@ -80,29 +75,22 @@ class ImageRayDepthRenderer(ImageRenderer):
         objects: list[Object],
         pixel_location: tuple[int, int],
     ) -> float:
-        """Returns the ray depth of the pixel."""
+        """
+        Returns the ray depth of the pixel.
 
-        # calculate light ray
-        ray = ray_for_pixel[self.projection_mode](
-            camera, geometry, pixel_location
-        )
+        Note: An erro is indicated by nan.
+        Note: No intersections is indicated by inf.
+        """
 
-        # ray must start with valid coordinates
-        if not geometry.is_valid_coordinate(ray.start):
-            if self.is_printing_warings():
-                print(
-                    f"Info: Cannot render pixel {pixel_location} since its camera"
-                    f" ray={ray} starts with invalid coordinates."
-                    f"\n      The pixel ray depth is set to {np.nan}"
-                    f" instead."
-                )
+        ray = self.ray_for_pixel(camera, geometry, pixel_location)
+        if ray is None:
             return np.nan
 
         # detect intersections with objects
         current_depth = np.inf
         for obj in objects:
             for face in obj.faces():
-                intersection_info = geometry.intersection_info(ray, face)
+                intersection_info = ray.intersection_info(face)
                 if intersection_info.hits():
                     if intersection_info.ray_depth() < current_depth:
                         current_depth = intersection_info.ray_depth()

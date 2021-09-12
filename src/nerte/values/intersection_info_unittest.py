@@ -8,7 +8,7 @@ import unittest
 
 import math
 
-from nerte.values.intersection_info import IntersectionInfo
+from nerte.values.intersection_info import IntersectionInfo, IntersectionInfos
 
 
 class IntersectionInfoConstructorTest(unittest.TestCase):
@@ -18,8 +18,7 @@ class IntersectionInfoConstructorTest(unittest.TestCase):
         IntersectionInfo(ray_depth=0.0)
         IntersectionInfo(ray_depth=1.0)
         IntersectionInfo(ray_depth=math.inf)
-        IntersectionInfo(ray_depth=math.inf, miss_reasons=None)
-        IntersectionInfo(ray_depth=math.inf, miss_reasons=set())
+        IntersectionInfo(ray_depth=math.inf, miss_reason=None)
         # invalid ray_depth
         with self.assertRaises(ValueError):
             IntersectionInfo(ray_depth=-1.0)
@@ -29,9 +28,7 @@ class IntersectionInfoConstructorTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             IntersectionInfo(
                 ray_depth=1.0,
-                miss_reasons=set(
-                    (IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD,)
-                ),
+                miss_reason=IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD,
             )
 
 
@@ -42,16 +39,13 @@ class IntersectionInfoPropertiesTest(unittest.TestCase):
         self.miss_reasons = (
             None,
             None,
-            set((IntersectionInfo.MissReason.NO_INTERSECTION,)),
-            None,
-            set((IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD,)),
+            IntersectionInfo.MissReason.NO_INTERSECTION,
+            IntersectionInfo.MissReason.NO_INTERSECTION,
+            IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD,
         )
         self.infos = tuple(
-            IntersectionInfo(ray_depth=rd, miss_reasons=mr)
+            IntersectionInfo(ray_depth=rd, miss_reason=mr)
             for rd, mr in zip(self.ray_depths, self.miss_reasons)
-        )
-        self.miss_reason_no_intersection = set(
-            (IntersectionInfo.MissReason.NO_INTERSECTION,)
         )
 
     def test_default_properties(self) -> None:
@@ -59,28 +53,47 @@ class IntersectionInfoPropertiesTest(unittest.TestCase):
         self.assertFalse(self.info0.hits())
         self.assertTrue(self.info0.misses())
         self.assertTrue(self.info0.ray_depth() == math.inf)
-        self.assertTrue(
-            self.info0.miss_reasons()
-            == set((IntersectionInfo.MissReason.NO_INTERSECTION,))
-        )
+        reason = self.info0.miss_reason()
+        self.assertIsNotNone(reason)
+        if reason is not None:
+            self.assertIs(reason, IntersectionInfo.MissReason.NO_INTERSECTION)
 
     def test_properties(self) -> None:
         """Tests properties."""
-        for info, ray_depth, miss_reasons in zip(
+        for info, ray_depth, miss_reason in zip(
             self.infos, self.ray_depths, self.miss_reasons
         ):
             self.assertTrue(info.ray_depth() == ray_depth)
             if ray_depth < math.inf:
                 self.assertTrue(info.hits())
                 self.assertFalse(info.misses())
-                self.assertTrue(info.miss_reasons() == set())
+                self.assertIsNone(info.miss_reason())
             else:
-                if miss_reasons is None:
-                    miss_reasons = set()
-                miss_reasons |= self.miss_reason_no_intersection
                 self.assertFalse(info.hits())
                 self.assertTrue(info.misses())
-                self.assertTrue(info.miss_reasons() == miss_reasons)
+                self.assertIs(info.miss_reason(), miss_reason)
+
+
+class IntersectionInfosPropertiesTest(unittest.TestCase):
+    def test_constant_no_intersection(self) -> None:
+        """Tests if constant NO_INTERSECTION is correct."""
+        info = IntersectionInfos.NO_INTERSECTION
+        self.assertTrue(info.misses())
+        self.assertTrue(math.isinf(info.ray_depth()))
+        reason = info.miss_reason()
+        self.assertIsNotNone(reason)
+        if reason is not None:
+            self.assertIs(reason, IntersectionInfo.MissReason.NO_INTERSECTION)
+
+    def test_constant_ray_left_manifold(self) -> None:
+        """Tests if constant RAY_LEFT_MANIFOLD is correct."""
+        info = IntersectionInfos.RAY_LEFT_MANIFOLD
+        self.assertTrue(info.misses())
+        self.assertTrue(math.isinf(info.ray_depth()))
+        reason = info.miss_reason()
+        self.assertIsNotNone(reason)
+        if reason is not None:
+            self.assertIs(reason, IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD)
 
 
 if __name__ == "__main__":

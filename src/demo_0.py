@@ -1,4 +1,4 @@
-"""This demo script renders a test scene in non-euclidean geometry."""
+"""This demo script renders a test scene in euclidean geometry."""
 
 import os
 
@@ -13,7 +13,7 @@ from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
 from nerte.geometry.geometry import Geometry
-from nerte.geometry.swirl_geometry import SwirlGeometry
+from nerte.geometry.carthesian_geometry import CarthesianGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_renderer import ImageRenderer
 from nerte.render.image_color_renderer import ImageColorRenderer
@@ -164,10 +164,7 @@ def render(
                 max_ray_depth=2.0,
             )
         else:
-            image_renderer = ImageColorRenderer(
-                projection_mode=projection_mode,
-                print_warings=False,
-            )
+            image_renderer = ImageColorRenderer(projection_mode=projection_mode)
         image_renderer.render(scene=scene, geometry=geometry)
         os.makedirs("../images", exist_ok=True)
         image = image_renderer.last_image()
@@ -185,18 +182,14 @@ def main() -> None:
     # NOTE: Increase the canvas dimension to improve the image quality.
     #       This will also increase rendering time!
     scene = make_scene(canvas_dimension=100)
-    # NOTE: max_ray_length must be long enough to reach all surfaces.
-    # NOTE: max_steps controlls the accuracy of the approximation
-    # NOTE: Increase the bend_factor to increase the 'swirl' effect.
-    #       bend_factor=0.0 results in euclidean geometry.
-    geo = SwirlGeometry(max_steps=16, max_ray_depth=10.0, bend_factor=0.4)
+    geo = CarthesianGeometry()
 
     render(
         scene=scene,
         geometry=geo,
         render_ray_depth=False,  # enble to render ray depth instead
         output_path="../images",
-        file_prefix="demo_1",
+        file_prefix="demo_0",
         show=True,  # disable if images cannot be displayed
     )
 

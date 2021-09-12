@@ -6,18 +6,18 @@
 
 import unittest
 
-from typing import Union
+from typing import Union, cast
 
 import math
 
 from nerte.values.coordinates import Coordinates3D, Coordinates2D
-from nerte.values.ray import Ray
+from nerte.values.ray_segment import RaySegment
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.manifolds.cartesian import Plane as PlaneCartesian
 from nerte.values.manifolds.cylindrical import Plane as PlaneCylindric
 from nerte.world.camera import Camera
-from nerte.geometry.geometry import CarthesianGeometry
+from nerte.geometry.carthesian_geometry import CarthesianGeometry
 from nerte.render.projection import (
     detector_manifold_coords,
     orthographic_ray_for_pixel,
@@ -44,8 +44,8 @@ def _triple_equiv(
     return _equiv(x[0], y[0]) and _equiv(x[1], y[1]) and _equiv(x[2], y[2])
 
 
-# True, iff two rays are equivalent
-def _ray_equiv(x: Ray, y: Ray) -> bool:
+# True, iff two ray segments are equivalent
+def _ray_seg_equiv(x: RaySegment, y: RaySegment) -> bool:
     return _triple_equiv(x.start, y.start) and _triple_equiv(
         x.direction, y.direction
     )
@@ -64,16 +64,30 @@ class ProjectionTestCase(unittest.TestCase):
                 f"Coordinates {x} are not equivalent to {y}."
             ) from ae
 
-    def assertEquivRay(self, x: Ray, y: Ray) -> None:
+    def assertEquivRaySegment(self, x: RaySegment, y: RaySegment) -> None:
         """
-        Asserts the equivalence of two rays.
-        Note: This replaces assertTrue(x == y) for Ray.
+        Asserts the equivalence of two ray segments.
+        Note: This replaces assertTrue(x == y) for RaySegment.
         """
         try:
-            self.assertTrue(_ray_equiv(x, y))
+            self.assertTrue(_ray_seg_equiv(x, y))
         except AssertionError as ae:
             raise AssertionError(
-                f"Ray {x} is not equivalent to ray {y}."
+                f"Ray segment {x} is not equivalent to {y}."
+            ) from ae
+
+    def assertEquivCartRay(
+        self, x: CarthesianGeometry.Ray, y: CarthesianGeometry.Ray
+    ) -> None:
+        """
+        Asserts the equivalence of two carthesian rays.
+        Note: This replaces assertTrue(x == y) for CarthesianGeometry.Ray.
+        """
+        try:
+            self.assertEquivRaySegment(x.as_segment(), y.as_segment())
+        except AssertionError as ae:
+            raise AssertionError(
+                f"Carthesian ray {x} is not equivalent to {y}."
             ) from ae
 
 
@@ -180,8 +194,8 @@ class OrthographicProjectionTest(ProjectionTestCase):
             (dim + 1, 1),
         )
         # orthographic ray from detecor manifold coordinates
-        def make_ray(coords2d: Coordinates2D) -> Ray:
-            return Ray(
+        def make_ray(coords2d: Coordinates2D) -> CarthesianGeometry.Ray:
+            return self.geometry.ray_from_tangent(
                 start=manifold.embed(coords2d),
                 direction=manifold.surface_normal(coords2d),
             )
@@ -204,7 +218,9 @@ class OrthographicProjectionTest(ProjectionTestCase):
                 geometry=self.geometry,
                 pixel_location=pix_loc,
             )
-            self.assertEquivRay(ray, pix_ray)
+            self.assertIsInstance(ray, CarthesianGeometry.Ray)
+            cart_ray = cast(CarthesianGeometry.Ray, ray)
+            self.assertEquivCartRay(cart_ray, pix_ray)
 
     def test_orthographic_ray_for_pixel_invalid_values(self) -> None:
         """Tests orthographic projection for pixel's invalid values."""
@@ -257,8 +273,10 @@ class PerspectiveProjectionTest(ProjectionTestCase):
             (dim + 1, 1),
         )
         # perspective ray from detecor manifold coordinates
-        def make_ray(coords2d: Coordinates2D) -> Ray:
-            return self.geometry.ray_towards(
+        def make_ray(
+            coords2d: Coordinates2D,
+        ) -> CarthesianGeometry.Ray:
+            return self.geometry.ray_from_coords(
                 start=self.camera.location,
                 target=self.camera.detector_manifold.embed(coords2d),
             )
@@ -281,7 +299,9 @@ class PerspectiveProjectionTest(ProjectionTestCase):
                 geometry=self.geometry,
                 pixel_location=pix_loc,
             )
-            self.assertEquivRay(ray, pix_ray)
+            self.assertIsInstance(ray, CarthesianGeometry.Ray)
+            cart_ray = cast(CarthesianGeometry.Ray, ray)
+            self.assertEquivCartRay(cart_ray, pix_ray)
 
     def test_perspective_ray_for_pixel_invalid_values(self) -> None:
         """Tests perspective projection for pixel's invalid values."""
@@ -298,7 +318,7 @@ class PerspectiveProjectionTest(ProjectionTestCase):
                 )
 
 
-class RayForPixelTest(ProjectionTestCase):
+class RaySegmentForPixelTest(ProjectionTestCase):
     def test_ray_for_pixel(self) -> None:
         # pylint: disable=W0143
         """Test ray generator selector."""

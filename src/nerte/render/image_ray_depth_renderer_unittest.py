@@ -18,7 +18,7 @@ from nerte.values.color import Colors
 from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
-from nerte.geometry.geometry import CarthesianGeometry
+from nerte.geometry.carthesian_geometry import CarthesianGeometry
 from nerte.geometry.cylindircal_geometry import CylindricRungeKuttaGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_ray_depth_renderer import ImageRayDepthRenderer
@@ -249,7 +249,7 @@ class ImageColorRendererProjectionFailureTest1(unittest.TestCase):
         self.scene = Scene(camera=cam)
         # geometry
         self.geometry = CylindricRungeKuttaGeometry(
-            max_ray_length=math.inf,
+            max_ray_depth=math.inf,
             step_size=0.1,
             max_steps=2,
         )
@@ -298,7 +298,7 @@ class ImageColorRendererProjectionFailureTest2(unittest.TestCase):
         self.scene = Scene(camera=cam)
         # geometry
         self.geometry = CylindricRungeKuttaGeometry(
-            max_ray_length=math.inf,
+            max_ray_depth=math.inf,
             step_size=0.1,
             max_steps=2,
         )

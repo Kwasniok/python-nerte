@@ -3,7 +3,6 @@
 from enum import Enum
 
 from nerte.values.coordinates import Coordinates2D
-from nerte.values.ray import Ray
 from nerte.world.camera import Camera
 from nerte.geometry.geometry import Geometry
 
@@ -34,33 +33,50 @@ def detector_manifold_coords(
 
 def orthographic_ray_for_pixel(
     camera: Camera, geometry: Geometry, pixel_location: tuple[int, int]
-) -> Ray:
+) -> Geometry.Ray:
     # pylint: disable=W0613
     """
-    Returns the initial ray leaving the cameras detector for a given pixel on
-    the canvas in orthographic projection.
+    Returns the initial ray segment leaving the cameras detector for a given
+    pixel on the canvas in orthographic projection.
 
-    NOTE: All initial rays start on the detector's manifold and are normal to it.
+    NOTE: All initial ray segments start on the detector's manifold and are
+    normal to it.
+
+    :raises: ValueError, if no ray could be generated (e.g. if the ray would
+             start at an invalid coordinate)
     """
     coords_2d = detector_manifold_coords(camera, pixel_location)
     start = camera.detector_manifold.embed(coords_2d)
     direction = camera.detector_manifold.surface_normal(coords_2d)
-    return Ray(start=start, direction=direction)
+    try:
+        return geometry.ray_from_tangent(start=start, direction=direction)
+    except ValueError as ex:
+        raise ValueError(
+            f"Could not generate orthographic ray for pixel {pixel_location}."
+        ) from ex
 
 
 def perspective_ray_for_pixel(
     camera: Camera, geometry: Geometry, pixel_location: tuple[int, int]
-) -> Ray:
+) -> Geometry.Ray:
     """
-    Returns the initial ray leaving the cameras detector for a given pixel on
-    the canvas in perspective projection.
+    Returns the initial ray segment leaving the cameras detector for a given
+    pixel on the canvas in perspective projection.
 
-    NOTE: All initial rays start at the camera's location and pass through the
-          detector's manifold.
+    NOTE: All initial ray segments start at the camera's location and pass
+    through the detector's manifold.
+
+    :raises: ValueError, if no ray could be generated (e.g. if the ray would
+             start at an invalid coordinate)
     """
     coords_2d = detector_manifold_coords(camera, pixel_location)
     target = camera.detector_manifold.embed(coords_2d)
-    return geometry.ray_towards(start=camera.location, target=target)
+    try:
+        return geometry.ray_from_coords(start=camera.location, target=target)
+    except ValueError as ex:
+        raise ValueError(
+            f"Could not generate perspective ray for pixel {pixel_location}."
+        ) from ex
 
 
 class ProjectionMode(Enum):
