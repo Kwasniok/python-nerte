@@ -10,10 +10,22 @@ class IntersectionInfo:
     """Represents the outcome of an intersection test of a ray with a face."""
 
     class MissReason(Enum):
+        # TODO: redesign: simple numbers do not reflect the hierachy of the
+        #       miss reasons
+        # E.G.  Ray.has_missreason(miss_reason:Ray.MissReason) -> bool
+        #       with behaviour
+        #       info = Info(miss_reason=RAY_INITIALIZED_OUTSIDE_MANIFOLD)
+        #       info.has_missreason(RAY_INITIALIZED_OUTSIDE_MANIFOLD) == TRUE
+        #       info.has_missreason(RAY_LEFT_MANIFOLD) == TRUE
         """All reasons why an intersection test may have failed."""
 
+        # bit field like values
+        UNINIALIZED = 0
         NO_INTERSECTION = 1
         RAY_LEFT_MANIFOLD = 2
+        # a ray starting outside the manifold is an edge case of
+        # a ray reaching the outside of the manifold
+        RAY_INITIALIZED_OUTSIDE_MANIFOLD = 6  # 4 + 2
 
     # reduce miss reasons to one optinal item
     def __init__(
@@ -82,9 +94,15 @@ class IntersectionInfos:
           to save resources.
     """
 
+    UNINIALIZED = IntersectionInfo(
+        miss_reason=IntersectionInfo.MissReason.UNINIALIZED,
+    )
     NO_INTERSECTION = IntersectionInfo(
         miss_reason=IntersectionInfo.MissReason.NO_INTERSECTION,
     )
     RAY_LEFT_MANIFOLD = IntersectionInfo(
         miss_reason=IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD,
+    )
+    RAY_INITIALIZED_OUTSIDE_MANIFOLD = IntersectionInfo(
+        miss_reason=IntersectionInfo.MissReason.RAY_INITIALIZED_OUTSIDE_MANIFOLD,
     )
