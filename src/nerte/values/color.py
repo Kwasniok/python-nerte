@@ -8,6 +8,9 @@ class Color:
     def __init__(self, r: int, g: int, b: int) -> None:
         self.rgb: tuple[int, int, int] = (r, g, b)
 
+    def __repr__(self) -> str:
+        return f"Color(r={self.rgb[0]},g={self.rgb[1]},b={self.rgb[2]})"
+
 
 class Colors:
     # pylint: disable=R0903
