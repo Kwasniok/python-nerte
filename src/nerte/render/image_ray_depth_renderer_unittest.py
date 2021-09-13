@@ -31,7 +31,6 @@ class ImageRayDepthRendererConstructorTest(unittest.TestCase):
         self.invalid_ray_depths = (math.inf, math.nan, -1e-8, -1.0)
 
     def test_image_ray_Depth_renderer_costructor(self) -> None:
-        # pylint: disable=R0201
         """Tests constructor."""
 
         # preconditions
