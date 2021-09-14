@@ -124,7 +124,6 @@ def render(  # pylint: disable=R0913
     """
 
     for projection_mode in ProjectionMode:
-        # for mode in (ImageRenderer.Mode.PERSPECTIVE,):
         print(f"rendering {projection_mode.name} projection ...")
         if render_ray_depth:
             image_renderer: ImageRenderer = ImageRayDepthRenderer(
