@@ -27,6 +27,7 @@ from nerte.render.image_filter_renderer import (
     HitFilter,
 )
 from nerte.render.ray_depth_filter import RayDepthFilter
+from nerte.render.meta_info_filter import MetaInfoFilter
 from nerte.util.random_color_generator import RandomColorGenerator
 
 # pseudo-random color generator
@@ -131,24 +132,24 @@ def render(  # pylint: disable=R0913
     perspective projection.
     """
 
-    for projection_mode in ProjectionMode:
-        # for mode in (ImageRenderer.Mode.PERSPECTIVE,):
-        print(f"rendering {projection_mode.name} projection ...")
-        renderer = ImageFilterRenderer(
-            projection_mode=projection_mode,
-            filtr=filtr,
-            print_warings=False,
-        )
-        renderer.render(scene=scene, geometry=geometry)
-        renderer.apply_filter()
-        os.makedirs(output_path, exist_ok=True)
-        image = renderer.last_image()
-        if image is not None:
-            image.save(
-                f"{output_path}/{file_prefix}_{projection_mode.name}.png"
-            )
-            if show:
-                image.show()
+    projection_mode = ProjectionMode.PERSPECTIVE
+    print(
+        f"rendering {projection_mode.name} projection for filter type"
+        f" '{type(filtr).__name__}' ..."
+    )
+    renderer = ImageFilterRenderer(
+        projection_mode=projection_mode,
+        filtr=filtr,
+        print_warings=False,
+    )
+    renderer.render(scene=scene, geometry=geometry)
+    renderer.apply_filter()
+    os.makedirs(output_path, exist_ok=True)
+    image = renderer.last_image()
+    if image is not None:
+        image.save(f"{output_path}/{file_prefix}_{projection_mode.name}.png")
+        if show:
+            image.show()
 
 
 def main() -> None:
@@ -157,10 +158,11 @@ def main() -> None:
     # NOTE: Increase the canvas dimension to improve the image quality.
     #       This will also increase rendering time!
     scene = make_scene(canvas_dimension=100)
+    max_steps = 25
     geo = SwirlCylindricRungeKuttaGeometry(
         max_ray_depth=math.inf,
-        step_size=0.5,
-        max_steps=25,
+        step_size=0.2,
+        max_steps=max_steps,
         swirl_strength=0.25,
     )
 
@@ -187,6 +189,19 @@ def main() -> None:
         filtr=filtr,
         output_path=output_path,
         file_prefix=file_prefix + "_ray_depth_filter",
+        show=show,
+    )
+
+    # meta info filter
+    filtr = MetaInfoFilter(
+        meta_data_key="steps", min_value=0, max_value=max_steps
+    )
+    render(
+        scene=scene,
+        geometry=geo,
+        filtr=filtr,
+        output_path=output_path,
+        file_prefix=file_prefix + "_meta_info_steps_filter",
         show=show,
     )
 
