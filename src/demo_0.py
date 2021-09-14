@@ -15,9 +15,7 @@ from nerte.world.scene import Scene
 from nerte.geometry.geometry import Geometry
 from nerte.geometry.carthesian_geometry import CarthesianGeometry
 from nerte.render.projection import ProjectionMode
-from nerte.render.image_renderer import ImageRenderer
 from nerte.render.image_color_renderer import ImageColorRenderer
-from nerte.render.image_ray_depth_renderer import ImageRayDepthRenderer
 from nerte.util.random_color_generator import RandomColorGenerator
 
 
@@ -141,10 +139,9 @@ def make_scene(canvas_dimension: int) -> Scene:
     return scene
 
 
-def render(  # pylint: disable=R0913
+def render(
     scene: Scene,
     geometry: Geometry,
-    render_ray_depth: bool,
     output_path: str,
     file_prefix: str,
     show: bool,
@@ -156,15 +153,7 @@ def render(  # pylint: disable=R0913
 
     for projection_mode in ProjectionMode:
         print(f"rendering {projection_mode.name} projection ...")
-        if render_ray_depth:
-            image_renderer: ImageRenderer = ImageRayDepthRenderer(
-                projection_mode=projection_mode,
-                print_warings=False,
-                min_ray_depth=0.0,
-                max_ray_depth=2.0,
-            )
-        else:
-            image_renderer = ImageColorRenderer(projection_mode=projection_mode)
+        image_renderer = ImageColorRenderer(projection_mode=projection_mode)
         image_renderer.render(scene=scene, geometry=geometry)
         os.makedirs("../images", exist_ok=True)
         image = image_renderer.last_image()
@@ -187,7 +176,6 @@ def main() -> None:
     render(
         scene=scene,
         geometry=geo,
-        render_ray_depth=False,  # enble to render ray depth instead
         output_path="../images",
         file_prefix="demo_0",
         show=True,  # disable if images cannot be displayed
