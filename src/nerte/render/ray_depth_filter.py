@@ -178,7 +178,7 @@ class RayDepthFilter(Filter):
     def apply(self, info_matrix: IntersectionInfoMatrix) -> Image:
         if len(info_matrix) == 0 or len(info_matrix[0]) == 0:
             raise ValueError(
-                "Cannot apply hit filter. Intersection info matrix is empty."
+                "Cannot apply ray depth filter. Intersection info matrix is empty."
             )
         width = len(info_matrix)
         height = len(info_matrix[0])
