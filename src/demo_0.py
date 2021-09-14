@@ -141,7 +141,7 @@ def make_scene(canvas_dimension: int) -> Scene:
     return scene
 
 
-def render(
+def render(  # pylint: disable=R0913
     scene: Scene,
     geometry: Geometry,
     render_ray_depth: bool,

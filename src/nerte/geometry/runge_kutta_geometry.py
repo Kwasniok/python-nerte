@@ -21,6 +21,7 @@ from nerte.values.ray_segment_delta import (
     add_ray_segment_delta,
 )
 from nerte.values.intersection_info import IntersectionInfo, IntersectionInfos
+from nerte.values.extended_intersection_info import ExtendedIntersectionInfo
 from nerte.geometry.geometry import Geometry, intersection_ray_depth
 
 
@@ -165,7 +166,9 @@ class RungeKuttaGeometry(Geometry):
                 )
                 if relative_segment_depth < math.inf:
                     total_ray_depth += relative_segment_depth * segment_length
-                    return IntersectionInfo(ray_depth=total_ray_depth)
+                    return ExtendedIntersectionInfo(
+                        ray_depth=total_ray_depth, meta_data={"steps": step + 1}
+                    )
 
                 step += 1
                 total_ray_depth += segment_length

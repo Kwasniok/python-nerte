@@ -75,6 +75,16 @@ class IntersectionInfoPropertiesTest(unittest.TestCase):
 
 
 class IntersectionInfosPropertiesTest(unittest.TestCase):
+    def test_constant_uninitialized(self) -> None:
+        """Tests if constant UNINIALIZED is correct."""
+        info = IntersectionInfos.UNINIALIZED
+        self.assertTrue(info.misses())
+        self.assertTrue(math.isinf(info.ray_depth()))
+        reason = info.miss_reason()
+        self.assertIsNotNone(reason)
+        if reason is not None:
+            self.assertIs(reason, IntersectionInfo.MissReason.UNINIALIZED)
+
     def test_constant_no_intersection(self) -> None:
         """Tests if constant NO_INTERSECTION is correct."""
         info = IntersectionInfos.NO_INTERSECTION
@@ -94,6 +104,19 @@ class IntersectionInfosPropertiesTest(unittest.TestCase):
         self.assertIsNotNone(reason)
         if reason is not None:
             self.assertIs(reason, IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD)
+
+    def test_constant_ray_initialized_outside_manifold(self) -> None:
+        """Tests if constant RAY_INITIALIZED_OUTSIDE_MANIFOLD is correct."""
+        info = IntersectionInfos.RAY_INITIALIZED_OUTSIDE_MANIFOLD
+        self.assertTrue(info.misses())
+        self.assertTrue(math.isinf(info.ray_depth()))
+        reason = info.miss_reason()
+        self.assertIsNotNone(reason)
+        if reason is not None:
+            self.assertIs(
+                reason,
+                IntersectionInfo.MissReason.RAY_INITIALIZED_OUTSIDE_MANIFOLD,
+            )
 
 
 if __name__ == "__main__":
