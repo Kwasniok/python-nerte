@@ -31,8 +31,6 @@ class RayDepthFilter(Filter):
         min_ray_depth: Optional[float] = None,
         max_ray_depth: Optional[float] = None,
         max_color_value: float = 1.0,
-        color_failure: Color = Color(255, 0, 255),
-        color_no_intersection: Color = Color(0, 0, 255),
     ):
         if min_ray_depth is not None and not 0.0 <= min_ray_depth < math.inf:
             raise ValueError(
@@ -65,8 +63,6 @@ class RayDepthFilter(Filter):
         self.min_ray_depth = min_ray_depth
         self.max_ray_depth = max_ray_depth
         self.max_color_value = max_color_value  # 0.0...1.0
-        self.color_failure = color_failure
-        self.color_no_intersection = color_no_intersection
 
     def _normalized_ray_depths(self, ray_depths: np.ndarray) -> np.ndarray:
         """
@@ -132,16 +128,9 @@ class RayDepthFilter(Filter):
 
     def color_for_normalized_ray_depth_value(self, value: float) -> Color:
         """
-        Returns color assosiated with ray depth value.
-
-        Infinite ray depth value is assisiated with color_no_intersection.
-        NaN ray depth value is assisiated with color_failure.
+        Returns color assosiated with the normalized ray depth value in
+        [0.0...1.0].
         """
-
-        if np.isnan(value):
-            return self.color_failure
-        if np.isinf(value):
-            return self.color_no_intersection
         if not 0.0 <= value <= 1.0:
             raise ValueError(
                 f"Cannot obtain color from normalized ray depth value {value}."

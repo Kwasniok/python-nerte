@@ -81,10 +81,6 @@ class RayDpethFilterProperties(unittest.TestCase):
             max_color_value=0.5,
         )
         self.color = Color(12, 34, 56)
-        self.filter_color_failure = RayDepthFilter(color_failure=self.color)
-        self.filter_color_no_intersection = RayDepthFilter(
-            color_no_intersection=self.color
-        )
 
     def test_default_properties(self) -> None:
         """Tests the default properties."""
@@ -105,16 +101,6 @@ class RayDpethFilterProperties(unittest.TestCase):
     def test_max_color_value(self) -> None:
         """Tests the max color value property."""
         self.assertTrue(self.filter_max_color_value.max_color_value == 0.5)
-
-    def test_colors(self) -> None:
-        """Tests the color properties."""
-        self.assertTrue(
-            self.filter_color_failure.color_failure.rgb == self.color.rgb
-        )
-        self.assertTrue(
-            self.filter_color_no_intersection.color_no_intersection.rgb
-            == self.color.rgb
-        )
 
 
 class RayDepthFilterColorsMissReasonTest(unittest.TestCase):
@@ -169,12 +155,6 @@ class RayDepthFilterColorForRayDepthTest(unittest.TestCase):
                 self.assertAlmostEqual(
                     rgb[0], int(val * filtr.max_color_value * 255)
                 )
-
-            color = filtr.color_for_normalized_ray_depth_value(math.nan)
-            self.assertTrue(color.rgb == filtr.color_failure.rgb)
-
-            color = filtr.color_for_normalized_ray_depth_value(math.inf)
-            self.assertTrue(color.rgb, filtr.color_no_intersection.rgb)
 
             for val in self.invalid_normalized_values:
                 with self.assertRaises(ValueError):
