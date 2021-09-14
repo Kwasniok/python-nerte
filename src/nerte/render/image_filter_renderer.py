@@ -25,6 +25,40 @@ IntersectionInfoMatrix = NewType(
 )
 
 
+def color_for_normalized_value(value: float) -> Color:
+    """
+    Returns color assosiated with a value from 0.0 to 1.0 value.
+    """
+    if not 0.0 <= value <= 1.0:
+        raise ValueError(
+            f"Cannot obtain color from normalized value {value}."
+            f" Value must be between 0.0 and 1.0 inf or nan."
+        )
+    level = int(value * 255)
+    return Color(level, level, level)
+
+
+def color_miss_reason(miss_reason: IntersectionInfo.MissReason) -> Color:
+    """
+    Returns a color for a pixel to denote a ray failing to hit a surface.
+    """
+    if miss_reason is IntersectionInfo.MissReason.UNINIALIZED:
+        return Color(0, 0, 0)
+    if miss_reason is IntersectionInfo.MissReason.NO_INTERSECTION:
+        return Color(0, 0, 255)
+    if miss_reason is IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD:
+        return Color(0, 255, 0)
+    if (
+        miss_reason
+        is IntersectionInfo.MissReason.RAY_INITIALIZED_OUTSIDE_MANIFOLD
+    ):
+        return Color(255, 255, 0)
+    raise NotImplementedError(
+        f"Cannot pick color for miss reason {miss_reason}."
+        f"No color was implemented."
+    )
+
+
 class Filter(ABC):
     # pylint: disable=R0903
     """
@@ -59,29 +93,6 @@ class HitFilter(Filter):
         # pylint: disable=R0201
         return Color(128, 128, 128)
 
-    def color_miss_reason(
-        self, miss_reason: IntersectionInfo.MissReason
-    ) -> Color:
-        """
-        Returns a color for a pixel to denote a ray failing to hit a surface.
-        """
-        # pylint: disable=R0201
-        if miss_reason is IntersectionInfo.MissReason.UNINIALIZED:
-            return Color(0, 0, 0)
-        if miss_reason is IntersectionInfo.MissReason.NO_INTERSECTION:
-            return Color(0, 0, 255)
-        if miss_reason is IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD:
-            return Color(0, 255, 0)
-        if (
-            miss_reason
-            is IntersectionInfo.MissReason.RAY_INITIALIZED_OUTSIDE_MANIFOLD
-        ):
-            return Color(255, 255, 0)
-        raise NotImplementedError(
-            f"Cannot pick color for miss reason {miss_reason}."
-            f"No color was implemented."
-        )
-
     def color_for_info(
         self,
         info: IntersectionInfo,
@@ -96,7 +107,7 @@ class HitFilter(Filter):
                 f"Cannot pick color for intersectio info {info}."
                 " No miss reason specified despite ray is missing."
             )
-        return self.color_miss_reason(miss_reason)
+        return color_miss_reason(miss_reason)
 
     def apply(self, info_matrix: IntersectionInfoMatrix) -> Image:
         if len(info_matrix) == 0 or len(info_matrix[0]) == 0:

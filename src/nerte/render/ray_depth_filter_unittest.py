@@ -10,7 +10,10 @@ import math
 
 from nerte.values.color import Color
 from nerte.values.intersection_info import IntersectionInfo
-from nerte.render.image_filter_renderer import IntersectionInfoMatrix
+from nerte.render.image_filter_renderer import (
+    IntersectionInfoMatrix,
+    color_miss_reason,
+)
 from nerte.render.ray_depth_filter import RayDepthFilter
 
 
@@ -103,40 +106,10 @@ class RayDpethFilterProperties(unittest.TestCase):
         self.assertTrue(self.filter_max_color_value.max_color_value == 0.5)
 
 
-class RayDepthFilterColorsMissReasonTest(unittest.TestCase):
-    def assertAllColorsUnique(self, colors: list[Color]) -> None:
-        """ "Asserts all colors in the list are unique."""
-
-        def all_unique(colors: list[Color]) -> bool:
-            rgbs = []
-            return not any(
-                any(c.rgb == rgb for rgb in rgbs)
-                or rgbs.append(c.rgb)  # type: ignore[func-returns-value]
-                for c in colors
-            )
-
-        try:
-            self.assertTrue(all_unique(colors))
-        except AssertionError as ae:
-            raise AssertionError(
-                f"Colors in list {colors} are not unique."
-            ) from ae
-
-    def setUp(self) -> None:
-        self.filter = RayDepthFilter()
-
-    def test_colors(self) -> None:
-        """Tests the colors for miss reasons."""
-        colors: list[Color] = []
-        for miss_reason in IntersectionInfo.MissReason:
-            colors.append(self.filter.color_miss_reason(miss_reason))
-        self.assertAllColorsUnique(colors)
-
-
 class RayDepthFilterColorForRayDepthTest(unittest.TestCase):
     def setUp(self) -> None:
         self.valid_normalized_values = (0.0, 0.25, 1.0)
-        self.invalid_normalized_values = (-1.0, 1.1)
+        self.invalid_normalized_values = (-1.0, 10.0)
 
         max_color_values = (0.5, 1.0)
         self.filters = tuple(
@@ -181,10 +154,7 @@ class RayDepthFilterApplyTest(unittest.TestCase):
             Color(0, 0, 0),
             Color(127, 127, 127),
             Color(255, 255, 255),
-        ] + list(
-            self.filter.color_miss_reason(mr)
-            for mr in IntersectionInfo.MissReason
-        )
+        ] + list(color_miss_reason(mr) for mr in IntersectionInfo.MissReason)
 
     def test_apply(self) -> None:
         """Test filter application."""

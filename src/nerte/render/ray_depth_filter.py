@@ -11,7 +11,12 @@ from PIL import Image
 
 from nerte.values.color import Color, Colors
 from nerte.values.intersection_info import IntersectionInfo
-from nerte.render.image_filter_renderer import IntersectionInfoMatrix, Filter
+from nerte.render.image_filter_renderer import (
+    IntersectionInfoMatrix,
+    Filter,
+    color_for_normalized_value,
+    color_miss_reason,
+)
 
 
 def _is_finite(mat: np.ndarray) -> np.ndarray:
@@ -22,6 +27,7 @@ def _is_finite(mat: np.ndarray) -> np.ndarray:
 
 
 class RayDepthFilter(Filter):
+    # pylint: disable=R0903
     """
     False-color filter for displaying rays based their depth.
     """
@@ -131,36 +137,7 @@ class RayDepthFilter(Filter):
         Returns color assosiated with the normalized ray depth value in
         [0.0...1.0].
         """
-        if not 0.0 <= value <= 1.0:
-            raise ValueError(
-                f"Cannot obtain color from normalized ray depth value {value}."
-                f" Value must be between 0.0 and 1.0 inf or nan."
-            )
-        level = int(value * self.max_color_value * 255)
-        return Color(level, level, level)
-
-    def color_miss_reason(
-        self, miss_reason: IntersectionInfo.MissReason
-    ) -> Color:
-        """
-        Returns a color for a pixel to denote a ray failing to hit a surface.
-        """
-        # pylint: disable=R0201
-        if miss_reason is IntersectionInfo.MissReason.UNINIALIZED:
-            return Color(0, 0, 0)
-        if miss_reason is IntersectionInfo.MissReason.NO_INTERSECTION:
-            return Color(0, 0, 255)
-        if miss_reason is IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD:
-            return Color(0, 255, 0)
-        if (
-            miss_reason
-            is IntersectionInfo.MissReason.RAY_INITIALIZED_OUTSIDE_MANIFOLD
-        ):
-            return Color(255, 255, 0)
-        raise NotImplementedError(
-            f"Cannot pick color for miss reason {miss_reason}."
-            f"No color was implemented."
-        )
+        return color_for_normalized_value(value * self.max_color_value)
 
     def _color_for_pixel(
         self, info: IntersectionInfo, pixel_value: float
@@ -173,7 +150,7 @@ class RayDepthFilter(Filter):
                 f"Cannot pick color for intersectio info {info}."
                 " No miss reason specified despite ray is missing."
             )
-        return self.color_miss_reason(miss_reason)
+        return color_miss_reason(miss_reason)
 
     def apply(self, info_matrix: IntersectionInfoMatrix) -> Image:
         if len(info_matrix) == 0 or len(info_matrix[0]) == 0:
