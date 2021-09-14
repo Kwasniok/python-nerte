@@ -14,6 +14,7 @@ from nerte.values.face import Face
 from nerte.values.linalg import AbstractVector
 from nerte.values.ray_segment import RaySegment
 from nerte.values.intersection_info import IntersectionInfo, IntersectionInfos
+from nerte.values.extended_intersection_info import ExtendedIntersectionInfo
 from nerte.geometry.geometry import Geometry, intersection_ray_depth
 
 
@@ -113,7 +114,9 @@ class SegmentedRayGeometry(Geometry):
                     total_ray_depth = (
                         step + relative_segment_ray_depth
                     ) * geometry.ray_segment_length()
-                    return IntersectionInfo(ray_depth=total_ray_depth)
+                    return ExtendedIntersectionInfo(
+                        ray_depth=total_ray_depth, meta_data={"steps": step + 1}
+                    )
 
             return IntersectionInfos.NO_INTERSECTION
 

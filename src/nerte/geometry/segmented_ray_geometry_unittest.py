@@ -7,7 +7,7 @@
 
 import unittest
 
-from typing import Type, Optional
+from typing import Type, Optional, cast
 
 import math
 
@@ -18,6 +18,7 @@ from nerte.values.linalg import AbstractVector, normalized
 from nerte.values.ray_segment import RaySegment
 from nerte.values.face import Face
 from nerte.values.intersection_info import IntersectionInfo
+from nerte.values.extended_intersection_info import ExtendedIntersectionInfo
 from nerte.values.util.convert import coordinates_as_vector
 from nerte.geometry.segmented_ray_geometry import SegmentedRayGeometry
 
@@ -274,6 +275,51 @@ class SegmentedRayGeometryRayIntersectsRayImmediatelyLeftManifoldTest(
         self.assertIs(
             info.miss_reason(), IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD
         )
+
+
+class SegmentedRayGeometryRayIntersectsMetaDataTest(GeometryTestCase):
+    def setUp(self) -> None:
+        p1 = Coordinates3D((1.0, 0.0, 0.0))
+        p2 = Coordinates3D((0.0, 1.0, 0.0))
+        p3 = Coordinates3D((0.0, 0.0, 1.0))
+        self.face = Face(p1, p2, p3)
+        # geometry (carthesian & euclidean)
+        DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
+        geos = (
+            DummySegmentedRayGeometry(
+                max_ray_depth=10.0,
+                max_steps=10,
+                # step size = 1 -> direct hit
+            ),
+            DummySegmentedRayGeometry(
+                max_ray_depth=10.0,
+                max_steps=100,
+                # step size = 0.1 -> 6 steps until hit (1/sqrt(3) ~ 0.577...)
+            ),
+        )
+        self.rays = tuple(
+            geo.ray_from_tangent(
+                start=Coordinates3D((0.0, 0.0, 0.0)),
+                direction=AbstractVector((1.0, 1.0, 1.0)),
+            )
+            for geo in geos
+        )
+        self.steps = (1, 6)
+
+    def test_runge_kutta_geometry_intersects_meta_data(self) -> None:
+        """
+        Tests if ray's meta data.
+        """
+        for ray, steps in zip(self.rays, self.steps):
+            info = ray.intersection_info(self.face)
+            self.assertIsInstance(info, ExtendedIntersectionInfo)
+            if isinstance(info, ExtendedIntersectionInfo):
+                info = cast(ExtendedIntersectionInfo, info)
+                meta_data = info.meta_data
+                self.assertIsNotNone(meta_data)
+                if meta_data is not None:
+                    self.assertTrue("steps" in meta_data)
+                    self.assertAlmostEqual(meta_data["steps"], steps)
 
 
 class SegmentedRayGeometryRayFromTest(GeometryTestCase):
