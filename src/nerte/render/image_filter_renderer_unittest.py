@@ -7,6 +7,7 @@
 import unittest
 
 import math
+from PIL import Image
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.domain import Domain1D
@@ -36,20 +37,14 @@ class FilterImplentationTest(unittest.TestCase):
         """Tests the implementation of the interface."""
 
         class DummyFilter(Filter):
-            def analyze(
+            # pylint: disable=R0903
+            def apply(
                 self,
                 info_matrix: IntersectionInfoMatrix,
-                canvas_dimensions: tuple[int, int],
-            ) -> None:
-                pass
-
-            def color_for_pixel(
-                self,
-                info_matrix: IntersectionInfoMatrix,
-                canvas_dimensions: tuple[int, int],
-                pixel_location: tuple[int, int],
-            ) -> Color:
-                return Colors.BLACK
+            ) -> Image:
+                return Image.new(
+                    mode="RGB", size=(5, 5), color=Colors.BLACK.rgb
+                )
 
         DummyFilter()
 
@@ -61,7 +56,7 @@ class HitFilterConstructorTest(unittest.TestCase):
         HitFilter()
 
 
-class HitFilterColorsrTest(unittest.TestCase):
+class HitFilterColorsTest(unittest.TestCase):
     def assertAllColorsUnique(self, colors: list[Color]) -> None:
         """ "Asserts all colors in the list are unique."""
 
@@ -82,58 +77,37 @@ class HitFilterColorsrTest(unittest.TestCase):
 
     def setUp(self) -> None:
         self.filter = HitFilter()
+        self.info_hit = IntersectionInfo(ray_depth=1.0)
+        self.miss_reasons = list(IntersectionInfo.MissReason)
+        self.info_miss_reasons = tuple(
+            IntersectionInfo(miss_reason=mr) for mr in self.miss_reasons
+        )
 
-    def test_colors(self) -> None:
-        # pylint: disable=R0201
-        """Tests the colors."""
+    def test_color_uniqueness(self) -> None:
+        """Tests the uniquness of colors."""
         colors: list[Color] = []
         colors.append(self.filter.color_hit())
-        colors.append(
-            self.filter.color_miss_reason(
-                IntersectionInfo.MissReason.UNINIALIZED
-            )
-        )
-        colors.append(
-            self.filter.color_miss_reason(
-                IntersectionInfo.MissReason.NO_INTERSECTION
-            )
-        )
-        colors.append(
-            self.filter.color_miss_reason(
-                IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD
-            )
-        )
-        colors.append(
-            self.filter.color_miss_reason(
-                IntersectionInfo.MissReason.RAY_INITIALIZED_OUTSIDE_MANIFOLD
-            )
-        )
-
-        self.assertTrue(len(colors) == 5)
+        for miss_reason in IntersectionInfo.MissReason:
+            colors.append(self.filter.color_miss_reason(miss_reason))
         self.assertAllColorsUnique(colors)
 
+    def test_color_for_info(self) -> None:
+        """Tests color for intersection info."""
 
-class HitFilterAnalyzeTest(unittest.TestCase):
-    def setUp(self) -> None:
-        infos = (
-            IntersectionInfo(ray_depth=1.0),
-            IntersectionInfos.UNINIALIZED,
-            IntersectionInfos.NO_INTERSECTION,
-            IntersectionInfos.RAY_LEFT_MANIFOLD,
-            IntersectionInfos.RAY_INITIALIZED_OUTSIDE_MANIFOLD,
+        self.assertTupleEqual(
+            self.filter.color_for_info(self.info_hit).rgb,
+            self.filter.color_hit().rgb,
         )
-        self.info_matrices = tuple(
-            IntersectionInfoMatrix([[info]]) for info in infos
-        )
-        self.filter = HitFilter()
-
-    def test_analyze(self) -> None:
-        """Tests analyze."""
-        for info_mat in self.info_matrices:
-            self.filter.analyze(info_matrix=info_mat, canvas_dimensions=(1, 1))
+        for info_miss_reason, miss_reason in zip(
+            self.info_miss_reasons, self.miss_reasons
+        ):
+            self.assertTupleEqual(
+                self.filter.color_for_info(info_miss_reason).rgb,
+                self.filter.color_miss_reason(miss_reason).rgb,
+            )
 
 
-class HitFilterColorForPixelTest(unittest.TestCase):
+class HitFilterApplyTest(unittest.TestCase):
     def setUp(self) -> None:
         self.infos = (
             IntersectionInfo(ray_depth=1.0),
@@ -147,23 +121,12 @@ class HitFilterColorForPixelTest(unittest.TestCase):
         )
         self.filter = HitFilter()
 
-    def test_color_for_pixel(self) -> None:
-        """Test color for pixel correct based on intersection info."""
+    def test_apply(self) -> None:
+        """Test filter application."""
         for info, info_mat in zip(self.infos, self.info_matrices):
-            self.filter.analyze(info_matrix=info_mat, canvas_dimensions=(1, 1))
-            pixel_color = self.filter.color_for_pixel(
-                info_matrix=info_mat,
-                canvas_dimensions=(1, 1),
-                pixel_location=(0, 0),
-            )
-            if info.hits():
-                info_color = self.filter.color_hit()
-            else:
-                miss_reason = info.miss_reason()
-                self.assertIsNotNone(miss_reason)  # precondition
-                if miss_reason is not None:
-                    info_color = self.filter.color_miss_reason(miss_reason)
-            self.assertTrue(pixel_color.rgb == info_color.rgb)
+            pixel_color = self.filter.color_for_info(info)
+            image = self.filter.apply(info_matrix=info_mat)
+            self.assertTrue(image.getpixel((0, 0)) == pixel_color.rgb)
 
 
 class ImageFilterRendererConstructorTest(unittest.TestCase):

@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 from PIL import Image
 
-from nerte.values.color import Color
+from nerte.values.color import Color, Colors
 from nerte.values.intersection_info import IntersectionInfo, IntersectionInfos
 from nerte.world.camera import Camera
 from nerte.world.object import Object
@@ -26,32 +26,17 @@ IntersectionInfoMatrix = NewType(
 
 
 class Filter(ABC):
+    # pylint: disable=R0903
     """
     Interface for filters which convert the raw intersctio information of a
     ray into a color
-
-    The workflow has two stages:
-    1) The data is analyzed. e.g. to determine the color map.
-    2) The color information is requested on a per pixel basis.
     ."""
 
     @abstractmethod
-    def analyze(
+    def apply(
         self,
         info_matrix: IntersectionInfoMatrix,
-        canvas_dimensions: tuple[int, int],
-    ) -> None:
-        """Initialize mapping from intersection info matrix to colors."""
-        # pylint: disable=W0107
-        pass
-
-    @abstractmethod
-    def color_for_pixel(
-        self,
-        info_matrix: IntersectionInfoMatrix,
-        canvas_dimensions: tuple[int, int],
-        pixel_location: tuple[int, int],
-    ) -> Color:
+    ) -> Image:
         """
         Returns color for pixel based.
 
@@ -97,30 +82,44 @@ class HitFilter(Filter):
             f"No color was implemented."
         )
 
-    def analyze(
+    def color_for_info(
         self,
-        info_matrix: IntersectionInfoMatrix,
-        canvas_dimensions: tuple[int, int],
-    ) -> None:
-        pass
-
-    def color_for_pixel(
-        self,
-        info_matrix: IntersectionInfoMatrix,
-        canvas_dimensions: tuple[int, int],
-        pixel_location: tuple[int, int],
+        info: IntersectionInfo,
     ) -> Color:
-        pixel_x, pixel_y = pixel_location
-        info = info_matrix[pixel_x][pixel_y]
+        """Returns color associated with the intersection info."""
+
         if info.hits():
             return self.color_hit()
         miss_reason = info.miss_reason()
         if miss_reason is None:
             raise RuntimeError(
-                f"Cannot pick color for pixel {pixel_location}."
-                " No miss reason specified despite missing."
+                f"Cannot pick color for intersectio info {info}."
+                " No miss reason specified despite ray is missing."
             )
         return self.color_miss_reason(miss_reason)
+
+    def apply(self, info_matrix: IntersectionInfoMatrix) -> Image:
+        if len(info_matrix) == 0 or len(info_matrix[0]) == 0:
+            raise ValueError(
+                "Cannot apply hit filter. Intersection info matrix is empty."
+            )
+        width = len(info_matrix)
+        height = len(info_matrix[0])
+
+        # initialize image with pink background
+        image = Image.new(
+            mode="RGB", size=(width, height), color=Colors.BLACK.rgb
+        )
+
+        # paint-in pixels
+        for pixel_x in range(width):
+            for pixel_y in range(height):
+                pixel_location = (pixel_x, pixel_y)
+                info = info_matrix[pixel_x][pixel_y]
+                pixel_color = self.color_for_info(info)
+                image.putpixel(pixel_location, pixel_color.rgb)
+
+        return image
 
 
 class ImageFilterRenderer(ImageRenderer):
@@ -145,16 +144,12 @@ class ImageFilterRenderer(ImageRenderer):
 
         self._filter = filtr
         self.auto_apply_filter = auto_apply_filter
-        self._last_canvas_dimensions: Optional[tuple[int, int]] = None
         self._last_info_matrix: Optional[IntersectionInfoMatrix] = None
 
     def has_render_data(self) -> bool:
         """Returns True, iff render was called previously."""
 
-        return (
-            self._last_canvas_dimensions is not None
-            and self._last_canvas_dimensions is not None
-        )
+        return self._last_info_matrix is not None
 
     def filter(self) -> Filter:
         """Returns the filter currently used."""
@@ -251,7 +246,6 @@ class ImageFilterRenderer(ImageRenderer):
         info_matrix = self.render_intersection_info(
             scene=scene, geometry=geometry
         )
-        self._last_canvas_dimensions = scene.camera.canvas_dimensions
         self._last_info_matrix = info_matrix
 
         if self.auto_apply_filter:
@@ -266,41 +260,13 @@ class ImageFilterRenderer(ImageRenderer):
         Note: This method may be called automatically depending on
               auto_apply_filter. If not apply_filter must be called manually.
         """
-
-        if self._last_canvas_dimensions is None:
-            print(
-                "WARNING: Cannot apply filter without rendering first."
-                " No canvas dimensions found."
-            )
-            return
         if self._last_info_matrix is None:
             print(
                 "WARNING: Cannot apply filter without rendering first."
                 " No intersection info matrix found."
             )
             return
-
-        width, height = self._last_canvas_dimensions
-        # initialize image with pink background
-        image = Image.new(
-            mode="RGB", size=(width, height), color=self.color_failure().rgb
-        )
-        self._filter.analyze(
-            info_matrix=self._last_info_matrix,
-            canvas_dimensions=self._last_canvas_dimensions,
-        )
-
-        # paint in pixels
-        for pixel_x in range(width):
-            for pixel_y in range(height):
-                pixel_location = (pixel_x, pixel_y)
-                pixel_color = self._filter.color_for_pixel(
-                    info_matrix=self._last_info_matrix,
-                    canvas_dimensions=self._last_canvas_dimensions,
-                    pixel_location=pixel_location,
-                )
-                image.putpixel(pixel_location, pixel_color.rgb)
-        self._last_image = image
+        self._last_image = self._filter.apply(self._last_info_matrix)
 
     def last_image(self) -> Optional[Image.Image]:
         """Returns the last image rendered iff it exists or else None."""
