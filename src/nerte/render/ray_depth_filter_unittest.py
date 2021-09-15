@@ -12,7 +12,7 @@ from nerte.values.color import Color
 from nerte.values.intersection_info import IntersectionInfo
 from nerte.render.image_filter_renderer import (
     IntersectionInfoMatrix,
-    color_miss_reason,
+    color_for_miss_reason,
 )
 from nerte.render.ray_depth_filter import RayDepthFilter
 
@@ -158,7 +158,7 @@ class RayDepthFilterApplyTest(unittest.TestCase):
             Color(0, 0, 0),
             Color(127, 127, 127),
             Color(255, 255, 255),
-        ] + list(color_miss_reason(imr) for imr in info_miss_reason)
+        ] + list(color_for_miss_reason(imr) for imr in info_miss_reason)
 
     def test_apply(self) -> None:
         """Test filter application."""

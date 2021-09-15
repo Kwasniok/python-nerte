@@ -15,7 +15,7 @@ from nerte.render.image_filter_renderer import (
     IntersectionInfoMatrix,
     Filter,
     color_for_normalized_value,
-    color_miss_reason,
+    color_for_miss_reason,
 )
 
 
@@ -144,7 +144,7 @@ class RayDepthFilter(Filter):
     ) -> Color:
         if info.hits():
             return self.color_for_normalized_ray_depth_value(pixel_value)
-        return color_miss_reason(info)
+        return color_for_miss_reason(info)
 
     def apply(self, info_matrix: IntersectionInfoMatrix) -> Image:
         if len(info_matrix) == 0 or len(info_matrix[0]) == 0:

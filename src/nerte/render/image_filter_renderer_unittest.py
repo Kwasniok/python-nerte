@@ -28,12 +28,12 @@ from nerte.render.image_filter_renderer import (
     Filter,
     HitFilter,
     ImageFilterRenderer,
-    color_miss_reason,
+    color_for_miss_reason,
     color_for_normalized_value,
 )
 
 
-class ColorMissReasonTest(unittest.TestCase):
+class ColorForMissReasonTest(unittest.TestCase):
     def assertAllColorsUnique(self, colors: list[Color]) -> None:
         """ "Asserts all colors in the list are unique."""
 
@@ -60,17 +60,17 @@ class ColorMissReasonTest(unittest.TestCase):
             IntersectionInfo(miss_reason=mr) for mr in self.miss_reasons
         )
 
-    def test_color_miss_reasons_uniqueness(self) -> None:
+    def test_color_for_miss_reasons_uniqueness(self) -> None:
         """Tests the uniquness of miss reason colors."""
         colors: list[Color] = []
         for info_miss_reason in self.info_miss_reasons:
-            colors.append(color_miss_reason(info_miss_reason))
+            colors.append(color_for_miss_reason(info_miss_reason))
         self.assertAllColorsUnique(colors)
 
-    def test_color_miss_reason_precondition(self) -> None:
+    def test_color_for_miss_reason_precondition(self) -> None:
         """Tests precondition of color for miss reason."""
         with self.assertRaises(ValueError):
-            color_miss_reason(self.info_hit)
+            color_for_miss_reason(self.info_hit)
 
 
 class ColorForNormalizedValueTest(unittest.TestCase):
@@ -148,7 +148,7 @@ class HitFilterColorsTest(unittest.TestCase):
         colors: list[Color] = []
         colors.append(self.filter.color_hit())
         for info_miss_reason in self.info_miss_reasons:
-            colors.append(color_miss_reason(info_miss_reason))
+            colors.append(color_for_miss_reason(info_miss_reason))
         self.assertAllColorsUnique(colors)
 
     def test_color_for_info(self) -> None:
@@ -161,7 +161,7 @@ class HitFilterColorsTest(unittest.TestCase):
         for info_miss_reason in self.info_miss_reasons:
             self.assertTupleEqual(
                 self.filter.color_for_info(info_miss_reason).rgb,
-                color_miss_reason(info_miss_reason).rgb,
+                color_for_miss_reason(info_miss_reason).rgb,
             )
 
 
@@ -451,7 +451,9 @@ class ImageFilterProjectionTest(unittest.TestCase):
             for pix in self.no_intersection_pixel:
                 self.assertTrue(
                     img.getpixel(pix)
-                    == color_miss_reason(IntersectionInfos.NO_INTERSECTION).rgb
+                    == color_for_miss_reason(
+                        IntersectionInfos.NO_INTERSECTION
+                    ).rgb
                 )
 
     def test_image_filter_renderer_perspective(self) -> None:
@@ -470,7 +472,9 @@ class ImageFilterProjectionTest(unittest.TestCase):
             for pix in self.no_intersection_pixel:
                 self.assertTrue(
                     img.getpixel(pix)
-                    == color_miss_reason(IntersectionInfos.NO_INTERSECTION).rgb
+                    == color_for_miss_reason(
+                        IntersectionInfos.NO_INTERSECTION
+                    ).rgb
                 )
 
 
@@ -522,7 +526,7 @@ class ImageFilterRendererProjectionFailureTest1(unittest.TestCase):
                 for y in range(self.dim):
                     if (
                         img.getpixel((x, y))
-                        == color_miss_reason(
+                        == color_for_miss_reason(
                             IntersectionInfos.RAY_INITIALIZED_OUTSIDE_MANIFOLD
                         ).rgb
                     ):
@@ -576,7 +580,7 @@ class ImageFilterRendererProjectionFailureTest2(unittest.TestCase):
         if img is not None:
             self.assertTrue(
                 img.getpixel((0, 0))
-                == color_miss_reason(
+                == color_for_miss_reason(
                     IntersectionInfos.RAY_INITIALIZED_OUTSIDE_MANIFOLD
                 ).rgb
             )

@@ -38,7 +38,7 @@ def color_for_normalized_value(value: float) -> Color:
     return Color(level, level, level)
 
 
-def color_miss_reason(info: IntersectionInfo) -> Color:
+def color_for_miss_reason(info: IntersectionInfo) -> Color:
     """
     Returns a color which encodes the reason why a ray was not hitting a
     surface.
@@ -110,7 +110,7 @@ class HitFilter(Filter):
 
         if info.hits():
             return self.color_hit()
-        return color_miss_reason(info)
+        return color_for_miss_reason(info)
 
     def apply(self, info_matrix: IntersectionInfoMatrix) -> Image:
         if len(info_matrix) == 0 or len(info_matrix[0]) == 0:
