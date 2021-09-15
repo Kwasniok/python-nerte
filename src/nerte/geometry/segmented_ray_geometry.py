@@ -66,6 +66,16 @@ class SegmentedRayGeometry(Geometry):
 
         # TODO: test cache generation (for max_steps = 0 etc.)
         def _cache_next_segment(self) -> None:
+            """
+            To be called to cache the next ray segment.
+
+            :precon: self._steps_cached < self._geometry.max_steps()
+            :precon: self._geometry.is_valid_coordinate(
+                         self._segments[self._steps_cached - 1].start
+                     )
+
+            :raises: RuntimeError if next segment cannot be created.
+            """
             if self._cached_ray_left_manifold:
                 return
             if self._steps_cached >= self._geometry.max_steps():
