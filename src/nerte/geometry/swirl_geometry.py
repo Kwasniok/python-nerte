@@ -34,7 +34,9 @@ class SwirlGeometry(SegmentedRayGeometry):
     def ray_from_coords(
         self, start: Coordinates3D, target: Coordinates3D
     ) -> SegmentedRayGeometry.Ray:
-        # TODO: This method is crude and incorrect.
+        # TODO: This is incorrect.
+        #       A valid result might be impossible?
+        #       Does a geodesic even exist?
         vec_s = coordinates_as_vector(start)
         vec_t = coordinates_as_vector(target)
         return SegmentedRayGeometry.Ray(
