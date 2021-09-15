@@ -216,8 +216,8 @@ class SegmentedRayGeometryRayIntersectsTest(GeometryTestCase):
         """Tests ray and face intersection."""
         info = self.ray.intersection_info(self.face_far)
         self.assertTrue(info.misses())
-        self.assertIs(
-            info.miss_reason(), IntersectionInfo.MissReason.NO_INTERSECTION
+        self.assertTrue(
+            info.has_miss_reason(IntersectionInfo.MissReason.NO_INTERSECTION)
         )
 
 
@@ -243,8 +243,8 @@ class SegmentedRayGeometryRayIntersectsRayEventuallyLeftManifoldTest(
         """
         info = self.ray.intersection_info(self.face)
         self.assertTrue(info.misses())
-        self.assertIs(
-            info.miss_reason(), IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD
+        self.assertTrue(
+            info.has_miss_reason(IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD)
         )
 
 
@@ -272,8 +272,8 @@ class SegmentedRayGeometryRayIntersectsRayImmediatelyLeftManifoldTest(
         """
         info = self.ray.intersection_info(self.face)
         self.assertTrue(info.misses())
-        self.assertIs(
-            info.miss_reason(), IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD
+        self.assertTrue(
+            info.has_miss_reason(IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD)
         )
 
 

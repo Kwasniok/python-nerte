@@ -33,7 +33,7 @@ from nerte.render.image_filter_renderer import (
 )
 
 
-class ColorsTest(unittest.TestCase):
+class ColorMissReasonTest(unittest.TestCase):
     def assertAllColorsUnique(self, colors: list[Color]) -> None:
         """ "Asserts all colors in the list are unique."""
 
@@ -55,7 +55,7 @@ class ColorsTest(unittest.TestCase):
     def setUp(self) -> None:
         self.filter = HitFilter()
         self.info_hit = IntersectionInfo(ray_depth=1.0)
-        self.miss_reasons = list(IntersectionInfo.MissReason)
+        self.miss_reasons = tuple(IntersectionInfo.MissReason)
         self.info_miss_reasons = tuple(
             IntersectionInfo(miss_reason=mr) for mr in self.miss_reasons
         )
@@ -63,9 +63,14 @@ class ColorsTest(unittest.TestCase):
     def test_color_miss_reasons_uniqueness(self) -> None:
         """Tests the uniquness of miss reason colors."""
         colors: list[Color] = []
-        for miss_reason in IntersectionInfo.MissReason:
-            colors.append(color_miss_reason(miss_reason))
+        for info_miss_reason in self.info_miss_reasons:
+            colors.append(color_miss_reason(info_miss_reason))
         self.assertAllColorsUnique(colors)
+
+    def test_color_miss_reason_precondition(self) -> None:
+        """Tests precondition of color for miss reason."""
+        with self.assertRaises(ValueError):
+            color_miss_reason(self.info_hit)
 
 
 class ColorForNormalizedValueTest(unittest.TestCase):
@@ -133,17 +138,17 @@ class HitFilterColorsTest(unittest.TestCase):
     def setUp(self) -> None:
         self.filter = HitFilter()
         self.info_hit = IntersectionInfo(ray_depth=1.0)
-        self.miss_reasons = list(IntersectionInfo.MissReason)
         self.info_miss_reasons = tuple(
-            IntersectionInfo(miss_reason=mr) for mr in self.miss_reasons
+            IntersectionInfo(miss_reason=mr)
+            for mr in IntersectionInfo.MissReason
         )
 
     def test_color_uniqueness(self) -> None:
         """Tests the uniquness of colors."""
         colors: list[Color] = []
         colors.append(self.filter.color_hit())
-        for miss_reason in IntersectionInfo.MissReason:
-            colors.append(color_miss_reason(miss_reason))
+        for info_miss_reason in self.info_miss_reasons:
+            colors.append(color_miss_reason(info_miss_reason))
         self.assertAllColorsUnique(colors)
 
     def test_color_for_info(self) -> None:
@@ -153,12 +158,10 @@ class HitFilterColorsTest(unittest.TestCase):
             self.filter.color_for_info(self.info_hit).rgb,
             self.filter.color_hit().rgb,
         )
-        for info_miss_reason, miss_reason in zip(
-            self.info_miss_reasons, self.miss_reasons
-        ):
+        for info_miss_reason in self.info_miss_reasons:
             self.assertTupleEqual(
                 self.filter.color_for_info(info_miss_reason).rgb,
-                color_miss_reason(miss_reason).rgb,
+                color_miss_reason(info_miss_reason).rgb,
             )
 
 
@@ -448,9 +451,7 @@ class ImageFilterProjectionTest(unittest.TestCase):
             for pix in self.no_intersection_pixel:
                 self.assertTrue(
                     img.getpixel(pix)
-                    == color_miss_reason(
-                        IntersectionInfo.MissReason.NO_INTERSECTION
-                    ).rgb
+                    == color_miss_reason(IntersectionInfos.NO_INTERSECTION).rgb
                 )
 
     def test_image_filter_renderer_perspective(self) -> None:
@@ -469,9 +470,7 @@ class ImageFilterProjectionTest(unittest.TestCase):
             for pix in self.no_intersection_pixel:
                 self.assertTrue(
                     img.getpixel(pix)
-                    == color_miss_reason(
-                        IntersectionInfo.MissReason.NO_INTERSECTION
-                    ).rgb
+                    == color_miss_reason(IntersectionInfos.NO_INTERSECTION).rgb
                 )
 
 
@@ -524,7 +523,7 @@ class ImageFilterRendererProjectionFailureTest1(unittest.TestCase):
                     if (
                         img.getpixel((x, y))
                         == color_miss_reason(
-                            IntersectionInfo.MissReason.RAY_INITIALIZED_OUTSIDE_MANIFOLD
+                            IntersectionInfos.RAY_INITIALIZED_OUTSIDE_MANIFOLD
                         ).rgb
                     ):
                         found_failure_pixel = True
@@ -578,7 +577,7 @@ class ImageFilterRendererProjectionFailureTest2(unittest.TestCase):
             self.assertTrue(
                 img.getpixel((0, 0))
                 == color_miss_reason(
-                    IntersectionInfo.MissReason.RAY_INITIALIZED_OUTSIDE_MANIFOLD
+                    IntersectionInfos.RAY_INITIALIZED_OUTSIDE_MANIFOLD
                 ).rgb
             )
 

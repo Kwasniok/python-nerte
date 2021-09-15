@@ -144,13 +144,7 @@ class RayDepthFilter(Filter):
     ) -> Color:
         if info.hits():
             return self.color_for_normalized_ray_depth_value(pixel_value)
-        miss_reason = info.miss_reason()
-        if miss_reason is None:
-            raise RuntimeError(
-                f"Cannot pick color for intersectio info {info}."
-                " No miss reason specified despite ray is missing."
-            )
-        return color_miss_reason(miss_reason)
+        return color_miss_reason(info)
 
     def apply(self, info_matrix: IntersectionInfoMatrix) -> Image:
         if len(info_matrix) == 0 or len(info_matrix[0]) == 0:

@@ -150,11 +150,15 @@ class RayDepthFilterApplyTest(unittest.TestCase):
             ]
         )
         self.filter = RayDepthFilter(max_color_value=1.0)
+        info_miss_reason = tuple(
+            IntersectionInfo(miss_reason=mr)
+            for mr in IntersectionInfo.MissReason
+        )
         self.pixel_colors = [
             Color(0, 0, 0),
             Color(127, 127, 127),
             Color(255, 255, 255),
-        ] + list(color_miss_reason(mr) for mr in IntersectionInfo.MissReason)
+        ] + list(color_miss_reason(imr) for imr in info_miss_reason)
 
     def test_apply(self) -> None:
         """Test filter application."""

@@ -12,11 +12,11 @@ class IntersectionInfo:
     class MissReason(Enum):
         # TODO: redesign: simple numbers do not reflect the hierachy of the
         #       miss reasons
-        # E.G.  Ray.has_missreason(miss_reason:Ray.MissReason) -> bool
+        # E.G.  info.has_miss_reason(miss_reason:Ray.MissReason)
         #       with behaviour
         #       info = Info(miss_reason=RAY_INITIALIZED_OUTSIDE_MANIFOLD)
-        #       info.has_missreason(RAY_INITIALIZED_OUTSIDE_MANIFOLD) == TRUE
-        #       info.has_missreason(RAY_LEFT_MANIFOLD) == TRUE
+        #       info.has_miss_reason(RAY_INITIALIZED_OUTSIDE_MANIFOLD) == TRUE
+        #       info.has_miss_reason(RAY_LEFT_MANIFOLD) == TRUE
         """All reasons why an intersection test may have failed."""
 
         # bit field like values
@@ -77,12 +77,12 @@ class IntersectionInfo:
         """
         return self._ray_depth
 
-    def miss_reason(self) -> Optional[MissReason]:
+    def has_miss_reason(self, miss_reason: MissReason) -> bool:
         """
-        Returns the reason why the intersection failed if it exists or None if
-        an intersection exists.
+        Returns true iff the given miss reason matches the miss reason of the
+        intersection info.
         """
-        return self._miss_reason
+        return self._miss_reason is miss_reason
 
 
 class IntersectionInfos:

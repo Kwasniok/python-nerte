@@ -46,50 +46,45 @@ class ExtendedIntersectionInfoConstructorTest(unittest.TestCase):
 class ExtendedIntersectionInfoInheritedPropertiesTest(unittest.TestCase):
     def setUp(self) -> None:
         self.info0 = ExtendedIntersectionInfo()
-        self.ray_depths = (0.0, 1.0, math.inf, math.inf, math.inf)
-        self.miss_reasons = (
-            None,
-            None,
-            IntersectionInfo.MissReason.NO_INTERSECTION,
-            IntersectionInfo.MissReason.NO_INTERSECTION,
-            IntersectionInfo.MissReason.RAY_LEFT_MANIFOLD,
+        self.hitting_ray_depths = (0.0, 1.0)
+        self.hitting_infos = tuple(
+            ExtendedIntersectionInfo(ray_depth=rd)
+            for rd in self.hitting_ray_depths
         )
-        self.infos = tuple(
-            ExtendedIntersectionInfo(ray_depth=rd, miss_reason=mr)
-            for rd, mr in zip(self.ray_depths, self.miss_reasons)
+        self.missing_infos = tuple(
+            ExtendedIntersectionInfo(miss_reason=mr)
+            for mr in IntersectionInfo.MissReason
         )
 
-    def test_inherited_default_properties(self) -> None:
-        """Tests inherited default properties."""
+    def test_default_properties(self) -> None:
+        """Tests default properties."""
         self.assertFalse(self.info0.hits())
         self.assertTrue(self.info0.misses())
         self.assertTrue(self.info0.ray_depth() == math.inf)
-        reason = self.info0.miss_reason()
-        self.assertIsNotNone(reason)
-        if reason is not None:
-            self.assertIs(reason, IntersectionInfo.MissReason.NO_INTERSECTION)
-
-    def test_inherited_properties(self) -> None:
-        """Tests inherited properties."""
-
-        # preconditions
-        self.assertTrue(len(self.infos) > 0)
         self.assertTrue(
-            len(self.infos) == len(self.ray_depths) == len(self.miss_reasons)
+            self.info0.has_miss_reason(
+                IntersectionInfo.MissReason.NO_INTERSECTION
+            )
         )
 
-        for info, ray_depth, miss_reason in zip(
-            self.infos, self.ray_depths, self.miss_reasons
-        ):
+    def test_hitting_ray_properties(self) -> None:
+        """Tests properties of rays hitting."""
+        for (
+            info,
+            ray_depth,
+        ) in zip(self.hitting_infos, self.hitting_ray_depths):
             self.assertTrue(info.ray_depth() == ray_depth)
-            if ray_depth < math.inf:
-                self.assertTrue(info.hits())
-                self.assertFalse(info.misses())
-                self.assertIsNone(info.miss_reason())
-            else:
-                self.assertFalse(info.hits())
-                self.assertTrue(info.misses())
-                self.assertIs(info.miss_reason(), miss_reason)
+            self.assertTrue(info.hits())
+            self.assertFalse(info.misses())
+
+    def test_missing_ray_properties(self) -> None:
+        """Tests properties of rays missing."""
+        for info, miss_reason in zip(
+            self.missing_infos, IntersectionInfo.MissReason
+        ):
+            self.assertFalse(info.hits())
+            self.assertTrue(info.misses())
+            self.assertTrue(info.has_miss_reason(miss_reason))
 
 
 class ExtendedIntersectionPropertiesTest(unittest.TestCase):
