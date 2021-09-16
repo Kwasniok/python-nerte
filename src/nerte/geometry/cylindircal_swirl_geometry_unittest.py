@@ -189,43 +189,67 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
 ):
     def setUp(self) -> None:
         self.geo = SwirlCylindricRungeKuttaGeometry(
-            max_ray_depth=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
+            max_ray_depth=1.0, step_size=1.0, max_steps=1, swirl_strength=2.0
         )
-        self.coords1 = Coordinates3D((1.0, 0.0, 0.0))
-        self.coords2 = Coordinates3D((1.0, math.pi / 2, 0.0))
+        self.starts = (
+            Coordinates3D((1.0, 0.0, 0.0)),
+            Coordinates3D((1.0, math.pi * 3 / 4, 0.0)),
+        )
+        self.targets = (
+            Coordinates3D((1.0, math.pi / 2, 0.0)),
+            Coordinates3D((2.0, -math.pi * 3 / 4, 3.0)),
+        )
+        self.directions = (
+            AbstractVector((-1.0, 1.0, 0.0)),
+            AbstractVector(
+                (
+                    -3 * math.sqrt(2) + 2 * math.cos(12),
+                    1 - 3 * math.sqrt(2) + 2 * math.sin(12),
+                    3,
+                )
+            ),
+        )
+        tangents = tuple(
+            RaySegment(start=s, direction=d)
+            for s, d in zip(self.starts, self.directions)
+        )
+        self.initial_tangents = tuple(
+            self.geo.normalized(it) for it in tangents
+        )
         self.invalid_coords = (
             Coordinates3D((0.0, 0.0, 0.0)),
             Coordinates3D((1.0, -math.pi, 0.0)),
             Coordinates3D((1.0, +math.pi, 0.0)),
         )
-        self.direction = AbstractVector((0.0, 1.0, 0.0))  # equiv to cords2
-        self.init_seg = self.geo.normalized(
-            RaySegment(start=self.coords1, direction=self.direction)
-        )
 
     def test_ray_from_coords(self) -> None:
         """Tests ray from coordinates."""
-        ray = self.geo.ray_from_coords(self.coords1, self.coords2)
-        init_seg = ray.initial_tangent()
-        self.assertCoordinates3DEquiv(init_seg.start, self.init_seg.start)
-        self.assertVectorEquiv(init_seg.direction, self.init_seg.direction)
+        for start, target, initial_tangent in zip(
+            self.starts, self.targets, self.initial_tangents
+        ):
+            ray = self.geo.ray_from_coords(start, target)
+            init_tan = ray.initial_tangent()
+            self.assertEquivRaySegment(init_tan, initial_tangent)
+        # invalid coordinates
         for invalid_coords in self.invalid_coords:
             with self.assertRaises(ValueError):
-                self.geo.ray_from_coords(invalid_coords, self.coords2)
+                self.geo.ray_from_coords(invalid_coords, self.targets[0])
             with self.assertRaises(ValueError):
-                self.geo.ray_from_coords(self.coords1, invalid_coords)
+                self.geo.ray_from_coords(self.starts[0], invalid_coords)
             with self.assertRaises(ValueError):
                 self.geo.ray_from_coords(invalid_coords, invalid_coords)
 
     def test_ray_from_tangent(self) -> None:
         """Tests ray from tangent."""
-        ray = self.geo.ray_from_tangent(self.coords1, self.direction)
-        init_seg = ray.initial_tangent()
-        self.assertCoordinates3DEquiv(init_seg.start, self.init_seg.start)
-        self.assertVectorEquiv(init_seg.direction, self.init_seg.direction)
+        for start, direction, initial_tangent in zip(
+            self.starts, self.directions, self.initial_tangents
+        ):
+            ray = self.geo.ray_from_tangent(start, direction)
+            init_tan = ray.initial_tangent()
+            self.assertEquivRaySegment(init_tan, initial_tangent)
         for invalid_coords in self.invalid_coords:
             with self.assertRaises(ValueError):
-                self.geo.ray_from_tangent(invalid_coords, self.direction)
+                self.geo.ray_from_tangent(invalid_coords, self.directions[0])
 
 
 class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(
