@@ -37,7 +37,7 @@ COLOR = RandomColorGenerator()
 def make_camera(canvas_dimension: int) -> Camera:
     """Creates a camera with preset values."""
 
-    location = Coordinates3D((2.0, 0.0, 2.0))
+    location = Coordinates3D((0.5, 0.0, 0.5))
     manifold = CarthesianPlaneInCylindric(
         b0=AbstractVector((0.0, -1.0, 0.0)),
         b1=AbstractVector((-0.4, 0.0, 0.4)),
@@ -131,7 +131,7 @@ def render(  # pylint: disable=R0913
     perspective projection.
     """
 
-    projection_mode = ProjectionMode.PERSPECTIVE
+    projection_mode = ProjectionMode.OBSCURA
     print(f"rendering {projection_mode.name} projection ...")
     renderer = ImageFilterRenderer(
         projection_mode=projection_mode,
@@ -160,12 +160,12 @@ def main() -> None:
     # NOTE: Increase the canvas dimension to improve the image quality.
     #       This will also increase rendering time!
     scene = make_scene(canvas_dimension=100)
-    max_steps = 50
+    max_steps = 25
     geo = SwirlCylindricRungeKuttaGeometry(
         max_ray_depth=math.inf,
-        step_size=0.2,
+        step_size=0.125,
         max_steps=max_steps,
-        swirl_strength=0.25,
+        swirl_strength=0.1,
     )
 
     output_path = "../images"
