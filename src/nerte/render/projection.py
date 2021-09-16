@@ -60,11 +60,21 @@ def perspective_ray_for_pixel(
     camera: Camera, geometry: Geometry, pixel_location: tuple[int, int]
 ) -> Geometry.Ray:
     """
-    Returns the initial ray segment leaving the cameras detector for a given
-    pixel on the canvas in perspective projection.
+    Returns the initial ray segment leaving the camera's location and passing
+    through the camera's detector surface (manifold) for a given pixel
+    This creates a perspective projection similar to the standart for most
+    comupter generated images.
 
-    NOTE: All initial ray segments start at the camera's location and pass
-    through the detector's manifold.
+    NOTE: All initial ray segments start at the camera's virtual location and
+          pass through the detector's manifold. Since physical ray's would be
+          absorbed by the detector, they never reach the virtual point.
+          While this has no effect in the euclidean space it is non-trivial
+          in curved spaces. The ray's length is counted from the virtual point
+          on.
+          For a more physically plausible alternative use the obscura
+          projection.
+
+    :see: obscura_ray_for_pixel
 
     :raises: ValueError, if no ray could be generated (e.g. if the ray would
              start at an invalid coordinate)
@@ -79,14 +89,48 @@ def perspective_ray_for_pixel(
         ) from ex
 
 
+def obscura_ray_for_pixel(
+    camera: Camera, geometry: Geometry, pixel_location: tuple[int, int]
+) -> Geometry.Ray:
+    """
+    Returns the initial ray segment leaving the camera's detector at a given
+    pixel and passing through the camera's location later on.
+    This creates a perspective projection similar to the camera obscura.
+
+    NOTE: All initial ray segments start at the detector sufrace (manifold) and
+          will pass through the camera's location (if not blocked before).
+          This projection models a camera obscura and is physically plausible.
+          The ray's length is counted from the detector surface on.
+          The usual projection via virtual point behind the detecor is
+          disputable in the context of curved spaces.
+    Note: As a consequence of the obscura projection the image will be flipped
+          both horizontally and vertically.
+
+    :see: perspective_ray_for_pixel
+
+    :raises: ValueError, if no ray could be generated (e.g. if the ray would
+             start at an invalid coordinate)
+    """
+    coords_2d = detector_manifold_coords(camera, pixel_location)
+    start = camera.detector_manifold.embed(coords_2d)
+    try:
+        return geometry.ray_from_coords(start=start, target=camera.location)
+    except ValueError as ex:
+        raise ValueError(
+            f"Could not generate perspective ray for pixel {pixel_location}."
+        ) from ex
+
+
 class ProjectionMode(Enum):
     """Projection modes of nerte.ImageRenderer."""
 
     ORTHOGRAPHIC = "ORTHOGRAPHIC"
     PERSPECTIVE = "PERSPECTIVE"
+    OBSCURA = "OBSCURA"
 
 
 ray_for_pixel = {
     ProjectionMode.ORTHOGRAPHIC: orthographic_ray_for_pixel,
     ProjectionMode.PERSPECTIVE: perspective_ray_for_pixel,
+    ProjectionMode.OBSCURA: obscura_ray_for_pixel,
 }

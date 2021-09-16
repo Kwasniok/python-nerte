@@ -22,6 +22,7 @@ from nerte.render.projection import (
     detector_manifold_coords,
     orthographic_ray_for_pixel,
     perspective_ray_for_pixel,
+    obscura_ray_for_pixel,
     ProjectionMode,
     ray_for_pixel,
 )
@@ -318,6 +319,87 @@ class PerspectiveProjectionTest(ProjectionTestCase):
                 )
 
 
+class ObscuraProjectionTest(ProjectionTestCase):
+    def setUp(self) -> None:
+        # camera
+        loc = Coordinates3D((0.0, 0.0, 1.0))
+        domain = Domain1D(-1.0, 1.0)
+        manifold = PlaneCartesian(
+            AbstractVector((1.0, 0.0, 0.0)),
+            AbstractVector((0.0, 1.0, 0.0)),
+            x0_domain=domain,
+            x1_domain=domain,
+            offset=AbstractVector((0.0, 0.0, 0.0)),
+        )
+        dim = 100
+        self.camera = Camera(
+            location=loc,
+            detector_manifold=manifold,
+            canvas_dimensions=(dim, dim),
+        )
+        # geometry
+        self.geometry = CarthesianGeometry()
+        # pixels and rays
+        self.pixel_locations = (
+            (0, 0),
+            (12, 7),
+            (3, 23),
+            (0, dim),
+            (dim, 0),
+            (dim, dim),
+        )
+        self.invalid_pixel_locations = (
+            (-1, 1),
+            (1, -1),
+            (1, dim + 1),
+            (dim + 1, 1),
+        )
+        # perspective ray from detecor manifold coordinates
+        def make_ray(
+            coords2d: Coordinates2D,
+        ) -> CarthesianGeometry.Ray:
+            return self.geometry.ray_from_coords(
+                start=self.camera.detector_manifold.embed(coords2d),
+                target=self.camera.location,
+            )
+
+        self.pixel_rays = tuple(
+            make_ray(detector_manifold_coords(self.camera, loc))
+            for loc in self.pixel_locations
+        )
+
+    def test_obscura_ray_for_pixel(self) -> None:
+        """Tests camera obscura projection for pixel."""
+
+        # preconditions
+        self.assertTrue(len(self.pixel_locations) > 0)
+        self.assertTrue(len(self.pixel_locations) == len(self.pixel_rays))
+
+        for pix_loc, pix_ray in zip(self.pixel_locations, self.pixel_rays):
+            ray = obscura_ray_for_pixel(
+                camera=self.camera,
+                geometry=self.geometry,
+                pixel_location=pix_loc,
+            )
+            self.assertIsInstance(ray, CarthesianGeometry.Ray)
+            cart_ray = cast(CarthesianGeometry.Ray, ray)
+            self.assertEquivCartRay(cart_ray, pix_ray)
+
+    def test_perspective_ray_for_pixel_invalid_values(self) -> None:
+        """Tests perspective projection for pixel's invalid values."""
+
+        # preconditions
+        self.assertTrue(len(self.invalid_pixel_locations) > 0)
+
+        for pix_loc in self.invalid_pixel_locations:
+            with self.assertRaises(ValueError):
+                obscura_ray_for_pixel(
+                    camera=self.camera,
+                    geometry=self.geometry,
+                    pixel_location=pix_loc,
+                )
+
+
 class RaySegmentForPixelTest(ProjectionTestCase):
     def test_ray_for_pixel(self) -> None:
         # pylint: disable=W0143
@@ -330,6 +412,9 @@ class RaySegmentForPixelTest(ProjectionTestCase):
         self.assertTrue(
             ray_for_pixel[ProjectionMode.PERSPECTIVE]
             == perspective_ray_for_pixel
+        )
+        self.assertTrue(
+            ray_for_pixel[ProjectionMode.OBSCURA] == obscura_ray_for_pixel
         )
 
 

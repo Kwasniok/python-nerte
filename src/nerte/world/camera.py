@@ -6,14 +6,16 @@ from nerte.values.manifold import Manifold2D
 
 class Camera:
     # pylint: disable=R0903
-    """Represenation of a camera.
-    Each camera defines its properties in the world via its detector and on the
-    screen via its canvas.
+    """
+    Represenation of a camera connecting the world to the screen.
+
+    Each camera defines its properties in the world via its detector surface
+    (manifold) and on the screen via its canvas dimensions.
     """
 
     def __init__(
         self,
-        location: Coordinates3D,  # TODO: change to focal point
+        location: Coordinates3D,
         detector_manifold: Manifold2D,
         canvas_dimensions: tuple[int, int],
     ) -> None:

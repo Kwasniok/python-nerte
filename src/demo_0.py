@@ -151,7 +151,10 @@ def render(
     perspective projection.
     """
 
-    for projection_mode in ProjectionMode:
+    for projection_mode in (
+        ProjectionMode.ORTHOGRAPHIC,
+        ProjectionMode.PERSPECTIVE,
+    ):
         print(f"rendering {projection_mode.name} projection ...")
         image_renderer = ImageColorRenderer(projection_mode=projection_mode)
         image_renderer.render(scene=scene, geometry=geometry)
