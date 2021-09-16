@@ -122,9 +122,8 @@ def make_scene(canvas_dimension: int) -> Scene:
 def render(  # pylint: disable=R0913
     scene: Scene,
     geometry: Geometry,
-    filtr: Filter,
+    filter_and_file_prefixes: list[tuple[Filter, str]],
     output_path: str,
-    file_prefix: str,
     show: bool,
 ) -> None:
     """
@@ -133,23 +132,26 @@ def render(  # pylint: disable=R0913
     """
 
     projection_mode = ProjectionMode.PERSPECTIVE
-    print(
-        f"rendering {projection_mode.name} projection for filter type"
-        f" '{type(filtr).__name__}' ..."
-    )
+    print(f"rendering {projection_mode.name} projection ...")
     renderer = ImageFilterRenderer(
         projection_mode=projection_mode,
-        filtr=filtr,
+        filtr=filter_and_file_prefixes[0][0],
+        auto_apply_filter=False,
         print_warings=False,
     )
     renderer.render(scene=scene, geometry=geometry)
-    renderer.apply_filter()
-    os.makedirs(output_path, exist_ok=True)
-    image = renderer.last_image()
-    if image is not None:
-        image.save(f"{output_path}/{file_prefix}_{projection_mode.name}.png")
-        if show:
-            image.show()
+    for filtr, file_prefix in filter_and_file_prefixes:
+        image_path = f"{output_path}/{file_prefix}_{projection_mode.name}.png"
+        print(f"applying filter of type {type(filtr).__name__} ...")
+        renderer.change_filter(filtr)
+        renderer.apply_filter()
+        print(f"saving file to {image_path} ...")
+        os.makedirs(output_path, exist_ok=True)
+        image = renderer.last_image()
+        if image is not None:
+            image.save(image_path)
+            if show:
+                image.show()
 
 
 def main() -> None:
@@ -158,7 +160,7 @@ def main() -> None:
     # NOTE: Increase the canvas dimension to improve the image quality.
     #       This will also increase rendering time!
     scene = make_scene(canvas_dimension=100)
-    max_steps = 25
+    max_steps = 50
     geo = SwirlCylindricRungeKuttaGeometry(
         max_ray_depth=math.inf,
         step_size=0.2,
@@ -170,38 +172,22 @@ def main() -> None:
     file_prefix = "demo3"
     show = True  # disable if images cannot be displayed
 
-    # hit filter
-    filtr: Filter = HitFilter()
+    # filters
+    filter_and_file_prefixes = [
+        (HitFilter(), file_prefix + "_hit_filter"),
+        (RayDepthFilter(), file_prefix + "_ray_depth_filter"),
+        (
+            MetaInfoFilter(
+                meta_data_key="steps", min_value=0, max_value=max_steps
+            ),
+            file_prefix + "_meta_info_steps_filter",
+        ),
+    ]
     render(
         scene=scene,
         geometry=geo,
-        filtr=filtr,
+        filter_and_file_prefixes=filter_and_file_prefixes,
         output_path=output_path,
-        file_prefix=file_prefix + "_hit_filter",
-        show=show,
-    )
-
-    # ray depth filter
-    filtr = RayDepthFilter()
-    render(
-        scene=scene,
-        geometry=geo,
-        filtr=filtr,
-        output_path=output_path,
-        file_prefix=file_prefix + "_ray_depth_filter",
-        show=show,
-    )
-
-    # meta info filter
-    filtr = MetaInfoFilter(
-        meta_data_key="steps", min_value=0, max_value=max_steps
-    )
-    render(
-        scene=scene,
-        geometry=geo,
-        filtr=filtr,
-        output_path=output_path,
-        file_prefix=file_prefix + "_meta_info_steps_filter",
         show=show,
     )
 
