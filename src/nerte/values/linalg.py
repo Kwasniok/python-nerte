@@ -193,6 +193,15 @@ def is_zero_vector(vec: AbstractVector) -> bool:
     return vec[0] == vec[1] == vec[2] == 0.0
 
 
+def mat_vec_mult(
+    matrix: AbstractMatrix, vector: AbstractVector
+) -> AbstractVector:
+    """Return the product p = m.v of the matrix m and the vector v."""
+    return _abstract_vector_from_numpy(
+        np.dot(matrix._m, vector._v)  # type: ignore[no-untyped-call]
+    )
+
+
 def dot(
     vec1: AbstractVector,
     vec2: AbstractVector,

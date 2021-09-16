@@ -16,6 +16,7 @@ from nerte.values.linalg import (
     covariant,
     contravariant,
     is_zero_vector,
+    mat_vec_mult,
     dot,
     cross,
     length,
@@ -230,6 +231,30 @@ class AbstractVectorIsZero(LinAlgTestCase):
 
         self.assertTrue(is_zero_vector(self.v0))
         self.assertFalse(is_zero_vector(self.v1))
+
+
+class MatVecMultTest(LinAlgTestCase):
+    # pylint: disable=R0902
+    def setUp(self) -> None:
+        self.vec0 = AbstractVector((0.0, 0.0, 0.0))
+        self.vec1 = AbstractVector((2.0, 3.0, 5.0))
+        self.vec2 = AbstractVector((7.0, 11.0, 13.0))
+        self.vec3 = AbstractVector((17.0, 19.0, 23.0))
+        self.vec4 = AbstractVector((29.0, 31.0, 37.0))
+        self.vec5 = AbstractVector((336, 1025, 1933))
+        self.mat0 = AbstractMatrix(self.vec0, self.vec0, self.vec0)
+        self.mat1 = AbstractMatrix(self.vec1, self.vec2, self.vec3)
+
+    def test_mat_vec_mult(self) -> None:
+        """Tests the multiplication of a matrix and a vector."""
+        v = mat_vec_mult(self.mat0, self.vec0)
+        self.assertVectorEquiv(v, self.vec0)
+        v = mat_vec_mult(self.mat1, self.vec0)
+        self.assertVectorEquiv(v, self.vec0)
+        v = mat_vec_mult(self.mat0, self.vec1)
+        self.assertVectorEquiv(v, self.vec0)
+        v = mat_vec_mult(self.mat1, self.vec4)
+        self.assertVectorEquiv(v, self.vec5)
 
 
 class LengthTest(LinAlgTestCase):
