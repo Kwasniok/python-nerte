@@ -168,6 +168,37 @@ class AbstractMatrixIsSymmetricTest(LinAlgTestCase):
             self.assertFalse(mat.is_symmetric())
 
 
+class AbstractMatrixIsInvertibleTest(LinAlgTestCase):
+    def setUp(self) -> None:
+        v0 = AbstractVector((0.0, 0.0, 0.0))
+        v1 = AbstractVector((2.0, 3.0, 5.0))
+        v2 = AbstractVector((7.0, 11.0, 13.0))
+        v3 = AbstractVector((17.0, 23.0, 27))
+        self.invertible_mats = (
+            AbstractMatrix(v1, v2, v3),
+            AbstractMatrix(v2, v3, v1),
+            AbstractMatrix(v3, v1, v2),
+            AbstractMatrix(v3, v2, v1),
+            AbstractMatrix(v2, v1, v3),
+            AbstractMatrix(v1, v3, v2),
+        )
+
+        self.non_invertible_mats = (
+            AbstractMatrix(v0, v0, v0),
+            AbstractMatrix(v1, v1, v1),
+            AbstractMatrix(v1, v1, v3),
+            AbstractMatrix(v1, v2, v2),
+            AbstractMatrix(v3, v2, v3),
+        )
+
+    def test_matrix_is_invertible(self) -> None:
+        """Tests matix invertibility property."""
+        for mat in self.invertible_mats:
+            self.assertTrue(mat.is_invertible())
+        for mat in self.non_invertible_mats:
+            self.assertFalse(mat.is_invertible())
+
+
 class AbstractMatrixMathTest(LinAlgTestCase):
     def setUp(self) -> None:
         v1 = AbstractVector((1.1, 2.2, 3.3))

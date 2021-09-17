@@ -64,6 +64,7 @@ class AbstractMatrix:
     ) -> None:
         self._m = np.array((vec0._v, vec1._v, vec2._v))
         self._is_symmetric: Optional[bool] = None  # cache
+        self._is_invertible: Optional[bool] = None  # cache
 
     def __repr__(self) -> str:
         return "M(" + (",".join(repr(x) for x in self._m)) + ")"
@@ -101,6 +102,18 @@ class AbstractMatrix:
             )
         return self._is_symmetric
 
+    def is_invertible(self) -> bool:
+        """
+        Returns True, iff matrix is invertible.
+        """
+        # NOTE: Calculating the determinant is faster than calculating the rank!
+        if self._is_invertible is None:
+            # NOTE: np.isclose is significantly slower
+            self._is_invertible = (
+                np.linalg.det(self._m) != 0.0  # type: ignore[no-untyped-call]
+            )
+        return self._is_invertible
+
 
 def _abstract_matrix_from_numpy(np_array: np.ndarray) -> AbstractMatrix:
     """
@@ -126,19 +139,8 @@ class Metric:
                 f"Cannot construct metric form non-symmetric matrix"
                 f" {matrix}."
             )
-        # # NOTE: Declaring the matrix symmetric significantly boosts the
-        # #       rank calculations!
-        # rank = np.linalg.matrix_rank(
-        #     matrix._m,
-        #     hermitian=True,
-        # )  # type: ignore[no-untyped-call]
-        # if rank != 3:
-        #     raise ValueError(
-        #         f"Cannot construct metric form non-invertible symmetric matrix"
-        #         f" {matrix} - its rank is {rank}."
-        #     )
-        # NOTE: Calculating the determinant is faster than calculating the rank!
-        if np.linalg.det(matrix._m) == 0.0:  # type: ignore[no-untyped-call]
+
+        if not matrix.is_invertible():
             raise ValueError(
                 f"Cannot construct metric form non-invertible symmetric matrix"
                 f" {matrix}."
