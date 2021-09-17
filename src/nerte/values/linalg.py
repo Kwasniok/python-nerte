@@ -225,22 +225,32 @@ def dot(
     )  # TODO: optimize
 
 
-# TODO: include metric and transformation
 def cross(
     vec1: AbstractVector,
     vec2: AbstractVector,
+    jacobian: Optional[AbstractMatrix] = None,
 ) -> AbstractVector:
-    """Returns the (orthonormal) cross product of both vectors."""
-    # NOTE: MASSIVE performance improvments with hardcoded version!
-    return AbstractVector(
-        (
-            vec1._v[1] * vec2._v[2] - vec1._v[2] * vec2._v[1],
-            vec1._v[2] * vec2._v[0] - vec1._v[0] * vec2._v[2],
-            vec1._v[0] * vec2._v[1] - vec1._v[1] * vec2._v[0],
+    """
+    Returns the (orthonormal) cross product of both vectors.
+
+    :param jacobian: Jacobian matric which transforms a vector to one in an
+                     orthonormal basis.
+    """
+    if jacobian is None:
+        # NOTE: MASSIVE performance improvments with hardcoded version!
+        return AbstractVector(
+            (
+                vec1._v[1] * vec2._v[2] - vec1._v[2] * vec2._v[1],
+                vec1._v[2] * vec2._v[0] - vec1._v[0] * vec2._v[2],
+                vec1._v[0] * vec2._v[1] - vec1._v[1] * vec2._v[0],
+            )
         )
-    )
-    # NOTE: DON'T use this:
-    # return Vector.__from_numpy(np.cross(vec1._v, vec2._v))
+        # NOTE: DON'T use this:
+        # return Vector.__from_numpy(np.cross(vec1._v, vec2._v))
+    vec1 = mat_vec_mult(jacobian, vec1)
+    vec2 = mat_vec_mult(jacobian, vec2)
+    vec_res = cross(vec1, vec2)
+    return mat_vec_mult(inverted(jacobian), vec_res)
 
 
 def length(vec: AbstractVector, metric: Optional[Metric] = None) -> float:

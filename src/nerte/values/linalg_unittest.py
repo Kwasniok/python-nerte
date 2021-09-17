@@ -423,6 +423,24 @@ class CrossTest(LinAlgTestCase):
         }
         # arbitrary factors
         self.scalar_factors = (0.0, 1.2345, -0.98765)
+        # vector transformation (permutation (0,1,2)->(2,1,0))
+        self.jacobian = AbstractMatrix(
+            AbstractVector((0.0, 0.0, 1.0)),
+            AbstractVector((0.0, 1.0, 0.0)),
+            AbstractVector((1.0, 0.0, 0.0)),
+        )
+        # result of corss product for transformed vectors
+        self.jacobian_res = {
+            (0, 0): v0,
+            (0, 1): -self.orth_norm_basis[2],
+            (0, 2): self.orth_norm_basis[1],
+            (1, 0): self.orth_norm_basis[2],
+            (1, 1): v0,
+            (1, 2): -self.orth_norm_basis[0],
+            (2, 0): -self.orth_norm_basis[1],
+            (2, 1): self.orth_norm_basis[0],
+            (2, 2): v0,
+        }
 
     def test_math_cross_orthonormality(self) -> None:
         """Tests cross product acting on orthonormal basis."""
@@ -459,6 +477,15 @@ class CrossTest(LinAlgTestCase):
                                 cross(u, (v * a) + (w * b)),
                                 cross(u, v) * a + cross(u, w) * b,
                             )
+
+    def test_math_cross_jacobian(self) -> None:
+        """Tests cross with jacobian matrix."""
+        for i, v in enumerate(self.orth_norm_basis):
+            for j, w in enumerate(self.orth_norm_basis):
+                self.assertVectorEquiv(
+                    cross(v, w, jacobian=self.jacobian),
+                    self.jacobian_res[(i, j)],
+                )
 
 
 class AreLinearDependentTest(LinAlgTestCase):
