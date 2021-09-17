@@ -403,16 +403,35 @@ class DotTest(LinAlgTestCase):
 class CrossTest(LinAlgTestCase):
     def setUp(self) -> None:
         # standart Carthesian basis
+        v0 = AbstractVector((0.0, 0.0, 0.0))
         self.orth_norm_basis = (
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
             AbstractVector((0.0, 0.0, 1.0)),
         )
+        # result of corss product for orthonormal vectors
+        self.ortho_norm_res = {
+            (0, 0): v0,
+            (0, 1): self.orth_norm_basis[2],
+            (0, 2): -self.orth_norm_basis[1],
+            (1, 0): -self.orth_norm_basis[2],
+            (1, 1): v0,
+            (1, 2): self.orth_norm_basis[0],
+            (2, 0): self.orth_norm_basis[1],
+            (2, 1): -self.orth_norm_basis[0],
+            (2, 2): v0,
+        }
         # arbitrary factors
         self.scalar_factors = (0.0, 1.2345, -0.98765)
 
     def test_math_cross_orthonormality(self) -> None:
         """Tests cross product acting on orthonormal basis."""
+        for i, v in enumerate(self.orth_norm_basis):
+            for j, w in enumerate(self.orth_norm_basis):
+                self.assertVectorEquiv(cross(v, w), self.ortho_norm_res[(i, j)])
+
+    def test_math_cross_antisymmetry(self) -> None:
+        """Tests cross product's antisymmetry."""
         for v in self.orth_norm_basis:
             for w in self.orth_norm_basis:
                 self.assertVectorEquiv(cross(v, w), -cross(w, v))
