@@ -63,7 +63,7 @@ class AbstractMatrix:
         self, vec0: AbstractVector, vec1: AbstractVector, vec2: AbstractVector
     ) -> None:
         self._m = np.array((vec0._v, vec1._v, vec2._v))
-        self._is_symmetric: Optional[bool] = None
+        self._is_symmetric: Optional[bool] = None  # cache
 
     def __repr__(self) -> str:
         return "M(" + (",".join(repr(x) for x in self._m)) + ")"
@@ -145,7 +145,7 @@ class Metric:
             )
 
         self._g = matrix
-        self._g_inv: Optional[AbstractMatrix] = None
+        self._g_inv: Optional[AbstractMatrix] = None  # cache
 
     def matrix(self) -> AbstractMatrix:
         """Returns the metric as a matrix."""
