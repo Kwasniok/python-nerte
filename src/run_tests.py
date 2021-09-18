@@ -4,15 +4,6 @@ import sys
 import os
 import unittest
 
-# handle warings as errors
-# https://docs.python.org/3/library/warnings.html
-if not sys.warnoptions:
-    import warnings
-
-    warnings.simplefilter("error")
-    # enable for subprocesses as well
-    os.environ["PYTHONWARNINGS"] = "error"
-
 
 def do_tests() -> unittest.TestResult:
     """
@@ -47,4 +38,13 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    # handle warings as errors
+    # https://docs.python.org/3/library/warnings.html
+    if not sys.warnoptions:
+        import warnings
+
+        warnings.simplefilter("error")
+        # enable for subprocesses as well
+        os.environ["PYTHONWARNINGS"] = "error"
+
     main()
