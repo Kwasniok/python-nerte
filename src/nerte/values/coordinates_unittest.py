@@ -4,9 +4,6 @@
 # pylint: disable=C0115
 # pylint: disable=C0144
 
-# TODO: remove when pylint bug was resolved
-# pylint: disable=E1136
-
 import unittest
 
 from typing import Optional, cast
@@ -337,8 +334,6 @@ class Coordinates3DTest(unittest.TestCase, CoordinatesTestCaseMixin):
         with self.assertRaises(IndexError):
             c[-4]  # type: ignore[misc]
 
-        # TODO: remove pylint disable, if bug was fixed in pylint
-        # pylint: disable=E0633
         x0, x1, x2 = c
         self.assertTrue((x0, x1, x2) == self.coeffs)
 
@@ -359,8 +354,6 @@ class Coordinates2DTest(unittest.TestCase, CoordinatesTestCaseMixin):
         with self.assertRaises(IndexError):
             c[-3]  # type: ignore[misc]
 
-        # TODO: remove pylint disable, if bug was fixed in pylint
-        # pylint: disable=E0633
         x0, x1 = c
         self.assertTrue((x0, x1) == self.coeffs)
 
@@ -381,8 +374,6 @@ class Coordinates1DTest(unittest.TestCase, CoordinatesTestCaseMixin):
         with self.assertRaises(IndexError):
             c[-2]  # type: ignore[misc]
 
-        # TODO: remove pylint disable, if bug was fixed in pylint
-        # pylint: disable=E0633
         (x0,) = c
         self.assertTrue((x0,) == self.coeffs)
 
