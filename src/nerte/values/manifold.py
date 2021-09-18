@@ -90,14 +90,14 @@ class OutOfDomainError(ValueError):
 class Manifold1D(ABC):
     """Representation of a one-dimensional manifold in three dimensions."""
 
-    def __init__(self, domain: Domain1D) -> None:
+    def __init__(self, domain: tuple[Domain1D]) -> None:
         self.domain = domain
 
     def is_in_domain(self, coords: Coordinates1D) -> bool:
         """
         Returns True, iff the domain coordinates are valid.
         """
-        return coords in self.domain
+        return coords[0] in self.domain[0]
 
     def in_domain_assertion(self, coords: Coordinates1D) -> None:
         """

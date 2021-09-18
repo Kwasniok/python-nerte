@@ -13,7 +13,8 @@ from nerte.values.linalg import (
     are_linear_dependent,
 )
 from nerte.values.util.convert import vector_as_coordinates
-from nerte.values.manifold import Manifold1D, Manifold2D,Manifold3D
+from nerte.values.manifold import Manifold1D, Manifold2D, Manifold3D
+
 
 class Line(Manifold1D):
     """Representation of a one-dimensional line embedded in three dimensions."""
@@ -30,7 +31,7 @@ class Line(Manifold1D):
 
         if domain is None:
             domain = Domain1D(-math.inf, math.inf)
-        Manifold1D.__init__(self, domain)
+        Manifold1D.__init__(self, (domain,))
 
         self._direction = direction
 
@@ -41,7 +42,7 @@ class Line(Manifold1D):
 
     def embed(self, coords: Coordinates1D) -> Coordinates3D:
         self.in_domain_assertion(coords)
-        return vector_as_coordinates(self._direction * coords + self._offset)
+        return vector_as_coordinates(self._direction * coords[0] + self._offset)
 
     def tangential_space(self, coords: Coordinates1D) -> AbstractVector:
         self.in_domain_assertion(coords)

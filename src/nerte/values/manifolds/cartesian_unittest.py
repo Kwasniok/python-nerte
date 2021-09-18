@@ -44,6 +44,7 @@ class LineDomainTest(ManifoldTestCase):
         self.finite_line = Line(self.v1, Domain1D(-1.0, 2.0))
         self.infinite_line = Line(self.v1)
         self.coords = (Coordinates1D(-2.0), Coordinates1D(3.0))
+        self.coords = (Coordinates1D((-2.0,)), Coordinates1D((3.0,)))
 
     def test_line_embed_domain(self) -> None:
         """Tests line coordinates."""
@@ -70,9 +71,9 @@ class LinePropertiesTest(ManifoldTestCase):
             AbstractVector((1.1, 2.2, 3.3)),
         )
         self.lines = tuple(Line(self.v, offset=o) for o in self.offsets)
-        c1d_0 = Coordinates1D(0.0)
-        c1d_1 = Coordinates1D(-1.0)
-        c1d_3 = Coordinates1D(2.0)
+        c1d_0 = Coordinates1D((0.0,))
+        c1d_1 = Coordinates1D((-1.0,))
+        c1d_3 = Coordinates1D((2.0,))
         c3d_0 = Coordinates3D((0.0, 0.0, 0.0))
         c3d_1 = Coordinates3D((-1.0, -2.0, -3.0))
         c3d_3 = Coordinates3D((2.0, 4.0, 6.0))

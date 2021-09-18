@@ -87,29 +87,29 @@ class Manifold1DImplementationTest(ManifoldTestCase):
         class DummyManifold1D(Manifold1D):
             def __init__(
                 self,
-                domain: Domain1D,
+                domain: tuple[Domain1D],
             ):
                 Manifold1D.__init__(self, domain)
 
             def embed(self, coords: Coordinates1D) -> Coordinates3D:
                 self.in_domain_assertion(coords)
-                return Coordinates3D((coords, 0.0, 0.0))
+                return Coordinates3D((coords[0], 0.0, 0.0))
 
             def tangential_space(self, coords: Coordinates1D) -> AbstractVector:
                 self.in_domain_assertion(coords)
                 return AbstractVector((1.0, 0.0, 0.0))
 
-        man = DummyManifold1D(self.domain)
+        man = DummyManifold1D((self.domain,))
         for x in self.coord_inside_domain:
-            man.embed(Coordinates1D(x))
-            man.tangential_space(Coordinates1D(x))
+            man.embed(Coordinates1D((x,)))
+            man.tangential_space(Coordinates1D((x,)))
         for x in self.coord_outside_domain:
             with self.assertRaises(OutOfDomainError):
-                man.embed(Coordinates1D(x))
+                man.embed(Coordinates1D((x,)))
             with self.assertRaises(OutOfDomainError):
-                man.tangential_space(Coordinates1D(x))
+                man.tangential_space(Coordinates1D((x,)))
 
-        self.assertTrue(man.domain is self.domain)
+        self.assertTrue(man.domain[0] is self.domain)
 
 
 class Manifold2DImplementationTest(ManifoldTestCase):
