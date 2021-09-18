@@ -1,5 +1,7 @@
 """Module for rendering a scene with respect to a geometry."""
 
+from typing import Iterable
+
 import math
 from PIL import Image
 
@@ -34,7 +36,7 @@ class ImageColorRenderer(ImageRenderer):
         self,
         camera: Camera,
         geometry: Geometry,
-        objects: list[Object],
+        objects: Iterable[Object],
         pixel_location: tuple[int, int],
     ) -> Color:
         """

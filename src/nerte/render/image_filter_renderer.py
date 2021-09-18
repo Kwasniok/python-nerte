@@ -3,7 +3,7 @@ Module for rendering a scene with respect to a geometry.
 The data is rendered first and filters may be applied afterwards.
 """
 
-from typing import Optional, NewType
+from typing import Optional, NewType, Iterable
 
 from abc import ABC, abstractmethod
 
@@ -186,7 +186,7 @@ class ImageFilterRenderer(ImageRenderer):
         self,
         camera: Camera,
         geometry: Geometry,
-        objects: list[Object],
+        objects: Iterable[Object],
         pixel_location: tuple[int, int],
     ) -> IntersectionInfo:
         """

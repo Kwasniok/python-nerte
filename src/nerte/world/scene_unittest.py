@@ -49,11 +49,21 @@ class SceneTest(unittest.TestCase):
     def test_objects(self) -> None:
         """Tests object management."""
         scene = Scene(camera=self.camera)
+        # empty
+        self.assertAlmostEqual(len(scene.objects()), 0)
         self.assertFalse(self.obj in scene.objects())
+        # add
         scene.add_object(self.obj)
+        self.assertAlmostEqual(len(scene.objects()), 1)
         self.assertTrue(self.obj in scene.objects())
+        # redundant add
         scene.add_object(self.obj)
+        self.assertAlmostEqual(len(scene.objects()), 1)
         self.assertTrue(self.obj in scene.objects())
+        # remove
+        scene.remove_object(self.obj)
+        self.assertAlmostEqual(len(scene.objects()), 0)
+        self.assertTrue(self.obj not in scene.objects())
 
 
 if __name__ == "__main__":
