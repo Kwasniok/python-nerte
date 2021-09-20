@@ -7,141 +7,19 @@
 
 import unittest
 
-from typing import Optional
-
 from itertools import permutations
 import math
 
+from nerte.values.coordinates_unittest import CoordinatesTestCaseMixin
+from nerte.values.linalg_unittest import LinAlgTestCaseMixin
+from nerte.values.ray_segment_unittest import RaySegmentTestCaseMixin
+from nerte.values.ray_segment_delta_unittest import RaySegmentDeltaTestCaseMixin
+
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.linalg import AbstractVector, Metric
+from nerte.values.linalg import AbstractVector
 from nerte.values.ray_segment import RaySegment
-from nerte.values.ray_segment_delta import RaySegmentDelta
 from nerte.values.face import Face
 from nerte.geometry.geometry import intersection_ray_depth
-
-# True, iff two floats are equivalent
-def _equiv(x: float, y: float, rel_tol: Optional[float] = None) -> bool:
-    if rel_tol is None:
-        return math.isclose(x, y)
-    return math.isclose(x, y, rel_tol=rel_tol)
-
-
-# True, iff two vectors are equivalent
-def _vec_equiv(x: AbstractVector, y: AbstractVector) -> bool:
-    return _equiv(x[0], y[0]) and _equiv(x[1], y[1]) and _equiv(x[2], y[2])
-
-
-# True, iff two coordinates are equivalent
-def _coords_equiv(x: Coordinates3D, y: Coordinates3D) -> bool:
-    return _equiv(x[0], y[0]) and _equiv(x[1], y[1]) and _equiv(x[2], y[2])
-
-
-# True, iff two metrics are equivalent
-def _metric_equiv(x: Metric, y: Metric) -> bool:
-    return (
-        _vec_equiv(x.matrix()[0], y.matrix()[0])
-        and _vec_equiv(x.matrix()[1], y.matrix()[1])
-        and _vec_equiv(x.matrix()[2], y.matrix()[2])
-    )
-
-
-# True, iff two ray segments are equivalent
-def _ray_seg_equiv(x: RaySegment, y: RaySegment) -> bool:
-    return _coords_equiv(x.start, y.start) and _vec_equiv(
-        x.direction, y.direction
-    )
-
-
-# True, iff two ray segment deltas are equivalent
-def _ray_seg_delta_equiv(x: RaySegmentDelta, y: RaySegmentDelta) -> bool:
-    return _vec_equiv(x.coords_delta, y.coords_delta) and _vec_equiv(
-        x.velocity_delta, y.velocity_delta
-    )
-
-
-class GeometryTestCase(unittest.TestCase):
-    def assertEquiv(
-        self, x: float, y: float, rel_tol: Optional[float] = None
-    ) -> None:
-        """
-        Asserts the equivalence of two floats.
-        Note: This replaces assertTrue(x == y) for float.
-        """
-        try:
-            self.assertTrue(_equiv(x, y, rel_tol=rel_tol))
-        except AssertionError as ae:
-            if rel_tol is None:
-                raise AssertionError(
-                    f"Scalar {x} is not equivalent to {y}."
-                ) from ae
-            raise AssertionError(
-                f"Scalar {x} is not equivalent to {y}."
-                f" Relative tolerance is {rel_tol}."
-            ) from ae
-
-    def assertVectorEquiv(self, x: AbstractVector, y: AbstractVector) -> None:
-        """
-        Asserts ths equivalence of two vectors.
-        Note: This replaces assertTrue(x == y) for vectors.
-        """
-        try:
-            self.assertTrue(_vec_equiv(x, y))
-        except AssertionError as ae:
-            raise AssertionError(
-                "Vector {} is not equivalent to {}.".format(x, y)
-            ) from ae
-
-    def assertCoordinates3DEquiv(
-        self, x: Coordinates3D, y: Coordinates3D
-    ) -> None:
-        """
-        Asserts ths equivalence of two three dimensional coordinates.
-        Note: This replaces assertTrue(x == y) for three dimensional coordinates.
-        """
-        try:
-            self.assertTrue(_coords_equiv(x, y))
-        except AssertionError as ae:
-            raise AssertionError(
-                "Coordinates {} is not equivalent to {}.".format(x, y)
-            ) from ae
-
-    def assertMetricEquiv(self, x: Metric, y: Metric) -> None:
-        """
-        Asserts ths equivalence of two metrics.
-        Note: This replaces assertTrue(x == y) for metrics.
-        """
-        try:
-            self.assertTrue(_metric_equiv(x, y))
-        except AssertionError as ae:
-            raise AssertionError(
-                f"Metric {x} is not equivalent to {y}."
-            ) from ae
-
-    def assertEquivRaySegment(self, x: RaySegment, y: RaySegment) -> None:
-        """
-        Asserts the equivalence of two ray segments.
-        Note: This replaces assertTrue(x == y) for RaySegment.
-        """
-        try:
-            self.assertTrue(_ray_seg_equiv(x, y))
-        except AssertionError as ae:
-            raise AssertionError(
-                f"Ray segment {x} is not equivalent to {y}."
-            ) from ae
-
-    def assertEquivRaySegmentDelta(
-        self, x: RaySegmentDelta, y: RaySegmentDelta
-    ) -> None:
-        """
-        Asserts the equivalence of two ray segment deltas.
-        Note: This replaces assertTrue(x == y) for RaySegmentDelta.
-        """
-        try:
-            self.assertTrue(_ray_seg_delta_equiv(x, y))
-        except AssertionError as ae:
-            raise AssertionError(
-                f"Ray segment delta {x} is not equivalent to {y}."
-            ) from ae
 
 
 # no test for abstract class/interface Geometry & Geometry.Ray
@@ -149,7 +27,16 @@ class GeometryTestCase(unittest.TestCase):
 # TODO: add dedicated tests for intersection infos where ray leaves the manifold
 
 
-class IntersectionRayDepthTest(GeometryTestCase):
+class GeometryTestCaseMixin(
+    CoordinatesTestCaseMixin,
+    LinAlgTestCaseMixin,
+    RaySegmentTestCaseMixin,
+    RaySegmentDeltaTestCaseMixin,
+):
+    pass
+
+
+class IntersectionRayDepthTest(unittest.TestCase, GeometryTestCaseMixin):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -222,7 +109,7 @@ class IntersectionRayDepthTest(GeometryTestCase):
             for face in self.faces:
                 rd = intersection_ray_depth(ray=ray, face=face)
                 self.assertTrue(0 <= rd < math.inf)
-                self.assertEquiv(rd, ray_depth)
+                self.assertAlmostEqual(rd, ray_depth)
 
     def test_intersetcs_ray_segment_hits(self) -> None:
         """
@@ -234,7 +121,7 @@ class IntersectionRayDepthTest(GeometryTestCase):
             for face in self.faces:
                 rd = intersection_ray_depth(ray=ray, face=face)
                 self.assertTrue(0 <= rd < math.inf)
-                self.assertEquiv(rd, ray_depth)
+                self.assertAlmostEqual(rd, ray_depth)
 
     def test_intersetcs_ray_misses(self) -> None:
         """

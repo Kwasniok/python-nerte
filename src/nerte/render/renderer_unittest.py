@@ -5,6 +5,7 @@
 # pylint: disable=C0144
 
 import unittest
+
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector

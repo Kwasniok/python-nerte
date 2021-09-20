@@ -8,6 +8,9 @@ import unittest
 
 import math
 
+from nerte.values.coordinates_unittest import CoordinatesTestCaseMixin
+from nerte.values.linalg_unittest import LinAlgTestCaseMixin
+
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector
 from nerte.values.util.convert import (
@@ -20,50 +23,9 @@ from nerte.values.util.convert import (
 )
 
 
-# True, iff two floats are equivalent
-def _equiv(x: float, y: float) -> bool:
-    return math.isclose(x, y)
-
-
-# True, iff two coordinates component-wise agree up to the (absolute) precision 𝜀
-def _coords_equiv(x: Coordinates3D, y: Coordinates3D) -> bool:
-    return _equiv(x[0], y[0]) and _equiv(x[1], y[1]) and _equiv(x[2], y[2])
-
-
-# True, iff two vectors component-wise agree up to the (absolute) precision 𝜀
-def _vec_equiv(x: AbstractVector, y: AbstractVector) -> bool:
-    return _equiv(x[0], y[0]) and _equiv(x[1], y[1]) and _equiv(x[2], y[2])
-
-
-class EquivTestCase(unittest.TestCase):
-    def assertCoordinates3DEquiv(
-        self, x: Coordinates3D, y: Coordinates3D
-    ) -> None:
-        """
-        Asserts ths equivalence of two vectors.
-        Note: This replaces assertTrue(x == y) for vectors.
-        """
-        try:
-            self.assertTrue(_coords_equiv(x, y))
-        except AssertionError as ae:
-            raise AssertionError(
-                "Coordinates3D {} are not equivalent to {}.".format(x, y)
-            ) from ae
-
-    def assertVectorEquiv(self, x: AbstractVector, y: AbstractVector) -> None:
-        """
-        Asserts ths equivalence of two vectors.
-        Note: This replaces assertTrue(x == y) for vectors.
-        """
-        try:
-            self.assertTrue(_vec_equiv(x, y))
-        except AssertionError as ae:
-            raise AssertionError(
-                "Vector {} is not equivalent to {}.".format(x, y)
-            ) from ae
-
-
-class ConvertCoordinatesVectorTypeTest(EquivTestCase):
+class ConvertCoordinatesVectorTypeTest(
+    unittest.TestCase, CoordinatesTestCaseMixin, LinAlgTestCaseMixin
+):
     def setUp(self) -> None:
         cs0 = (0.0, 0.0, 0.0)
         cs1 = (1.1, 2.2, 3.3)
@@ -87,7 +49,9 @@ class ConvertCoordinatesVectorTypeTest(EquivTestCase):
         )
 
 
-class ConvertCoordinates(EquivTestCase):
+class ConvertCoordinates(
+    unittest.TestCase, CoordinatesTestCaseMixin, LinAlgTestCaseMixin
+):
     def setUp(self) -> None:
         # r, phi, z
         self.cylin_coords = Coordinates3D((2.0, math.pi / 4, -3.0))

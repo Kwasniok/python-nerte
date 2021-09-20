@@ -5,11 +5,14 @@
 # pylint: disable=C0144
 
 import unittest
+
+from nerte.values.coordinates_unittest import CoordinatesTestCaseMixin
+
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.face import Face
 
 
-class FaceTest(unittest.TestCase):
+class FaceTest(unittest.TestCase, CoordinatesTestCaseMixin):
     def setUp(self) -> None:
         c0 = Coordinates3D((1.0, 0.0, 0.0))
         c1 = Coordinates3D((0.0, 1.0, 0.0))
@@ -21,11 +24,11 @@ class FaceTest(unittest.TestCase):
         f = Face(*self.coords)
 
         for i in range(3):
-            self.assertTrue(f[i] is self.coords[i])
+            self.assertCoordinates3DEquiv(f[i], self.coords[i])
         for x, i in zip(iter(f), range(3)):
-            self.assertEqual(x, f[i])
+            self.assertCoordinates3DEquiv(x, f[i])
         for x, y in zip(iter(f), self.coords):
-            self.assertTrue(x is y)
+            self.assertCoordinates3DEquiv(x, y)
 
 
 if __name__ == "__main__":

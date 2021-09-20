@@ -6,7 +6,7 @@
 
 import unittest
 
-from nerte.values.manifold_unittest import ManifoldTestCase
+from nerte.values.manifold_unittest import ManifoldTestCaseMixin
 
 from nerte.values.coordinates import Coordinates1D, Coordinates2D, Coordinates3D
 from nerte.values.domain import Domain1D
@@ -23,7 +23,7 @@ from nerte.values.util.convert import (
 )
 
 
-class LineConstructorTest(ManifoldTestCase):
+class LineConstructorTest(unittest.TestCase, ManifoldTestCaseMixin):
     def setUp(self) -> None:
         self.domain = Domain1D(-1.0, 4.0)
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
@@ -38,12 +38,12 @@ class LineConstructorTest(ManifoldTestCase):
             Line(self.v0)
 
 
-class LineDomainTest(ManifoldTestCase):
+class LineDomainTest(unittest.TestCase, ManifoldTestCaseMixin):
     def setUp(self) -> None:
         self.v1 = AbstractVector((1.0, 0.0, 0.0))
         self.finite_line = Line(self.v1, Domain1D(-1.0, 2.0))
         self.infinite_line = Line(self.v1)
-        self.coords = (Coordinates1D(-2.0), Coordinates1D(3.0))
+        self.coords = (Coordinates1D((-2.0,)), Coordinates1D((3.0,)))
         self.coords = (Coordinates1D((-2.0,)), Coordinates1D((3.0,)))
 
     def test_line_embed_domain(self) -> None:
@@ -63,7 +63,7 @@ class LineDomainTest(ManifoldTestCase):
             self.infinite_line.tangential_space(coords)
 
 
-class LinePropertiesTest(ManifoldTestCase):
+class LinePropertiesTest(unittest.TestCase, ManifoldTestCaseMixin):
     def setUp(self) -> None:
         self.v = AbstractVector((1.0, 2.0, 3.0))
         self.offsets = (
@@ -97,7 +97,7 @@ class LinePropertiesTest(ManifoldTestCase):
                 self.assertVectorEquiv(b, self.v)
 
 
-class PlaneConstructorTest(ManifoldTestCase):
+class PlaneConstructorTest(unittest.TestCase, ManifoldTestCaseMixin):
     def setUp(self) -> None:
         self.domain = Domain1D(-1.0, 4.0)
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
@@ -121,7 +121,7 @@ class PlaneConstructorTest(ManifoldTestCase):
             Plane(self.v1, self.v1)
 
 
-class PlaneDomainTest(ManifoldTestCase):
+class PlaneDomainTest(unittest.TestCase, ManifoldTestCaseMixin):
     def setUp(self) -> None:
         v1 = AbstractVector((1.0, 0.0, 0.0))
         v2 = AbstractVector((0.0, 1.0, 0.0))
@@ -161,7 +161,7 @@ class PlaneDomainTest(ManifoldTestCase):
             self.infinite_plane.tangential_space(coords)
 
 
-class PlanePropertiesTest(ManifoldTestCase):
+class PlanePropertiesTest(unittest.TestCase, ManifoldTestCaseMixin):
     def setUp(self) -> None:
         self.v1 = AbstractVector((1.0, 0.0, 0.0))
         self.v2 = AbstractVector((0.0, 1.0, 0.0))
@@ -208,7 +208,7 @@ class PlanePropertiesTest(ManifoldTestCase):
                 self.assertVectorEquiv(b1, self.v2)
 
 
-class ParallelepipedConstructorTest(ManifoldTestCase):
+class ParallelepipedConstructorTest(unittest.TestCase, ManifoldTestCaseMixin):
     def setUp(self) -> None:
         self.domain = Domain1D(-1.0, 4.0)
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
@@ -237,7 +237,7 @@ class ParallelepipedConstructorTest(ManifoldTestCase):
             Parallelepiped(b0=self.v3, b1=self.v2, b2=self.v3)
 
 
-class ParallelepipedDomainTest(ManifoldTestCase):
+class ParallelepipedDomainTest(unittest.TestCase, ManifoldTestCaseMixin):
     def setUp(self) -> None:
         v1 = AbstractVector((1.0, 0.0, 0.0))
         v2 = AbstractVector((0.0, 1.0, 0.0))
@@ -276,7 +276,7 @@ class ParallelepipedDomainTest(ManifoldTestCase):
             self.infinite_paraep.tangential_space(coords)
 
 
-class ParallelepipedPropertiesTest(ManifoldTestCase):
+class ParallelepipedPropertiesTest(unittest.TestCase, ManifoldTestCaseMixin):
     def setUp(self) -> None:
         self.v1 = AbstractVector((2.0, 0.0, 0.0))
         self.v2 = AbstractVector((0.0, 3.0, 0.0))

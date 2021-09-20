@@ -6,6 +6,8 @@ import unittest
 
 import math
 
+from nerte.values.coordinates_unittest import CoordinatesTestCaseMixin
+
 from nerte.values.domain import Domain1D
 
 
@@ -39,7 +41,7 @@ class Domain1DConstructorTest(unittest.TestCase):
             Domain1D(math.inf, math.inf)
 
 
-class Domain1DPropertiesTest(unittest.TestCase):
+class Domain1DPropertiesTest(unittest.TestCase, CoordinatesTestCaseMixin):
     def setUp(self) -> None:
         self.domain_params = (
             (1.1, 3.3),
@@ -61,11 +63,12 @@ class Domain1DPropertiesTest(unittest.TestCase):
     def test_domain1d_attributes(self) -> None:
         """Tests domain parameters getters."""
         for domain, params in zip(self.domains, self.domain_params):
-            self.assertTrue(domain.as_tuple() == params)
-            self.assertTrue(domain.start() == params[0])
-            self.assertTrue(domain.stop() == params[1])
-            self.assertTrue(domain.min() == min(params))
-            self.assertTrue(domain.max() == max(params))
+            self.assertAlmostEqual(domain.as_tuple()[0], params[0])
+            self.assertAlmostEqual(domain.as_tuple()[1], params[1])
+            self.assertAlmostEqual(domain.start(), params[0])
+            self.assertAlmostEqual(domain.stop(), params[1])
+            self.assertAlmostEqual(domain.min(), min(params))
+            self.assertAlmostEqual(domain.max(), max(params))
 
     def test_domain1d_contains(self) -> None:
         """Tests domain contains."""

@@ -12,7 +12,7 @@ from typing import Callable, Type, TypeVar, cast
 from itertools import permutations
 import math
 
-from nerte.geometry.geometry_unittest import GeometryTestCase
+from nerte.geometry.geometry_unittest import GeometryTestCaseMixin
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, length
@@ -96,7 +96,9 @@ def _make_dummy_runge_kutta_geometry() -> Type[RungeKuttaGeometry]:
     return DummyRungeKuttaGeometry
 
 
-class RungeKuttaGeometryImplementaionTest(GeometryTestCase):
+class RungeKuttaGeometryImplementaionTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def test_runge_kutta_geometry_implementation(self) -> None:
         # pylint: disable=R0201
         """
@@ -105,7 +107,9 @@ class RungeKuttaGeometryImplementaionTest(GeometryTestCase):
         _make_dummy_runge_kutta_geometry()
 
 
-class DummyRungeKuttaGeometryConstructorTest(GeometryTestCase):
+class DummyRungeKuttaGeometryConstructorTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         self.DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
 
@@ -157,7 +161,9 @@ class DummyRungeKuttaGeometryConstructorTest(GeometryTestCase):
             )
 
 
-class DummyRungeKuttaGeometryPropertiesTest(GeometryTestCase):
+class DummyRungeKuttaGeometryPropertiesTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         self.DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.max_ray_depth = 1.0
@@ -176,7 +182,9 @@ class DummyRungeKuttaGeometryPropertiesTest(GeometryTestCase):
         self.assertTrue(self.geometry.max_steps() == self.max_steps)
 
 
-class DummyRungeKuttaGeometryIsValidCoordinateTest(GeometryTestCase):
+class DummyRungeKuttaGeometryIsValidCoordinateTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.geo = DummyRungeKuttaGeometryGeo(
@@ -199,7 +207,9 @@ class DummyRungeKuttaGeometryIsValidCoordinateTest(GeometryTestCase):
             self.assertFalse(self.geo.is_valid_coordinate(coords))
 
 
-class RungeKuttaGeometryRayConstructorTest(GeometryTestCase):
+class RungeKuttaGeometryRayConstructorTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.geo = DummyRungeKuttaGeometryGeo(
@@ -220,7 +230,9 @@ class RungeKuttaGeometryRayConstructorTest(GeometryTestCase):
         )
 
 
-class RungeKuttaGeometryRayPropertiesTest(GeometryTestCase):
+class RungeKuttaGeometryRayPropertiesTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.geo = DummyRungeKuttaGeometryGeo(
@@ -240,12 +252,14 @@ class RungeKuttaGeometryRayPropertiesTest(GeometryTestCase):
 
     def test_properties(self) -> None:
         """Tests the properties."""
-        self.assertEquivRaySegment(
+        self.assertRaySegmentEquiv(
             self.ray.initial_tangent(), self.initial_tangent
         )
 
 
-class RungeKuttaGeometryRayIntersectsTest(GeometryTestCase):
+class RungeKuttaGeometryRayIntersectsTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -309,7 +323,7 @@ class RungeKuttaGeometryRayIntersectsTest(GeometryTestCase):
             for f in self.faces:
                 info = r.intersection_info(f)
                 self.assertTrue(info.hits())
-                self.assertEquiv(info.ray_depth(), rd)
+                self.assertAlmostEqual(info.ray_depth(), rd)
         for r in self.non_intersecting_rays:
             for f in self.faces:
                 info = r.intersection_info(f)
@@ -317,7 +331,7 @@ class RungeKuttaGeometryRayIntersectsTest(GeometryTestCase):
 
 
 class RungeKuttaGeometryRayIntersectsRayLeftManifoldEventuallyTest(
-    GeometryTestCase
+    unittest.TestCase, GeometryTestCaseMixin
 ):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
@@ -353,7 +367,7 @@ class RungeKuttaGeometryRayIntersectsRayLeftManifoldEventuallyTest(
 
 
 class RungeKuttaGeometryRayIntersectsRayLeftManifoldImmediatelyTest(
-    GeometryTestCase
+    unittest.TestCase, GeometryTestCaseMixin
 ):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
@@ -390,7 +404,9 @@ class RungeKuttaGeometryRayIntersectsRayLeftManifoldImmediatelyTest(
             )
 
 
-class RungeKuttaGeometryRayIntersectsMetaDataTest(GeometryTestCase):
+class RungeKuttaGeometryRayIntersectsMetaDataTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         p1 = Coordinates3D((1.0, 0.0, 0.0))
         p2 = Coordinates3D((0.0, 1.0, 0.0))
@@ -435,7 +451,9 @@ class RungeKuttaGeometryRayIntersectsMetaDataTest(GeometryTestCase):
                     self.assertAlmostEqual(meta_data["steps"], steps)
 
 
-class DummyRungeKuttaGeometryRayFromTest(GeometryTestCase):
+class DummyRungeKuttaGeometryRayFromTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.geo = DummyRungeKuttaGeometryGeo(
@@ -472,7 +490,7 @@ class DummyRungeKuttaGeometryRayFromTest(GeometryTestCase):
             self.geo.ray_from_tangent(self.invalid_coords, self.direction)
 
 
-class RungeKuttaGeometryVectorTest(GeometryTestCase):
+class RungeKuttaGeometryVectorTest(unittest.TestCase, GeometryTestCaseMixin):
     def setUp(self) -> None:
         v = AbstractVector((1.0, -2.0, 3.0))
         self.coords = Coordinates3D((0.0, 0.0, 0.0))
@@ -486,7 +504,7 @@ class RungeKuttaGeometryVectorTest(GeometryTestCase):
 
     def test_dummy_runge_kutta_geometry_length(self) -> None:
         """Tests dummy Runge-Kutta geometry vector length."""
-        self.assertEquiv(self.geo.length(self.ray), 14.0 ** 0.5)
+        self.assertAlmostEqual(self.geo.length(self.ray), 14.0 ** 0.5)
 
     def test_dummy_runge_kutta_geometry_normalized(self) -> None:
         """Tests dummy Runge-Kutta geometry vector normalization."""

@@ -11,7 +11,7 @@ from typing import TypeVar, Callable
 from itertools import permutations
 import math
 
-from nerte.geometry.geometry_unittest import GeometryTestCase
+from nerte.geometry.geometry_unittest import GeometryTestCaseMixin
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, AbstractMatrix, Metric
@@ -34,7 +34,9 @@ def _iterate(f: Callable[[T], T], n: int, x0: T) -> T:
     return x
 
 
-class SwirlCylindricRungeKuttaGeometryConstructorTest(GeometryTestCase):
+class SwirlCylindricRungeKuttaGeometryConstructorTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def test_constructor(self) -> None:
         """Tests constructor."""
         SwirlCylindricRungeKuttaGeometry(
@@ -137,7 +139,9 @@ class SwirlCylindricRungeKuttaGeometryConstructorTest(GeometryTestCase):
             )
 
 
-class SwirlCylindricRungeKuttaGeometryPropertiesTest(GeometryTestCase):
+class SwirlCylindricRungeKuttaGeometryPropertiesTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         self.swirl_strength = 0.1234
         self.geo = SwirlCylindricRungeKuttaGeometry(
@@ -149,10 +153,12 @@ class SwirlCylindricRungeKuttaGeometryPropertiesTest(GeometryTestCase):
 
     def test_properties(self) -> None:
         """Tests properties."""
-        self.assertEquiv(self.geo.swirl_strength(), self.swirl_strength)
+        self.assertAlmostEqual(self.geo.swirl_strength(), self.swirl_strength)
 
 
-class SwirlCylindricRungeKuttaGeometryIsValidCoordinateTest(GeometryTestCase):
+class SwirlCylindricRungeKuttaGeometryIsValidCoordinateTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         self.geo = SwirlCylindricRungeKuttaGeometry(
             max_ray_depth=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
@@ -185,7 +191,7 @@ class SwirlCylindricRungeKuttaGeometryIsValidCoordinateTest(GeometryTestCase):
 
 
 class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
-    GeometryTestCase
+    unittest.TestCase, GeometryTestCaseMixin
 ):
     def setUp(self) -> None:
         self.geo = SwirlCylindricRungeKuttaGeometry(
@@ -229,7 +235,7 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
         ):
             ray = self.geo.ray_from_coords(start, target)
             init_tan = ray.initial_tangent()
-            self.assertEquivRaySegment(init_tan, initial_tangent)
+            self.assertRaySegmentEquiv(init_tan, initial_tangent)
         # invalid coordinates
         for invalid_coords in self.invalid_coords:
             with self.assertRaises(ValueError):
@@ -246,14 +252,14 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
         ):
             ray = self.geo.ray_from_tangent(start, direction)
             init_tan = ray.initial_tangent()
-            self.assertEquivRaySegment(init_tan, initial_tangent)
+            self.assertRaySegmentEquiv(init_tan, initial_tangent)
         for invalid_coords in self.invalid_coords:
             with self.assertRaises(ValueError):
                 self.geo.ray_from_tangent(invalid_coords, self.directions[0])
 
 
 class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(
-    GeometryTestCase
+    unittest.TestCase, GeometryTestCaseMixin
 ):
     def setUp(self) -> None:
         # coordinates: r, 𝜑, z
@@ -301,7 +307,7 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(
     def test_length(self) -> None:
         """Tests vector length."""
         for ray, length in zip(self.rays, self.lengths):
-            self.assertEquiv(self.geo.length(ray), length)
+            self.assertAlmostEqual(self.geo.length(ray), length)
         for ray in self.invalid_rays:
             with self.assertRaises(ValueError):
                 self.geo.length(ray)
@@ -317,7 +323,9 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(
                 self.geo.normalized(ray)
 
 
-class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(GeometryTestCase):
+class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         self.geo = SwirlCylindricRungeKuttaGeometry(
             max_ray_depth=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
@@ -376,12 +384,14 @@ class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(GeometryTestCase):
         """Tests geodesic equation."""
         geodesic_equation = self.geo.geodesic_equation()
         for x in self.xs:
-            self.assertEquivRaySegmentDelta(
+            self.assertRaySegmentDeltaEquiv(
                 geodesic_equation(x), self.geodesic_equation(x)
             )
 
 
-class SwirlCylindricRungeKuttaGeometryMetricTest(GeometryTestCase):
+class SwirlCylindricRungeKuttaGeometryMetricTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         self.geo = SwirlCylindricRungeKuttaGeometry(
             max_ray_depth=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
@@ -415,7 +425,7 @@ class SwirlCylindricRungeKuttaGeometryMetricTest(GeometryTestCase):
 
 
 class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
-    GeometryTestCase
+    unittest.TestCase, GeometryTestCaseMixin
 ):
     def setUp(self) -> None:
         # coordinates: r, 𝜑, z
@@ -445,8 +455,8 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
         self.intersecting_rays = [
             geo.ray_from_tangent(start=s, direction=v) for s in coords1
         ]
-        self.ray_depths = [1.0, 1.0, 1.0]  #
-        self.ray_depth_relaltive_tolerance = [1e-3, 1e-3, 1e-3]
+        self.ray_depths = [1.0, 1.0, 1.0]
+        self.ray_depth_places = [3, 3, 3]
         # rays pointing 'backwards'
         # away from the face and parallel to face normal
         self.non_intersecting_rays = [
@@ -467,22 +477,20 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
         # convert to proper lists
         self.intersecting_rays = list(self.intersecting_rays)
         self.ray_depths = list(self.ray_depths)
-        self.ray_depth_relaltive_tolerance = list(
-            self.ray_depth_relaltive_tolerance
-        )
+        self.ray_depth_places = list(self.ray_depth_places)
         self.non_intersecting_rays = list(self.non_intersecting_rays)
 
     def test_intersects1(self) -> None:
         """Tests if rays intersect as expected."""
-        for r, rd, rt in zip(
+        for r, rd, ps in zip(
             self.intersecting_rays,
             self.ray_depths,
-            self.ray_depth_relaltive_tolerance,
+            self.ray_depth_places,
         ):
             for f in self.faces:
                 info = r.intersection_info(f)
                 self.assertTrue(info.hits())
-                self.assertEquiv(info.ray_depth(), rd, rel_tol=rt)
+                self.assertAlmostEqual(info.ray_depth(), rd, places=ps)
 
     def test_intersects2(self) -> None:
         """Tests if rays do not intersect as expected."""
@@ -492,7 +500,9 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
                 self.assertTrue(info.misses())
 
 
-class SwirlCylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
+class SwirlCylindricRungeKuttaGeometryIntersectsTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         # coordinates: r, 𝜑, z
 
@@ -523,8 +533,8 @@ class SwirlCylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
         self.intersecting_rays = [
             geo.ray_from_tangent(start=s, direction=v) for s in coords1
         ]
-        self.ray_depths = [1.38, 1.38, 1.38]  # TODO: needs confirmation
-        self.ray_depth_relaltive_tolerance = [1e-2, 1e-2, 1e-2]
+        self.ray_depths = [1.374, 1.374, 1.374]  # TODO: needs confirmation
+        self.ray_depth_places = [2, 2, 2]
         # antiparallel (miss)
         self.non_intersecting_rays = [
             geo.ray_from_tangent(start=s, direction=-v) for s in coords1
@@ -546,22 +556,20 @@ class SwirlCylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
         # convert to proper lists
         self.intersecting_rays = list(self.intersecting_rays)
         self.ray_depths = list(self.ray_depths)
-        self.ray_depth_relaltive_tolerance = list(
-            self.ray_depth_relaltive_tolerance
-        )
+        self.ray_depth_places = list(self.ray_depth_places)
         self.non_intersecting_rays = list(self.non_intersecting_rays)
 
     def test_intersects1(self) -> None:
         """Tests if rays intersect as expected."""
-        for r, rd, rt in zip(
+        for r, rd, ps in zip(
             self.intersecting_rays,
             self.ray_depths,
-            self.ray_depth_relaltive_tolerance,
+            self.ray_depth_places,
         ):
             for f in self.faces:
                 info = r.intersection_info(f)
                 self.assertTrue(info.hits())
-                self.assertEquiv(info.ray_depth(), rd, rel_tol=rt)
+                self.assertAlmostEqual(info.ray_depth(), rd, places=ps)
 
     def test_intersects2(self) -> None:
         """Tests if rays do not intersect as expected."""

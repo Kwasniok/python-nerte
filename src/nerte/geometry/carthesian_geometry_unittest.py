@@ -7,9 +7,11 @@
 
 import unittest
 
+from typing import Optional, cast
 from itertools import permutations
 
-from nerte.geometry.geometry_unittest import GeometryTestCase
+from nerte.values.ray_segment_unittest import RaySegmentTestCaseMixin
+from nerte.geometry.geometry_unittest import GeometryTestCaseMixin
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, normalized
@@ -18,14 +20,42 @@ from nerte.values.ray_segment import RaySegment
 from nerte.geometry.carthesian_geometry import CarthesianGeometry
 
 
-class CarthesianGeometryConstructorTest(GeometryTestCase):
+class CarthesianGeometryTestCaseMixin(GeometryTestCaseMixin):
+    # pylint: disable=R0903
+    def assertCarthRayEquiv(
+        self,
+        x: CarthesianGeometry.Ray,
+        y: CarthesianGeometry.Ray,
+        msg: Optional[str] = None,
+    ) -> None:
+        """
+        Asserts the equivalence of two ray's.
+        """
+
+        test_case = cast(unittest.TestCase, self)
+        try:
+            cast(RaySegmentTestCaseMixin, self).assertRaySegmentEquiv(
+                x.as_segment(), y.as_segment()
+            )
+        except AssertionError as ae:
+            msg_full = f"Ray segment {x} is not equivalent to {y}."
+            if msg is not None:
+                msg_full += f" : {msg}"
+            raise test_case.failureException(msg_full) from ae
+
+
+class CarthesianGeometryConstructorTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def test_constructor(self) -> None:
         # pylint: disable=R0201
         """Test the constructor."""
         CarthesianGeometry()
 
 
-class CarthesianGeometryIsValidCoordinateTest(GeometryTestCase):
+class CarthesianGeometryIsValidCoordinateTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         self.geo = CarthesianGeometry()
         self.valid_coords = (Coordinates3D((0.0, 0.0, 0.0)),)
@@ -36,7 +66,7 @@ class CarthesianGeometryIsValidCoordinateTest(GeometryTestCase):
             self.assertTrue(self.geo.is_valid_coordinate(coords))
 
 
-class CarthesianGeometryRayFromTest(GeometryTestCase):
+class CarthesianGeometryRayFromTest(unittest.TestCase, GeometryTestCaseMixin):
     def setUp(self) -> None:
         self.geo = CarthesianGeometry()
         self.coords1 = Coordinates3D((0.0, 0.0, 0.0))
@@ -61,7 +91,9 @@ class CarthesianGeometryRayFromTest(GeometryTestCase):
         self.assertVectorEquiv(init_seg.direction, self.init_seg.direction)
 
 
-class CarthesianGeometryIntersectsTest1(GeometryTestCase):
+class CarthesianGeometryIntersectsTest1(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -94,7 +126,9 @@ class CarthesianGeometryIntersectsTest1(GeometryTestCase):
                 self.assertTrue(info.hits())
 
 
-class CarthesianGeometryIntersectsTest2(GeometryTestCase):
+class CarthesianGeometryIntersectsTest2(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -127,7 +161,9 @@ class CarthesianGeometryIntersectsTest2(GeometryTestCase):
                 self.assertTrue(info.misses())
 
 
-class CarthesianGeometryIntersectsTest3(GeometryTestCase):
+class CarthesianGeometryIntersectsTest3(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -158,7 +194,9 @@ class CarthesianGeometryIntersectsTest3(GeometryTestCase):
                 self.assertTrue(info.misses())
 
 
-class CarthesianGeometryIntersectsTest4(GeometryTestCase):
+class CarthesianGeometryIntersectsTest4(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!

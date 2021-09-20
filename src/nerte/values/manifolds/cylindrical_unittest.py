@@ -8,7 +8,7 @@ import unittest
 
 import math
 
-from nerte.values.manifold_unittest import ManifoldTestCase
+from nerte.values.manifold_unittest import ManifoldTestCaseMixin
 
 from nerte.values.coordinates import Coordinates2D, Coordinates3D
 from nerte.values.domain import Domain1D
@@ -18,7 +18,7 @@ from nerte.values.manifolds.cylindrical import Plane
 from nerte.values.util.convert import cylindric_to_carthesian_vector
 
 
-class PlaneConstructorTest(ManifoldTestCase):
+class PlaneConstructorTest(unittest.TestCase, ManifoldTestCaseMixin):
     def setUp(self) -> None:
         self.domain = Domain1D(-1.0, 4.0)
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
@@ -42,7 +42,7 @@ class PlaneConstructorTest(ManifoldTestCase):
             Plane(self.v1, self.v1)
 
 
-class PlaneDomainTest(ManifoldTestCase):
+class PlaneDomainTest(unittest.TestCase, ManifoldTestCaseMixin):
     def setUp(self) -> None:
         v1 = AbstractVector((1.0, 0.0, 0.0))
         v2 = AbstractVector((0.0, 1.0, 0.0))
@@ -82,7 +82,7 @@ class PlaneDomainTest(ManifoldTestCase):
             self.infinite_plane.tangential_space(coords)
 
 
-class PlanePropertiesTest(ManifoldTestCase):
+class PlanePropertiesTest(unittest.TestCase, ManifoldTestCaseMixin):
     # pylint: disable=R0902
     def setUp(self) -> None:
         self.v1 = AbstractVector((1.0, 0.0, 0.0))
@@ -119,8 +119,8 @@ class PlanePropertiesTest(ManifoldTestCase):
             # which are orthogonal to the normal vector
             v0 = cylindric_to_carthesian_vector(c3d, b0)
             v1 = cylindric_to_carthesian_vector(c3d, b1)
-            self.assertEquiv(dot(self.n_cartesian, v0), 0.0)
-            self.assertEquiv(dot(self.n_cartesian, v1), 0.0)
+            self.assertScalarEquiv(dot(self.n_cartesian, v0), 0.0)
+            self.assertScalarEquiv(dot(self.n_cartesian, v1), 0.0)
 
 
 if __name__ == "__main__":

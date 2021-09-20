@@ -5,6 +5,7 @@
 # pylint: disable=C0144
 
 import unittest
+
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.face import Face
 from nerte.values.color import Color, Colors

@@ -11,7 +11,7 @@ from typing import TypeVar, Callable
 from itertools import permutations
 import math
 
-from nerte.geometry.geometry_unittest import GeometryTestCase
+from nerte.geometry.geometry_unittest import GeometryTestCaseMixin
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, AbstractMatrix, Metric
@@ -32,7 +32,9 @@ def _iterate(f: Callable[[T], T], n: int, x0: T) -> T:
     return x
 
 
-class CylindricRungeKuttaGeometryConstructorTest(GeometryTestCase):
+class CylindricRungeKuttaGeometryConstructorTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def test_constructor(self) -> None:
         """Tests constructor."""
         CylindricRungeKuttaGeometry(
@@ -103,7 +105,9 @@ class CylindricRungeKuttaGeometryConstructorTest(GeometryTestCase):
             )
 
 
-class CylindricRungeKuttaGeometryIsValidCoordinateTest(GeometryTestCase):
+class CylindricRungeKuttaGeometryIsValidCoordinateTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         self.geo = CylindricRungeKuttaGeometry(
             max_ray_depth=1.0, step_size=1.0, max_steps=1
@@ -135,7 +139,9 @@ class CylindricRungeKuttaGeometryIsValidCoordinateTest(GeometryTestCase):
             self.assertFalse(self.geo.is_valid_coordinate(coords))
 
 
-class CylindricRungeKuttaGeometryRayFromTest(GeometryTestCase):
+class CylindricRungeKuttaGeometryRayFromTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         self.geo = CylindricRungeKuttaGeometry(
             max_ray_depth=1.0, step_size=0.1, max_steps=10
@@ -177,7 +183,9 @@ class CylindricRungeKuttaGeometryRayFromTest(GeometryTestCase):
                 self.geo.ray_from_tangent(invalid_coords, self.direction)
 
 
-class CylindricRungeKuttaGeometryVectorTest(GeometryTestCase):
+class CylindricRungeKuttaGeometryVectorTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         # coordinates: r, 𝜑, z
         # metric: g = diag(1, r**2, z)
@@ -223,7 +231,7 @@ class CylindricRungeKuttaGeometryVectorTest(GeometryTestCase):
     def test_length(self) -> None:
         """Tests vector length."""
         for ray, length in zip(self.rays, self.lengths):
-            self.assertEquiv(self.geo.length(ray), length)
+            self.assertAlmostEqual(self.geo.length(ray), length)
         for ray in self.invalid_rays:
             with self.assertRaises(ValueError):
                 self.geo.length(ray)
@@ -239,7 +247,9 @@ class CylindricRungeKuttaGeometryVectorTest(GeometryTestCase):
                 self.geo.normalized(ray)
 
 
-class CylindricRungeKuttaGeometryGeodesicEquationTest(GeometryTestCase):
+class CylindricRungeKuttaGeometryGeodesicEquationTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         self.geo = CylindricRungeKuttaGeometry(
             max_ray_depth=1.0, step_size=1.0, max_steps=1
@@ -279,12 +289,14 @@ class CylindricRungeKuttaGeometryGeodesicEquationTest(GeometryTestCase):
         """Tests geodesic equation."""
         geodesic_equation = self.geo.geodesic_equation()
         for x in self.xs:
-            self.assertEquivRaySegmentDelta(
+            self.assertRaySegmentDeltaEquiv(
                 geodesic_equation(x), self.geodesic_equation(x)
             )
 
 
-class CylindricRungeKuttaGeometryMetricTest(GeometryTestCase):
+class CylindricRungeKuttaGeometryMetricTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         self.geo = CylindricRungeKuttaGeometry(
             max_ray_depth=1.0, step_size=1.0, max_steps=1
@@ -317,7 +329,9 @@ class CylindricRungeKuttaGeometryMetricTest(GeometryTestCase):
             self.assertMetricEquiv(self.geo.metric(coords), metric)
 
 
-class CylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
+class CylindricRungeKuttaGeometryIntersectsTest(
+    unittest.TestCase, GeometryTestCaseMixin
+):
     def setUp(self) -> None:
         # coordinates: r, 𝜑, z
 
@@ -374,7 +388,7 @@ class CylindricRungeKuttaGeometryIntersectsTest(GeometryTestCase):
             for f in self.faces:
                 info = r.intersection_info(f)
                 self.assertTrue(info.hits())
-                self.assertEquiv(info.ray_depth(), rd)
+                self.assertAlmostEqual(info.ray_depth(), rd)
 
     def test_intersects2(self) -> None:
         """Tests if rays do not intersect as expected."""

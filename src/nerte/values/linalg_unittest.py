@@ -7,6 +7,10 @@
 
 import unittest
 
+from typing import Optional, cast
+
+from abc import ABC
+import sys
 import math
 
 from nerte.values.linalg import (
@@ -26,17 +30,18 @@ from nerte.values.linalg import (
 )
 
 
-# True, iff two floats are equivalent
-def _equiv(x: float, y: float) -> bool:
+def _scalar_equiv(x: float, y: float) -> bool:
     return math.isclose(x, y)
 
 
-# True, iff two vectors component-wise agree up to the (absolute) precision 𝜀
 def _vec_equiv(x: AbstractVector, y: AbstractVector) -> bool:
-    return _equiv(x[0], y[0]) and _equiv(x[1], y[1]) and _equiv(x[2], y[2])
+    return (
+        _scalar_equiv(x[0], y[0])
+        and _scalar_equiv(x[1], y[1])
+        and _scalar_equiv(x[2], y[2])
+    )
 
 
-# True, iff two matrices component-wise agree up to the (absolute) precision 𝜀
 def _mat_equiv(x: AbstractMatrix, y: AbstractMatrix) -> bool:
     return (
         _vec_equiv(x[0], y[0])
@@ -45,45 +50,204 @@ def _mat_equiv(x: AbstractMatrix, y: AbstractMatrix) -> bool:
     )
 
 
-class LinAlgTestCase(unittest.TestCase):
-    def assertEquiv(self, x: float, y: float) -> None:
-        """
-        Asserts the equivalence of two floats.
-        Note: This replaces assertTrue(x == y) for float.
-        """
-        try:
-            self.assertTrue(_equiv(x, y))
-        except AssertionError as ae:
-            raise AssertionError(
-                "Scalar {} is not equivalent to {}.".format(x, y)
-            ) from ae
-
-    def assertVectorEquiv(self, x: AbstractVector, y: AbstractVector) -> None:
-        """
-        Asserts ths equivalence of two vectors.
-        Note: This replaces assertTrue(x == y) for vectors.
-        """
-        try:
-            self.assertTrue(_vec_equiv(x, y))
-        except AssertionError as ae:
-            raise AssertionError(
-                "Vector {} is not equivalent to {}.".format(x, y)
-            ) from ae
-
-    def assertMatrixEquiv(self, x: AbstractMatrix, y: AbstractMatrix) -> None:
-        """
-        Asserts ths equivalence of two matrices.
-        Note: This replaces assertTrue(x == y) for matrices.
-        """
-        try:
-            self.assertTrue(_mat_equiv(x, y))
-        except AssertionError as ae:
-            raise AssertionError(
-                "Matrix {} is not equivalent to {}.".format(x, y)
-            ) from ae
+def _metric_equiv(x: Metric, y: Metric) -> bool:
+    return _mat_equiv(x.matrix(), y.matrix())
 
 
-class AbstractVectorTestItem(LinAlgTestCase):
+class LinAlgTestCaseMixin(ABC):
+    """Mixin for manifold related test cases."""
+
+    def assertScalarEquiv(
+        self,
+        x: float,
+        y: float,
+        msg: Optional[str] = None,
+    ) -> None:
+        """
+        Asserts the equivalence of two scalars.
+        """
+
+        test_case = cast(unittest.TestCase, self)
+        if not _scalar_equiv(x, y):
+            msg_full = f"Scalar {x} is not equivalent to {y}."
+            if msg is not None:
+                msg_full += f" : {msg}"
+            raise test_case.failureException(msg_full)
+
+    def assertVectorEquiv(
+        self,
+        x: AbstractVector,
+        y: AbstractVector,
+        msg: Optional[str] = None,
+    ) -> None:
+        """
+        Asserts the equivalence of two three domensional vectors.
+        """
+
+        test_case = cast(unittest.TestCase, self)
+        if not _vec_equiv(x, y):
+            msg_full = f"Vector {x} is not equivalent to {y}."
+            if msg is not None:
+                msg_full += f" : {msg}"
+            raise test_case.failureException(msg_full)
+
+    def assertMatrixEquiv(
+        self,
+        x: AbstractMatrix,
+        y: AbstractMatrix,
+        msg: Optional[str] = None,
+    ) -> None:
+        """
+        Asserts the equivalence of two matrices.
+        """
+
+        test_case = cast(unittest.TestCase, self)
+        if not _mat_equiv(x, y):
+            msg_full = f"Matrix {x} is not equivalent to {y}."
+            if msg is not None:
+                msg_full += f" : {msg}"
+            raise test_case.failureException(msg_full)
+
+    def assertMetricEquiv(
+        self,
+        x: Metric,
+        y: Metric,
+        msg: Optional[str] = None,
+    ) -> None:
+        """
+        Asserts the equivalence of two metrics.
+        """
+
+        test_case = cast(unittest.TestCase, self)
+        if not _metric_equiv(x, y):
+            msg_full = f"Metric {x} is not equivalent to {y}."
+            if msg is not None:
+                msg_full += f" : {msg}"
+            raise test_case.failureException(msg_full)
+
+
+class AssertScalarEquivMixinTest(unittest.TestCase, LinAlgTestCaseMixin):
+    def setUp(self) -> None:
+        self.scalars = (0.0, 1.0, -1.123, math.pi, math.inf)
+        self.invalid_scalars = (math.nan,)
+
+    def test_scalar_equiv(self) -> None:
+        """Tests the scalar test case mixin."""
+        for x in self.scalars:
+            self.assertScalarEquiv(x, x)
+
+    def test_scalar_equiv_raise(self) -> None:
+        """Tests thescalar test case mixin raise."""
+        for x in self.scalars:
+            for y in self.scalars:
+                if x is not y:
+                    with self.assertRaises(AssertionError):
+                        self.assertScalarEquiv(x, y)
+        for x in self.invalid_scalars:
+            for y in self.scalars:
+                with self.assertRaises(AssertionError):
+                    self.assertScalarEquiv(x, y)
+                    self.assertScalarEquiv(y, x)
+                    self.assertScalarEquiv(x, x)
+
+
+class AssertVectorEquivMixinTest(unittest.TestCase, LinAlgTestCaseMixin):
+    def setUp(self) -> None:
+        self.vec_0 = AbstractVector((0.0, 0.0, 0.0))
+        self.vec_1 = AbstractVector((1.0, 2.0, 3.0))
+        self.vec_2 = AbstractVector((-1.0, 2.0, 3.0))
+        self.vec_3 = AbstractVector((1.0, -2.0, 3.0))
+        self.vec_4 = AbstractVector((1.0, 2.0, -3.0))
+        self.vec_epsilons = (
+            AbstractVector((sys.float_info.epsilon, 0.0, 0.0)),
+            AbstractVector((0.0, sys.float_info.epsilon, 0.0)),
+            AbstractVector((0.0, 0.0, sys.float_info.epsilon)),
+        )
+
+    def test_vector_equiv(self) -> None:
+        """Tests the three dimensional vector test case mixin."""
+        self.assertVectorEquiv(self.vec_0, self.vec_0)
+        self.assertVectorEquiv(self.vec_1, self.vec_1)
+        for vec_eps in self.vec_epsilons:
+            self.assertVectorEquiv(self.vec_1 + vec_eps, self.vec_1)
+            self.assertVectorEquiv(self.vec_1, self.vec_1 + vec_eps)
+
+    def test_vector_equiv_raise(self) -> None:
+        """Tests the three dimensional vector test case mixin raise."""
+        with self.assertRaises(AssertionError):
+            self.assertVectorEquiv(self.vec_0, self.vec_1)
+        with self.assertRaises(AssertionError):
+            self.assertVectorEquiv(self.vec_2, self.vec_1)
+        with self.assertRaises(AssertionError):
+            self.assertVectorEquiv(self.vec_3, self.vec_1)
+        with self.assertRaises(AssertionError):
+            self.assertVectorEquiv(self.vec_4, self.vec_1)
+        for vec_eps in self.vec_epsilons:
+            with self.assertRaises(AssertionError):
+                self.assertVectorEquiv(self.vec_0 + vec_eps, self.vec_0)
+
+
+class AssertMatrixEquivMixinTest(unittest.TestCase, LinAlgTestCaseMixin):
+    def setUp(self) -> None:
+        vec_0 = AbstractVector((0.0, 0.0, 0.0))
+        vec_1 = AbstractVector((1.0, 2.0, 3.0))
+        vec_2 = AbstractVector((-1.0, 2.0, 3.0))
+        vec_3 = AbstractVector((1.0, -2.0, 3.0))
+        vec_epsilons = (
+            AbstractVector((sys.float_info.epsilon, 0.0, 0.0)),
+            AbstractVector((0.0, sys.float_info.epsilon, 0.0)),
+            AbstractVector((0.0, 0.0, sys.float_info.epsilon)),
+        )
+        self.mat_0 = AbstractMatrix(vec_0, vec_0, vec_0)
+        self.mat_1 = AbstractMatrix(vec_1, vec_2, vec_3)
+        self.mat_epsilons = (AbstractMatrix(v, v, v) for v in vec_epsilons)
+
+    def test_matrix_equiv(self) -> None:
+        """Tests the matrix test case mixin."""
+        self.assertMatrixEquiv(self.mat_0, self.mat_0)
+        self.assertMatrixEquiv(self.mat_1, self.mat_1)
+        for vec_eps in self.mat_epsilons:
+            self.assertMatrixEquiv(self.mat_1 + vec_eps, self.mat_1)
+            self.assertMatrixEquiv(self.mat_1, self.mat_1 + vec_eps)
+
+    def test_matrix_equiv_raise(self) -> None:
+        """Tests the matrix test case mixin raise."""
+        with self.assertRaises(AssertionError):
+            self.assertMatrixEquiv(self.mat_0, self.mat_1)
+        for vec_eps in self.mat_epsilons:
+            with self.assertRaises(AssertionError):
+                self.assertMatrixEquiv(self.mat_0 + vec_eps, self.mat_0)
+
+
+class AssertMetricEquivMixinTest(unittest.TestCase, LinAlgTestCaseMixin):
+    def setUp(self) -> None:
+        self.metric_1 = Metric(
+            AbstractMatrix(
+                AbstractVector((1.0, 2.0, 3.0)),
+                AbstractVector((2.0, 4.0, 5.0)),
+                AbstractVector((3.0, 5.0, 6.0)),
+            )
+        )
+        self.metric_2 = Metric(
+            AbstractMatrix(
+                AbstractVector((1.0, -2.0, 3.0)),
+                AbstractVector((-2.0, 4.0, -5.0)),
+                AbstractVector((3.0, -5.0, 6.0)),
+            )
+        )
+
+    def test_metric_equiv(self) -> None:
+        """Tests the metric test case mixin."""
+        self.assertMetricEquiv(self.metric_1, self.metric_1)
+        self.assertMetricEquiv(self.metric_2, self.metric_2)
+
+    def test_metric_equiv_raise(self) -> None:
+        """Tests the matrix test case mixin raise."""
+        with self.assertRaises(AssertionError):
+            self.assertMetricEquiv(self.metric_1, self.metric_2)
+
+
+class AbstractVectorTestItem(unittest.TestCase, LinAlgTestCaseMixin):
     def setUp(self) -> None:
         self.cs = (1.0, 2.0, 3.0)
 
@@ -91,10 +255,10 @@ class AbstractVectorTestItem(LinAlgTestCase):
         """Tests item related operations."""
         v = AbstractVector(self.cs)
         for i, c in zip(range(3), self.cs):
-            self.assertEquiv(v[i], c)
+            self.assertScalarEquiv(v[i], c)
 
 
-class AbstractVectorMathTest(LinAlgTestCase):
+class AbstractVectorMathTest(unittest.TestCase, LinAlgTestCaseMixin):
     def setUp(self) -> None:
         self.v1 = AbstractVector((1.1, 2.2, 3.3))
         self.v2 = AbstractVector((4.4, 5.5, 6.6))
@@ -111,7 +275,7 @@ class AbstractVectorMathTest(LinAlgTestCase):
         self.assertVectorEquiv(self.v5 / 3.3, self.v4)
 
 
-class AbstractMatrixTest(LinAlgTestCase):
+class AbstractMatrixTest(unittest.TestCase, LinAlgTestCaseMixin):
     def setUp(self) -> None:
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
         self.v1 = AbstractVector((1.1, 2.2, 3.3))
@@ -125,7 +289,7 @@ class AbstractMatrixTest(LinAlgTestCase):
         AbstractMatrix(self.v1, self.v2, self.v3)
 
 
-class AbstractMatrixTestItem(LinAlgTestCase):
+class AbstractMatrixTestItem(unittest.TestCase, LinAlgTestCaseMixin):
     def setUp(self) -> None:
         self.vs = (
             AbstractVector((1.0, 2.0, 3.0)),
@@ -140,7 +304,7 @@ class AbstractMatrixTestItem(LinAlgTestCase):
             self.assertVectorEquiv(m[i], v)
 
 
-class AbstractMatrixIsSymmetricTest(LinAlgTestCase):
+class AbstractMatrixIsSymmetricTest(unittest.TestCase, LinAlgTestCaseMixin):
     def setUp(self) -> None:
         v0 = AbstractVector((0.0, 1e-9, 0.0))  # simulated small numerical error
         v1 = AbstractVector((1.1, 2.2, 3.3))
@@ -168,7 +332,7 @@ class AbstractMatrixIsSymmetricTest(LinAlgTestCase):
             self.assertFalse(mat.is_symmetric())
 
 
-class AbstractMatrixIsInvertibleTest(LinAlgTestCase):
+class AbstractMatrixIsInvertibleTest(unittest.TestCase, LinAlgTestCaseMixin):
     def setUp(self) -> None:
         v0 = AbstractVector((0.0, 0.0, 0.0))
         v1 = AbstractVector((2.0, 3.0, 5.0))
@@ -199,7 +363,7 @@ class AbstractMatrixIsInvertibleTest(LinAlgTestCase):
             self.assertFalse(mat.is_invertible())
 
 
-class AbstractMatrixMathTest(LinAlgTestCase):
+class AbstractMatrixMathTest(unittest.TestCase, LinAlgTestCaseMixin):
     def setUp(self) -> None:
         v1 = AbstractVector((1.1, 2.2, 3.3))
         v2 = AbstractVector((4.4, 5.5, 6.6))
@@ -221,7 +385,7 @@ class AbstractMatrixMathTest(LinAlgTestCase):
         self.assertMatrixEquiv(self.m5 / 3.3, self.m4)
 
 
-class MetricTest(LinAlgTestCase):
+class MetricTest(unittest.TestCase, LinAlgTestCaseMixin):
     def setUp(self) -> None:
         v0 = AbstractVector((0.0, 0.0, 0.0))
         self.m0 = AbstractMatrix(v0, v0, v0)
@@ -252,7 +416,7 @@ class MetricTest(LinAlgTestCase):
         self.assertMatrixEquiv(g.inverse_matrix(), self.m_inv)
 
 
-class AbstractVectorIsZero(LinAlgTestCase):
+class AbstractVectorIsZero(unittest.TestCase, LinAlgTestCaseMixin):
     def setUp(self) -> None:
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
         self.v1 = AbstractVector((1.0, 2.0, -3.0))
@@ -264,7 +428,7 @@ class AbstractVectorIsZero(LinAlgTestCase):
         self.assertFalse(is_zero_vector(self.v1))
 
 
-class MatVecMultTest(LinAlgTestCase):
+class MatVecMultTest(unittest.TestCase, LinAlgTestCaseMixin):
     # pylint: disable=R0902
     def setUp(self) -> None:
         self.vec0 = AbstractVector((0.0, 0.0, 0.0))
@@ -288,7 +452,7 @@ class MatVecMultTest(LinAlgTestCase):
         self.assertVectorEquiv(v, self.vec5)
 
 
-class LengthTest(LinAlgTestCase):
+class LengthTest(unittest.TestCase, LinAlgTestCaseMixin):
     def setUp(self) -> None:
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
         self.v1 = AbstractVector((1.0, 2.0, -3.0))
@@ -304,17 +468,17 @@ class LengthTest(LinAlgTestCase):
     def test_length(self) -> None:
         """Tests vector length."""
 
-        self.assertEquiv(length(self.v0), 0.0)
-        self.assertEquiv(length(self.v1) ** 2, 14.0)
+        self.assertScalarEquiv(length(self.v0), 0.0)
+        self.assertScalarEquiv(length(self.v1) ** 2, 14.0)
 
     def test_length_metric(self) -> None:
         """Tests vector length with metric."""
 
-        self.assertEquiv(length(self.v0, metric=self.metric), 0.0)
-        self.assertEquiv(length(self.v1, metric=self.metric) ** 2, 132.0)
+        self.assertScalarEquiv(length(self.v0, metric=self.metric), 0.0)
+        self.assertScalarEquiv(length(self.v1, metric=self.metric) ** 2, 132.0)
 
 
-class NormalizedTest(LinAlgTestCase):
+class NormalizedTest(unittest.TestCase, LinAlgTestCaseMixin):
     def setUp(self) -> None:
         self.n = AbstractVector((1.0, 1.0, 1.0)) / math.sqrt(3)
         self.w = AbstractVector((7.0, 7.0, 7.0))
@@ -339,7 +503,7 @@ class NormalizedTest(LinAlgTestCase):
         )
 
 
-class DotTest(LinAlgTestCase):
+class DotTest(unittest.TestCase, LinAlgTestCaseMixin):
     def setUp(self) -> None:
         # standart Carthesian basis
         self.orth_norm_basis = (
@@ -363,9 +527,9 @@ class DotTest(LinAlgTestCase):
         for v in self.orth_norm_basis:
             for w in self.orth_norm_basis:
                 if v is w:
-                    self.assertEquiv(dot(v, w), 1.0)
+                    self.assertScalarEquiv(dot(v, w), 1.0)
                 else:
-                    self.assertEquiv(dot(v, w), 0.0)
+                    self.assertScalarEquiv(dot(v, w), 0.0)
 
     def test_math_dot_linearity_left(self) -> None:
         """Tests dot product's linearity in the left argument."""
@@ -374,7 +538,7 @@ class DotTest(LinAlgTestCase):
                 for w in self.orth_norm_basis:
                     for a in self.scalar_factors:
                         for b in self.scalar_factors:
-                            self.assertEquiv(
+                            self.assertScalarEquiv(
                                 dot((v * a) + (w * b), u),
                                 dot(v, u) * a + dot(w, u) * b,
                             )
@@ -386,7 +550,7 @@ class DotTest(LinAlgTestCase):
                 for w in self.orth_norm_basis:
                     for a in self.scalar_factors:
                         for b in self.scalar_factors:
-                            self.assertEquiv(
+                            self.assertScalarEquiv(
                                 dot(u, (v * a) + (w * b)),
                                 dot(u, v) * a + dot(u, w) * b,
                             )
@@ -395,12 +559,12 @@ class DotTest(LinAlgTestCase):
         """Tests dot with metric."""
         for i, v in enumerate(self.orth_norm_basis):
             for j, w in enumerate(self.orth_norm_basis):
-                self.assertEquiv(
+                self.assertScalarEquiv(
                     dot(v, w, metric=self.metric), self.metric.matrix()[i][j]
                 )
 
 
-class CrossTest(LinAlgTestCase):
+class CrossTest(unittest.TestCase, LinAlgTestCaseMixin):
     def setUp(self) -> None:
         # standart Carthesian basis
         v0 = AbstractVector((0.0, 0.0, 0.0))
@@ -488,7 +652,7 @@ class CrossTest(LinAlgTestCase):
                 )
 
 
-class AreLinearDependentTest(LinAlgTestCase):
+class AreLinearDependentTest(unittest.TestCase, LinAlgTestCaseMixin):
     def setUp(self) -> None:
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
         self.v1 = AbstractVector((1.0, 0.0, 0.0))
@@ -515,7 +679,7 @@ class AreLinearDependentTest(LinAlgTestCase):
         )
 
 
-class InvertedTest(LinAlgTestCase):
+class InvertedTest(unittest.TestCase, LinAlgTestCaseMixin):
     def setUp(self) -> None:
         v0 = AbstractVector((0.0, 0.0, 0.0))
         e0 = AbstractVector((1.0, 0.0, 0.0))
@@ -552,7 +716,7 @@ class InvertedTest(LinAlgTestCase):
         self.assertMatrixEquiv(inverted(self.m4), self.m4_inv)
 
 
-class CoAndCoraviantTest(LinAlgTestCase):
+class CoAndCoraviantTest(unittest.TestCase, LinAlgTestCaseMixin):
     # pylint: disable=R0902
 
     def setUp(self) -> None:

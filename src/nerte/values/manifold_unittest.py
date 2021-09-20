@@ -7,7 +7,9 @@
 import unittest
 
 import itertools
-import math
+
+from nerte.values.coordinates_unittest import CoordinatesTestCaseMixin
+from nerte.values.linalg_unittest import LinAlgTestCaseMixin
 
 from nerte.values.coordinates import Coordinates1D, Coordinates2D, Coordinates3D
 from nerte.values.domain import Domain1D
@@ -20,62 +22,11 @@ from nerte.values.manifold import (
 )
 
 
-# True, iff two floats are equivalent
-def _equiv(x: float, y: float) -> bool:
-    return math.isclose(x, y)
+class ManifoldTestCaseMixin(CoordinatesTestCaseMixin, LinAlgTestCaseMixin):
+    pass
 
 
-# True, iff two coordinates component-wise agree up to the (absolute) precision 𝜀
-def _coords_equiv(x: Coordinates3D, y: Coordinates3D) -> bool:
-    return _equiv(x[0], y[0]) and _equiv(x[1], y[1]) and _equiv(x[2], y[2])
-
-
-# True, iff two vectors component-wise agree up to the (absolute) precision 𝜀
-def _vec_equiv(x: AbstractVector, y: AbstractVector) -> bool:
-    return _equiv(x[0], y[0]) and _equiv(x[1], y[1]) and _equiv(x[2], y[2])
-
-
-class ManifoldTestCase(unittest.TestCase):
-    def assertEquiv(self, x: float, y: float) -> None:
-        """
-        Asserts the equivalence of two floats.
-        Note: This replaces assertTrue(x == y) for float.
-        """
-        try:
-            self.assertTrue(_equiv(x, y))
-        except AssertionError as ae:
-            raise AssertionError(
-                "Scalar {} is not equivalent to {}.".format(x, y)
-            ) from ae
-
-    def assertCoordinates3DEquiv(
-        self, x: Coordinates3D, y: Coordinates3D
-    ) -> None:
-        """
-        Asserts ths equivalence of two vectors.
-        Note: This replaces assertTrue(x == y) for vectors.
-        """
-        try:
-            self.assertTrue(_coords_equiv(x, y))
-        except AssertionError as ae:
-            raise AssertionError(
-                "Coordinates3D {} are not equivalent to {}.".format(x, y)
-            ) from ae
-
-    def assertVectorEquiv(self, x: AbstractVector, y: AbstractVector) -> None:
-        """
-        Asserts ths equivalence of two vectors.
-        Note: This replaces assertTrue(x == y) for vectors.
-        """
-        try:
-            self.assertTrue(_vec_equiv(x, y))
-        except AssertionError as ae:
-            raise AssertionError(
-                "Vector {} is not equivalent to {}.".format(x, y)
-            ) from ae
-
-
-class Manifold1DImplementationTest(ManifoldTestCase):
+class Manifold1DImplementationTest(unittest.TestCase, ManifoldTestCaseMixin):
     def setUp(self) -> None:
         self.domain = Domain1D(-1.0, 1.0)
         self.coord_inside_domain = (-1.0, 0.0, 1.0)
@@ -112,7 +63,7 @@ class Manifold1DImplementationTest(ManifoldTestCase):
         self.assertTrue(man.domain[0] is self.domain)
 
 
-class Manifold2DImplementationTest(ManifoldTestCase):
+class Manifold2DImplementationTest(unittest.TestCase, ManifoldTestCaseMixin):
     def setUp(self) -> None:
         self.domain = Domain1D(-1.0, 1.0)
         self.coord_inside_domain = (-1.0, 0.0, 1.0)
@@ -166,7 +117,7 @@ class Manifold2DImplementationTest(ManifoldTestCase):
         self.assertTrue(man.domain[1] is self.domain)
 
 
-class Manifold3DImplementationTest(ManifoldTestCase):
+class Manifold3DImplementationTest(unittest.TestCase, ManifoldTestCaseMixin):
     def setUp(self) -> None:
         self.domain = Domain1D(-1.0, 1.0)
         self.coord_inside_domain = (-1.0, 0.0, 1.0)
