@@ -18,8 +18,6 @@ from nerte.values.util.convert import (
     carthesian_to_cylindric_vector,
 )
 
-# TODO: add line and parallelepiped?
-
 
 class Plane(Manifold2D):
     """
