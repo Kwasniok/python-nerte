@@ -165,25 +165,16 @@ class AssertCoordinates3DEquivMixinTest(
         self.assertCoordinates3DEquiv(self.coords_3d_0, self.coords_3d_0)
         self.assertCoordinates3DEquiv(self.coords_3d_1, self.coords_3d_1)
 
-    @unittest.expectedFailure
-    def test_coordinates_3d_equiv_raise_1(self) -> None:
+    def test_coordinates_3d_equiv_raise(self) -> None:
         """Tests the three dimensional coordinates test case mixin raise."""
-        self.assertCoordinates3DEquiv(self.coords_3d_0, self.coords_3d_1)
-
-    @unittest.expectedFailure
-    def test_coordinates_3d_equiv_raise_2(self) -> None:
-        """Tests the three dimensional coordinates test case mixin raise."""
-        self.assertCoordinates3DEquiv(self.coords_3d_2, self.coords_3d_1)
-
-    @unittest.expectedFailure
-    def test_coordinates_3d_equiv_raise_3(self) -> None:
-        """Tests the three dimensional coordinates test case mixin raise."""
-        self.assertCoordinates3DEquiv(self.coords_3d_3, self.coords_3d_1)
-
-    @unittest.expectedFailure
-    def test_coordinates_3d_equiv_raise_4(self) -> None:
-        """Tests the three dimensional coordinates test case mixin raise."""
-        self.assertCoordinates3DEquiv(self.coords_3d_4, self.coords_3d_1)
+        with self.assertRaises(AssertionError):
+            self.assertCoordinates3DEquiv(self.coords_3d_0, self.coords_3d_1)
+        with self.assertRaises(AssertionError):
+            self.assertCoordinates3DEquiv(self.coords_3d_2, self.coords_3d_1)
+        with self.assertRaises(AssertionError):
+            self.assertCoordinates3DEquiv(self.coords_3d_3, self.coords_3d_1)
+        with self.assertRaises(AssertionError):
+            self.assertCoordinates3DEquiv(self.coords_3d_4, self.coords_3d_1)
 
 
 class AssertCoordinates3DNotEquivMixinTest(
@@ -196,18 +187,15 @@ class AssertCoordinates3DNotEquivMixinTest(
         self.coords_3d_3 = Coordinates3D((1.0, -2.0, 3.0))
         self.coords_3d_4 = Coordinates3D((1.0, 2.0, -3.0))
 
-    @unittest.expectedFailure
-    def test_coordinates_3d_not_equiv_raises_1(self) -> None:
+    def test_coordinates_3d_not_equiv_raises(self) -> None:
         """Tests the three dimensional coordinates test case mixin raises."""
-        self.assertCoordinates3DNotEquiv(self.coords_3d_0, self.coords_3d_0)
-
-    @unittest.expectedFailure
-    def test_coordinates_3d_not_equiv_raises_2(self) -> None:
-        """Tests the three dimensional coordinates test case mixin raises."""
-        self.assertCoordinates3DNotEquiv(self.coords_3d_1, self.coords_3d_1)
+        with self.assertRaises(AssertionError):
+            self.assertCoordinates3DNotEquiv(self.coords_3d_0, self.coords_3d_0)
+        with self.assertRaises(AssertionError):
+            self.assertCoordinates3DNotEquiv(self.coords_3d_1, self.coords_3d_1)
 
     def test_coordinates_3d_not_equiv(self) -> None:
-        """Tests the three dimensional coordinates test case mixin raise."""
+        """Tests the three dimensional coordinates test case mixin."""
         self.assertCoordinates3DNotEquiv(self.coords_3d_0, self.coords_3d_1)
         self.assertCoordinates3DNotEquiv(self.coords_3d_2, self.coords_3d_1)
         self.assertCoordinates3DNotEquiv(self.coords_3d_3, self.coords_3d_1)
@@ -224,24 +212,18 @@ class AssertCoordinates2DEquivMixinTest(
         self.coords_2d_3 = Coordinates2D((1.0, -2.0))
 
     def test_coordinates_2d_equiv(self) -> None:
-        """Tests the three dimensional coordinates test case mixin."""
+        """Tests the two dimensional coordinates test case mixin."""
         self.assertCoordinates2DEquiv(self.coords_2d_0, self.coords_2d_0)
         self.assertCoordinates2DEquiv(self.coords_2d_1, self.coords_2d_1)
 
-    @unittest.expectedFailure
-    def test_coordinates_2d_equiv_raise_1(self) -> None:
-        """Tests the three dimensional coordinates test case mixin raise."""
-        self.assertCoordinates2DEquiv(self.coords_2d_0, self.coords_2d_1)
-
-    @unittest.expectedFailure
-    def test_coordinates_2d_equiv_raise_2(self) -> None:
-        """Tests the three dimensional coordinates test case mixin raise."""
-        self.assertCoordinates2DEquiv(self.coords_2d_2, self.coords_2d_1)
-
-    @unittest.expectedFailure
-    def test_coordinates_2d_equiv_raise_3(self) -> None:
-        """Tests the three dimensional coordinates test case mixin raise."""
-        self.assertCoordinates2DEquiv(self.coords_2d_3, self.coords_2d_1)
+    def test_coordinates_2d_equiv_raise(self) -> None:
+        """Tests the two dimensional coordinates test case mixin raise."""
+        with self.assertRaises(AssertionError):
+            self.assertCoordinates2DEquiv(self.coords_2d_0, self.coords_2d_1)
+        with self.assertRaises(AssertionError):
+            self.assertCoordinates2DEquiv(self.coords_2d_2, self.coords_2d_1)
+        with self.assertRaises(AssertionError):
+            self.assertCoordinates2DEquiv(self.coords_2d_3, self.coords_2d_1)
 
 
 class AssertCoordinates2DNotEquivMixinTest(
@@ -253,18 +235,15 @@ class AssertCoordinates2DNotEquivMixinTest(
         self.coords_2d_2 = Coordinates2D((-1.0, 2.0))
         self.coords_2d_3 = Coordinates2D((1.0, -2.0))
 
-    @unittest.expectedFailure
-    def test_coordinates_2d_not_equiv_raises_1(self) -> None:
-        """Tests the three dimensional coordinates test case mixin raises."""
-        self.assertCoordinates2DNotEquiv(self.coords_2d_0, self.coords_2d_0)
-
-    @unittest.expectedFailure
-    def test_coordinates_2d_not_equiv_raises_2(self) -> None:
-        """Tests the three dimensional coordinates test case mixin raises."""
-        self.assertCoordinates2DNotEquiv(self.coords_2d_1, self.coords_2d_1)
+    def test_coordinates_2d_not_equiv_raises(self) -> None:
+        """Tests the two dimensional coordinates test case mixin raises."""
+        with self.assertRaises(AssertionError):
+            self.assertCoordinates2DNotEquiv(self.coords_2d_0, self.coords_2d_0)
+        with self.assertRaises(AssertionError):
+            self.assertCoordinates2DNotEquiv(self.coords_2d_1, self.coords_2d_1)
 
     def test_coordinates_2d_not_equiv(self) -> None:
-        """Tests the three dimensional coordinates test case mixin raise."""
+        """Tests the two dimensional coordinates test case mixin."""
         self.assertCoordinates2DNotEquiv(self.coords_2d_0, self.coords_2d_1)
         self.assertCoordinates2DNotEquiv(self.coords_2d_2, self.coords_2d_1)
         self.assertCoordinates2DNotEquiv(self.coords_2d_3, self.coords_2d_1)
@@ -279,19 +258,16 @@ class AssertCoordinates1DEquivMixinTest(
         self.coords_1d_2 = Coordinates1D((-1.0,))
 
     def test_coordinates_1d_equiv(self) -> None:
-        """Tests the three dimensional coordinates test case mixin."""
+        """Tests the one dimensional coordinates test case mixin."""
         self.assertCoordinates1DEquiv(self.coords_1d_0, self.coords_1d_0)
         self.assertCoordinates1DEquiv(self.coords_1d_1, self.coords_1d_1)
 
-    @unittest.expectedFailure
-    def test_coordinates_1d_equiv_raise_1(self) -> None:
-        """Tests the three dimensional coordinates test case mixin raise."""
-        self.assertCoordinates1DEquiv(self.coords_1d_0, self.coords_1d_1)
-
-    @unittest.expectedFailure
-    def test_coordinates_1d_equiv_raise_2(self) -> None:
-        """Tests the three dimensional coordinates test case mixin raise."""
-        self.assertCoordinates1DEquiv(self.coords_1d_2, self.coords_1d_1)
+    def test_coordinates_1d_equiv_raise(self) -> None:
+        """Tests the one dimensional coordinates test case mixin raise."""
+        with self.assertRaises(AssertionError):
+            self.assertCoordinates1DEquiv(self.coords_1d_0, self.coords_1d_1)
+        with self.assertRaises(AssertionError):
+            self.assertCoordinates1DEquiv(self.coords_1d_2, self.coords_1d_1)
 
 
 class AssertCoordinates1DNotEquivMixinTest(
@@ -302,18 +278,15 @@ class AssertCoordinates1DNotEquivMixinTest(
         self.coords_1d_1 = Coordinates1D((1.0,))
         self.coords_1d_2 = Coordinates1D((-1.0,))
 
-    @unittest.expectedFailure
-    def test_coordinates_1d_not_equiv_raises_1(self) -> None:
-        """Tests the three dimensional coordinates test case mixin raises."""
-        self.assertCoordinates1DNotEquiv(self.coords_1d_0, self.coords_1d_0)
-
-    @unittest.expectedFailure
-    def test_coordinates_1d_not_equiv_raises_2(self) -> None:
-        """Tests the three dimensional coordinates test case mixin raises."""
-        self.assertCoordinates1DNotEquiv(self.coords_1d_1, self.coords_1d_1)
+    def test_coordinates_1d_not_equiv_raises(self) -> None:
+        """Tests the one dimensional coordinates test case mixin raises."""
+        with self.assertRaises(AssertionError):
+            self.assertCoordinates1DNotEquiv(self.coords_1d_0, self.coords_1d_0)
+        with self.assertRaises(AssertionError):
+            self.assertCoordinates1DNotEquiv(self.coords_1d_1, self.coords_1d_1)
 
     def test_coordinates_1d_not_equiv(self) -> None:
-        """Tests the three dimensional coordinates test case mixin raise."""
+        """Tests the one dimensional coordinates test case mixin raise."""
         self.assertCoordinates1DNotEquiv(self.coords_1d_0, self.coords_1d_1)
         self.assertCoordinates1DNotEquiv(self.coords_1d_2, self.coords_1d_1)
 
