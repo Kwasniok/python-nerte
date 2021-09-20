@@ -153,7 +153,7 @@ class CylindricRungeKuttaGeometryRayFromTest(
             Coordinates3D((1.0, -math.pi, 0.0)),
             Coordinates3D((1.0, +math.pi, 0.0)),
         )
-        self.direction = AbstractVector((0.0, 1.0, 0.0))  # equiv to cords2
+        self.direction = AbstractVector((-math.sqrt(0.5), math.sqrt(0.5), 0.0))
         self.init_seg = self.geo.normalized(
             RaySegment(start=self.coords1, direction=self.direction)
         )

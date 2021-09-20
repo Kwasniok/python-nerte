@@ -7,7 +7,11 @@ from collections.abc import Callable
 import math
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.util.convert import coordinates_as_vector
+from nerte.values.util.convert import (
+    coordinates_as_vector,
+    cylindric_to_carthesian_coords,
+    carthesian_to_cylindric_vector,
+)
 from nerte.values.ray_segment import RaySegment
 from nerte.values.ray_segment_delta import RaySegmentDelta
 from nerte.values.linalg import (
@@ -15,7 +19,6 @@ from nerte.values.linalg import (
     AbstractMatrix,
     Metric,
     length,
-    mat_vec_mult,
 )
 from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 
@@ -72,12 +75,12 @@ class CylindricRungeKuttaGeometry(RungeKuttaGeometry):
         # convert the direction then back to the original coordinates
         # Note: This strategy is possible since the underlying geometry is
         #       curvature-free (Ricci scalar is 0).
-        start_flat = self._to_flat_coordinates(start)
-        target_flat = self._to_flat_coordinates(target)
+        start_flat = cylindric_to_carthesian_coords(start)
+        target_flat = cylindric_to_carthesian_coords(target)
         start_flat_vec = coordinates_as_vector(start_flat)
         target_flat_vec = coordinates_as_vector(target_flat)
         delta_flat = target_flat_vec - start_flat_vec
-        direction = mat_vec_mult(self._to_flat_jacobian(start), delta_flat)
+        direction = carthesian_to_cylindric_vector(start_flat, delta_flat)
         return RungeKuttaGeometry.Ray(
             geometry=self,
             initial_tangent=RaySegment(start=start, direction=direction),
@@ -105,51 +108,4 @@ class CylindricRungeKuttaGeometry(RungeKuttaGeometry):
                 AbstractVector((0, r ** 2, 0)),
                 AbstractVector((0, 0, 1)),
             )
-        )
-
-    def _to_flat_coordinates(self, coords: Coordinates3D) -> Coordinates3D:
-        """
-        Returns coordinated transformed to a special domain in which geodesics
-        are staright lines - i.e. into flat space.
-
-        Note: This is possible since the underlying geometry is curvature-free.
-        """
-        # pylint: disable=C0103
-        # TODO: revert when mypy bug was fixed
-        #       see https://github.com/python/mypy/issues/2220
-        # r, phi, z = coords
-        r = coords[0]
-        phi = coords[1]
-        z = coords[2]
-        return Coordinates3D((r * math.cos(phi), r * math.sin(phi), z))
-
-    def _to_flat_jacobian(self, coords: Coordinates3D) -> AbstractMatrix:
-        """
-        Returns the (local) Jacobian matrix for the transformation to the flat
-        domain.
-
-        :see: _to_flat_coordinates
-        """
-        # pylint: disable=C0103
-        # TODO: revert when mypy bug was fixed
-        #       see https://github.com/python/mypy/issues/2220
-        # r, phi, z = coords
-        r = coords[0]
-        phi = coords[1]
-        return AbstractMatrix(
-            AbstractVector(
-                (
-                    math.cos(phi),
-                    -r * math.sin(phi),
-                    0.0,
-                )
-            ),
-            AbstractVector(
-                (
-                    math.sin(phi),
-                    +r * math.cos(phi),
-                    0.0,
-                )
-            ),
-            AbstractVector((0, 0, 1)),
         )
