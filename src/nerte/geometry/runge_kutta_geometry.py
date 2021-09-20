@@ -131,7 +131,6 @@ class RungeKuttaGeometry(Geometry):
             # Note: The step size behaves like Δt where t is the
             #       parameter of the curve on which the light travels.
             # Note: The smaller the step size, the better the approximation.
-            # TODO: check if Runge-Kutta-Nystrom is more suitable/efficient
             tangent_delta = runge_kutta_4_delta(
                 geometry.geodesic_equation(),
                 ray_segment_as_delta(tangent),
