@@ -15,6 +15,7 @@ from nerte.geometry.geometry_unittest import GeometryTestCaseMixin
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, normalized
+from nerte.values.tangential_vector import TangentialVector
 from nerte.values.ray_segment import RaySegment
 from nerte.values.face import Face
 from nerte.values.intersection_info import IntersectionInfo
@@ -51,35 +52,43 @@ def _dummy_segmented_ray_geometry_class() -> Type[SegmentedRayGeometry]:
                 )
             vec_s = coordinates_as_vector(start)
             vec_t = coordinates_as_vector(target)
+            tangent = TangentialVector(point=start, vector=(vec_t - vec_s))
             return SegmentedRayGeometry.Ray(
                 geometry=self,
-                initial_segment=RaySegment(
-                    start=start, direction=(vec_t - vec_s)
-                ),
+                initial_segment=RaySegment(tangential_vector=tangent),
             )
 
         def next_ray_segment(self, segment: RaySegment) -> Optional[RaySegment]:
             # old segment
-            s_old = segment.start
-            d_old = segment.direction
-            # advance starting point
-            s_new = Coordinates3D(
-                (s_old[0] + d_old[0], s_old[1] + d_old[1], s_old[2] + d_old[2])
+            point_old = segment.tangential_vector.point
+            vec_old = segment.tangential_vector.vector
+            # advance pointing point
+            point_new = Coordinates3D(
+                (
+                    point_old[0] + vec_old[0],
+                    point_old[1] + vec_old[1],
+                    point_old[2] + vec_old[2],
+                )
             )
-            d_new = d_old
+            vector_new = vec_old
             # new segment
-            if self.is_valid_coordinate(s_new):
-                return RaySegment(start=s_new, direction=d_new)
+            if self.is_valid_coordinate(point_new):
+                return RaySegment(
+                    tangential_vector=TangentialVector(
+                        point=point_new, vector=vector_new
+                    )
+                )
             return None
 
         def normalize_initial_ray_segment(
             self, segment: RaySegment
         ) -> RaySegment:
-            return RaySegment(
-                start=segment.start,
-                direction=normalized(segment.direction)
+            tangent = TangentialVector(
+                point=segment.tangential_vector.point,
+                vector=normalized(segment.tangential_vector.vector)
                 * self.ray_segment_length(),
             )
+            return RaySegment(tangential_vector=tangent)
 
     return DummySegmentedRayGeometry
 
@@ -169,9 +178,10 @@ class SegmentedRayGeometryRayConstructorTest(
         DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
         self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
         self.coords = Coordinates3D((0.0, 0.0, 0.0))
-        self.direction = AbstractVector((0.0, 1.0, 2.0))
+        self.vector = AbstractVector((0.0, 1.0, 2.0))
+        self.tangent = TangentialVector(point=self.coords, vector=self.vector)
         self.initial_segment = self.geo.normalize_initial_ray_segment(
-            RaySegment(start=self.coords, direction=self.direction)
+            RaySegment(tangential_vector=self.tangent)
         )
 
     def test_constructor(self) -> None:
@@ -188,13 +198,14 @@ class SegmentedRayGeometryRayPropertiesTest(
         DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
         self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
         coords = Coordinates3D((0.0, 0.0, 0.0))
-        direction = AbstractVector((0.0, 1.0, 2.0))
+        vector = AbstractVector((0.0, 1.0, 2.0))
+        tangent = TangentialVector(point=coords, vector=vector)
         self.ray = SegmentedRayGeometry.Ray(
             geometry=self.geo,
-            initial_segment=RaySegment(start=coords, direction=direction),
+            initial_segment=RaySegment(tangential_vector=tangent),
         )
         self.initial_segment = self.geo.normalize_initial_ray_segment(
-            RaySegment(start=coords, direction=direction)
+            RaySegment(tangential_vector=tangent),
         )
 
     def test_properties(self) -> None:
@@ -211,8 +222,10 @@ class SegmentedRayGeometryRayIntersectsTest(
         DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
         geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
         self.ray = geo.ray_from_tangent(
-            start=Coordinates3D((0.0, 0.0, 0.0)),
-            direction=AbstractVector((1.0, 1.0, 1.0)),
+            TangentialVector(
+                point=Coordinates3D((0.0, 0.0, 0.0)),
+                vector=AbstractVector((1.0, 1.0, 1.0)),
+            )
         )
         p0 = Coordinates3D((1.0, 0.0, 0.0))
         p1 = Coordinates3D((0.0, 1.0, 0.0))
@@ -244,8 +257,10 @@ class SegmentedRayGeometryRayIntersectsRayEventuallyLeftManifoldTest(
         DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
         geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=10.0)
         self.ray = geo.ray_from_tangent(
-            start=Coordinates3D((0.0, 0.0, 0.0)),
-            direction=AbstractVector((1.0, 0.0, 0.0)),
+            TangentialVector(
+                point=Coordinates3D((0.0, 0.0, 0.0)),
+                vector=AbstractVector((1.0, 0.0, 0.0)),
+            )
         )
         p0 = Coordinates3D((1.0, 0.0, 1.0))
         p1 = Coordinates3D((1.0, 1.0, 1.0))
@@ -271,10 +286,12 @@ class SegmentedRayGeometryRayIntersectsRayImmediatelyLeftManifoldTest(
         DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
         geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=10.0)
         self.ray = geo.ray_from_tangent(
-            start=Coordinates3D(
-                (0.99, 0.0, 0.0)  # close to manifold boundaries
-            ),
-            direction=AbstractVector((1.0, 0.0, 0.0)),
+            TangentialVector(
+                point=Coordinates3D(
+                    (0.99, 0.0, 0.0)  # close to manifold boundaries
+                ),
+                vector=AbstractVector((1.0, 0.0, 0.0)),
+            )
         )
         p0 = Coordinates3D((1.0, 0.0, 1.0))
         p1 = Coordinates3D((1.0, 1.0, 1.0))
@@ -317,8 +334,10 @@ class SegmentedRayGeometryRayIntersectsMetaDataTest(
         )
         self.rays = tuple(
             geo.ray_from_tangent(
-                start=Coordinates3D((0.0, 0.0, 0.0)),
-                direction=AbstractVector((1.0, 1.0, 1.0)),
+                TangentialVector(
+                    point=Coordinates3D((0.0, 0.0, 0.0)),
+                    vector=AbstractVector((1.0, 1.0, 1.0)),
+                )
             )
             for geo in geos
         )
@@ -347,17 +366,24 @@ class SegmentedRayGeometryRayFromTest(unittest.TestCase, GeometryTestCaseMixin):
         self.coords1 = Coordinates3D((0.0, 0.0, 0.0))
         self.coords2 = Coordinates3D((0.0, 1.0, 2.0))
         self.invalid_coords = Coordinates3D((-3.0, 0.0, 0.0))
-        self.direction = AbstractVector((0.0, 1.0, 2.0))  # equiv to cords2
+        self.vector = AbstractVector((0.0, 1.0, 2.0))  # equiv to cords2
+        self.tangent = TangentialVector(point=self.coords1, vector=self.vector)
+        self.invalid_tangent = TangentialVector(
+            point=self.invalid_coords, vector=self.vector
+        )
         self.init_seg = self.geo.normalize_initial_ray_segment(
-            RaySegment(start=self.coords1, direction=self.direction)
+            RaySegment(
+                tangential_vector=TangentialVector(
+                    point=self.coords1, vector=self.vector
+                )
+            )
         )
 
     def test_ray_from_coords(self) -> None:
         """Tests ray from coordinates."""
         ray = self.geo.ray_from_coords(self.coords1, self.coords2)
         init_seg = ray.initial_segment()
-        self.assertCoordinates3DEquiv(init_seg.start, self.init_seg.start)
-        self.assertVectorEquiv(init_seg.direction, self.init_seg.direction)
+        self.assertRaySegmentEquiv(init_seg, self.init_seg)
         with self.assertRaises(ValueError):
             self.geo.ray_from_coords(self.invalid_coords, self.coords2)
         with self.assertRaises(ValueError):
@@ -367,12 +393,11 @@ class SegmentedRayGeometryRayFromTest(unittest.TestCase, GeometryTestCaseMixin):
 
     def test_ray_from_tangent(self) -> None:
         """Tests ray from tangent."""
-        ray = self.geo.ray_from_tangent(self.coords1, self.direction)
+        ray = self.geo.ray_from_tangent(self.tangent)
         init_seg = ray.initial_segment()
-        self.assertCoordinates3DEquiv(init_seg.start, self.init_seg.start)
-        self.assertVectorEquiv(init_seg.direction, self.init_seg.direction)
+        self.assertRaySegmentEquiv(init_seg, self.init_seg)
         with self.assertRaises(ValueError):
-            self.geo.ray_from_tangent(self.invalid_coords, self.direction)
+            self.geo.ray_from_tangent(self.invalid_tangent)
 
 
 class SegmentedRayGeometryNextRaySegmentTest(
@@ -381,14 +406,18 @@ class SegmentedRayGeometryNextRaySegmentTest(
     def setUp(self) -> None:
         DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
         self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
-        direction = AbstractVector((0.75, 2.0, 3.0))
+        vector = AbstractVector((0.75, 2.0, 3.0))
         self.ray1 = RaySegment(
-            start=Coordinates3D((0.0, 0.0, 0.0)),
-            direction=direction,
+            tangential_vector=TangentialVector(
+                point=Coordinates3D((0.0, 0.0, 0.0)),
+                vector=vector,
+            )
         )
         self.ray2 = RaySegment(
-            start=Coordinates3D((0.75, 2.0, 3.0)),
-            direction=direction,
+            tangential_vector=TangentialVector(
+                point=Coordinates3D((0.75, 2.0, 3.0)),
+                vector=vector,
+            )
         )
 
     def test_next_ray_segment(self) -> None:
@@ -397,8 +426,7 @@ class SegmentedRayGeometryNextRaySegmentTest(
         ray2 = self.geo.next_ray_segment(self.ray1)
         self.assertTrue(ray2 is not None)
         if ray2 is not None:
-            self.assertCoordinates3DEquiv(ray2.start, self.ray2.start)
-            self.assertVectorEquiv(ray2.direction, self.ray2.direction)
+            self.assertRaySegmentEquiv(ray2, self.ray2)
 
         ray3 = self.geo.next_ray_segment(self.ray2)
         self.assertTrue(ray3 is None)
@@ -412,13 +440,17 @@ class SegmentedRayGeometryNormalizedInitialRayTest(
         self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
         corrds0 = Coordinates3D((0.0, 0.0, 0.0))
         self.ray = RaySegment(
-            start=corrds0,
-            direction=AbstractVector((1.0, 2.0, 3.0)),
+            tangential_vector=TangentialVector(
+                point=corrds0,
+                vector=AbstractVector((1.0, 2.0, 3.0)),
+            )
         )
         self.ray_normalized = RaySegment(
-            start=corrds0,
-            direction=normalized(AbstractVector((1.0, 2.0, 3.0)))
-            * self.geo.ray_segment_length(),
+            tangential_vector=TangentialVector(
+                point=corrds0,
+                vector=normalized(AbstractVector((1.0, 2.0, 3.0)))
+                * self.geo.ray_segment_length(),
+            )
         )
 
     def test_normalize_initial_ray_segment(self) -> None:
@@ -426,8 +458,7 @@ class SegmentedRayGeometryNormalizedInitialRayTest(
         ray = self.geo.normalize_initial_ray_segment(self.ray)
         self.assertTrue(ray is not None)
         if ray is not None:
-            self.assertCoordinates3DEquiv(ray.start, self.ray_normalized.start)
-            self.assertVectorEquiv(ray.direction, self.ray_normalized.direction)
+            self.assertRaySegmentEquiv(ray, self.ray_normalized)
 
 
 if __name__ == "__main__":

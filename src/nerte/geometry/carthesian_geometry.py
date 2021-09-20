@@ -1,7 +1,8 @@
 """Module for representing an euclidean geometry in carthesian coordinates."""
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.linalg import AbstractVector, normalized, is_zero_vector
+from nerte.values.linalg import normalized, is_zero_vector
+from nerte.values.tangential_vector import TangentialVector
 from nerte.values.face import Face
 from nerte.values.ray_segment import RaySegment
 from nerte.values.intersection_info import IntersectionInfo
@@ -15,21 +16,25 @@ class CarthesianGeometry(Geometry):
     class Ray(Geometry.Ray):
         """Represenation of a ray in euclidean geometry in Carthesian coordinates."""
 
-        def __init__(self, start: Coordinates3D, direction: AbstractVector):
-            if is_zero_vector(direction):
+        def __init__(self, tangential_vector: TangentialVector):
+            if is_zero_vector(tangential_vector.vector):
                 raise ValueError(
-                    "Cannot construct carthesian ray with zero vector as direction."
+                    f"Cannot construct carthesian ray with zero vector"
+                    f" {tangential_vector}."
                 )
-            direction = normalized(direction)
+            vector = normalized(tangential_vector.vector)
+            tangent = TangentialVector(
+                point=tangential_vector.point, vector=vector
+            )
             self._segment = RaySegment(
-                start=start, direction=direction, is_finite=False
+                tangential_vector=tangent, is_finite=False
             )
 
         def __repr__(self) -> str:
             return (
                 f"CarthesianGeometry.Ray("
-                f"start={self._segment.start}"
-                f", direction={self._segment.direction})"
+                f"start={self._segment.tangential_vector.point}"
+                f", direction={self._segment.tangential_vector.vector})"
             )
 
         def intersection_info(self, face: Face) -> IntersectionInfo:
@@ -52,9 +57,8 @@ class CarthesianGeometry(Geometry):
     ) -> Ray:
         vec_s = coordinates_as_vector(start)
         vec_t = coordinates_as_vector(target)
-        return CarthesianGeometry.Ray(start=start, direction=(vec_t - vec_s))
+        tangent = TangentialVector(point=start, vector=(vec_t - vec_s))
+        return CarthesianGeometry.Ray(tangential_vector=tangent)
 
-    def ray_from_tangent(
-        self, start: Coordinates3D, direction: AbstractVector
-    ) -> Ray:
-        return CarthesianGeometry.Ray(start=start, direction=direction)
+    def ray_from_tangent(self, tangential_vector: TangentialVector) -> Ray:
+        return CarthesianGeometry.Ray(tangential_vector=tangential_vector)

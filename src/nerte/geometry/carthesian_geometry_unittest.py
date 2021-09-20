@@ -15,6 +15,7 @@ from nerte.geometry.geometry_unittest import GeometryTestCaseMixin
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, normalized
+from nerte.values.tangential_vector import TangentialVector
 from nerte.values.face import Face
 from nerte.values.ray_segment import RaySegment
 from nerte.geometry.carthesian_geometry import CarthesianGeometry
@@ -71,24 +72,25 @@ class CarthesianGeometryRayFromTest(unittest.TestCase, GeometryTestCaseMixin):
         self.geo = CarthesianGeometry()
         self.coords1 = Coordinates3D((0.0, 0.0, 0.0))
         self.coords2 = Coordinates3D((0.0, 1.0, 2.0))
-        self.direction = AbstractVector((0.0, 1.0, 2.0))  # equiv to cords2
+        self.vector = AbstractVector((0.0, 1.0, 2.0))  # equiv to cords2
+        self.tangent = TangentialVector(
+            point=self.coords1, vector=normalized(self.vector)
+        )
         self.init_seg = RaySegment(
-            start=self.coords1, direction=normalized(self.direction)
+            tangential_vector=self.tangent, is_finite=False
         )
 
     def test_ray_from_coords(self) -> None:
         """Tests ray from coordinates."""
         ray = self.geo.ray_from_coords(self.coords1, self.coords2)
         init_seg = ray.as_segment()
-        self.assertCoordinates3DEquiv(init_seg.start, self.init_seg.start)
-        self.assertVectorEquiv(init_seg.direction, self.init_seg.direction)
+        self.assertRaySegmentEquiv(init_seg, self.init_seg)
 
     def test_ray_from_tangent(self) -> None:
         """Tests ray from tangent."""
-        ray = self.geo.ray_from_tangent(self.coords1, self.direction)
+        ray = self.geo.ray_from_tangent(self.tangent)
         init_seg = ray.as_segment()
-        self.assertCoordinates3DEquiv(init_seg.start, self.init_seg.start)
-        self.assertVectorEquiv(init_seg.direction, self.init_seg.direction)
+        self.assertRaySegmentEquiv(init_seg, self.init_seg)
 
 
 class CarthesianGeometryIntersectsTest1(
@@ -111,7 +113,8 @@ class CarthesianGeometryIntersectsTest1(
         ss = (s0, s1, s2, s3)
         v = AbstractVector((1.0, 1.0, 1.0))
         self.intersecting_rays = list(
-            geo.ray_from_tangent(start=s, direction=v) for s in ss
+            geo.ray_from_tangent(TangentialVector(point=s, vector=v))
+            for s in ss
         )
 
     def test_euclidean_intersects_1(self) -> None:
@@ -146,7 +149,8 @@ class CarthesianGeometryIntersectsTest2(
         ss = (s0, s1, s2, s3)
         v = AbstractVector((1.0, 1.0, 1.0))
         self.non_intersecting_rays = list(
-            geo.ray_from_tangent(start=s, direction=-v) for s in ss
+            geo.ray_from_tangent(TangentialVector(point=s, vector=-v))
+            for s in ss
         )
 
     def test_euclidean_intersects_2(self) -> None:
@@ -180,7 +184,8 @@ class CarthesianGeometryIntersectsTest3(
         ss = (s1, s2, s3)
         v = AbstractVector((1.0, 1.0, 1.0))
         self.non_intersecting_rays = list(
-            geo.ray_from_tangent(start=s, direction=v) for s in ss
+            geo.ray_from_tangent(TangentialVector(point=s, vector=v))
+            for s in ss
         )
 
     def test_euclidean_intersects_3(self) -> None:
@@ -214,7 +219,8 @@ class CarthesianGeometryIntersectsTest4(
         ss = (s1, s2, s3)
         v = AbstractVector((1.0, 1.0, 1.0))
         self.non_intersecting_rays = list(
-            geo.ray_from_tangent(start=s, direction=-v) for s in ss
+            geo.ray_from_tangent(TangentialVector(point=s, vector=-v))
+            for s in ss
         )
 
     def test_euclidean_intersects_4(self) -> None:

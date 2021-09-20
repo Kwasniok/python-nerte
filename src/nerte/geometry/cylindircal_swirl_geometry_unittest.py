@@ -15,6 +15,7 @@ from nerte.geometry.geometry_unittest import GeometryTestCaseMixin
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, AbstractMatrix, Metric
+from nerte.values.tangential_vector import TangentialVector
 from nerte.values.ray_segment import RaySegment
 from nerte.values.ray_segment_delta import RaySegmentDelta
 from nerte.values.face import Face
@@ -197,7 +198,7 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
         self.geo = SwirlCylindricRungeKuttaGeometry(
             max_ray_depth=1.0, step_size=1.0, max_steps=1, swirl_strength=2.0
         )
-        self.starts = (
+        self.points = (
             Coordinates3D((1.0, 0.0, 0.0)),
             Coordinates3D((1.0, math.pi * 3 / 4, 0.0)),
         )
@@ -205,7 +206,7 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
             Coordinates3D((1.0, math.pi / 2, 0.0)),
             Coordinates3D((2.0, -math.pi * 3 / 4, 3.0)),
         )
-        self.directions = (
+        self.vectors = (
             AbstractVector((-1.0, 1.0, 0.0)),
             AbstractVector(
                 (
@@ -215,25 +216,30 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
                 )
             ),
         )
-        tangents = tuple(
-            RaySegment(start=s, direction=d)
-            for s, d in zip(self.starts, self.directions)
+        self.tangents = tuple(
+            TangentialVector(point=s, vector=d)
+            for s, d in zip(self.points, self.vectors)
         )
         self.initial_tangents = tuple(
-            self.geo.normalized(it) for it in tangents
+            self.geo.normalized(RaySegment(tangential_vector=it))
+            for it in self.tangents
         )
         self.invalid_coords = (
             Coordinates3D((0.0, 0.0, 0.0)),
             Coordinates3D((1.0, -math.pi, 0.0)),
             Coordinates3D((1.0, +math.pi, 0.0)),
         )
+        self.invalid_tangents = tuple(
+            TangentialVector(point=c, vector=self.vectors[0])
+            for c in self.invalid_coords
+        )
 
     def test_ray_from_coords(self) -> None:
         """Tests ray from coordinates."""
-        for start, target, initial_tangent in zip(
-            self.starts, self.targets, self.initial_tangents
+        for point, target, initial_tangent in zip(
+            self.points, self.targets, self.initial_tangents
         ):
-            ray = self.geo.ray_from_coords(start, target)
+            ray = self.geo.ray_from_coords(point, target)
             init_tan = ray.initial_tangent()
             self.assertRaySegmentEquiv(init_tan, initial_tangent)
         # invalid coordinates
@@ -241,21 +247,21 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
             with self.assertRaises(ValueError):
                 self.geo.ray_from_coords(invalid_coords, self.targets[0])
             with self.assertRaises(ValueError):
-                self.geo.ray_from_coords(self.starts[0], invalid_coords)
+                self.geo.ray_from_coords(self.points[0], invalid_coords)
             with self.assertRaises(ValueError):
                 self.geo.ray_from_coords(invalid_coords, invalid_coords)
 
     def test_ray_from_tangent(self) -> None:
         """Tests ray from tangent."""
-        for start, direction, initial_tangent in zip(
-            self.starts, self.directions, self.initial_tangents
+        for tangent, initial_tangent in zip(
+            self.tangents, self.initial_tangents
         ):
-            ray = self.geo.ray_from_tangent(start, direction)
+            ray = self.geo.ray_from_tangent(tangent)
             init_tan = ray.initial_tangent()
             self.assertRaySegmentEquiv(init_tan, initial_tangent)
-        for invalid_coords in self.invalid_coords:
+        for tangent in self.invalid_tangents:
             with self.assertRaises(ValueError):
-                self.geo.ray_from_tangent(invalid_coords, self.directions[0])
+                self.geo.ray_from_tangent(tangent)
 
 
 class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(
@@ -272,7 +278,10 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(
             Coordinates3D((1.0, math.pi - 1e-8, 0.0)),
             Coordinates3D((2.0, math.pi - 1e-8, 1.0)),
         )
-        self.rays = tuple(RaySegment(start=c, direction=v) for c in self.coords)
+        self.rays = tuple(
+            RaySegment(tangential_vector=TangentialVector(point=c, vector=v))
+            for c in self.coords
+        )
         self.lengths = (
             14.0 ** 0.5,
             14.0 ** 0.5,
@@ -281,6 +290,10 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(
             26.0 ** 0.5,
         )
         self.ns = tuple(v / length for length in self.lengths)
+        self.rays_normalized = tuple(
+            RaySegment(tangential_vector=TangentialVector(point=c, vector=v))
+            for c, v in zip(self.coords, self.ns)
+        )
         # geometry (cylindirc & euclidean)
         self.geo = SwirlCylindricRungeKuttaGeometry(
             max_ray_depth=math.inf,
@@ -301,7 +314,8 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(
             Coordinates3D((1.0, 0.0, math.nan)),
         )
         self.invalid_rays = tuple(
-            RaySegment(start=c, direction=v) for c in invalid_coords
+            RaySegment(tangential_vector=TangentialVector(point=c, vector=v))
+            for c in invalid_coords
         )
 
     def test_length(self) -> None:
@@ -314,10 +328,9 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(
 
     def test_normalized(self) -> None:
         """Tests vector normalization."""
-        for coords, ray, n in zip(self.coords, self.rays, self.ns):
-            ray_normalized = self.geo.normalized(ray)
-            self.assertCoordinates3DEquiv(ray_normalized.start, coords)
-            self.assertVectorEquiv(ray_normalized.direction, n)
+        for ray, ray_normalized in zip(self.rays, self.rays_normalized):
+            ray = self.geo.normalized(ray)
+            self.assertRaySegmentEquiv(ray, ray_normalized)
         for ray in self.invalid_rays:
             with self.assertRaises(ValueError):
                 self.geo.normalized(ray)
@@ -335,17 +348,17 @@ class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(
             # pylint: disable=C0103
             # TODO: revert when mypy bug was fixed
             #       see https://github.com/python/mypy/issues/2220
-            # r, _, z = ray.coords_delta
-            # v_r, v_phi, v_z = ray.velocity_delta
+            # r, _, z = ray.point_delta
+            # v_r, v_phi, v_z = ray.vector_delta
             # a = self._swirl_strength
-            r = ray.coords_delta[0]
-            z = ray.coords_delta[2]
-            v_r = ray.velocity_delta[0]
-            v_phi = ray.velocity_delta[1]
-            v_z = ray.velocity_delta[2]
+            r = ray.point_delta[0]
+            z = ray.point_delta[2]
+            v_r = ray.vector_delta[0]
+            v_phi = ray.vector_delta[1]
+            v_z = ray.vector_delta[2]
             a = self.geo.swirl_strength()
             return RaySegmentDelta(
-                ray.velocity_delta,
+                ray.vector_delta,
                 AbstractVector(
                     (
                         r * (a * z * v_r + a * r * v_z + v_phi) ** 2,
@@ -453,25 +466,29 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
         # rays pointing 'forwards'
         # towards the face and parallel to face normal
         self.intersecting_rays = [
-            geo.ray_from_tangent(start=s, direction=v) for s in coords1
+            geo.ray_from_tangent(TangentialVector(point=s, vector=v))
+            for s in coords1
         ]
         self.ray_depths = [1.0, 1.0, 1.0]
         self.ray_depth_places = [3, 3, 3]
         # rays pointing 'backwards'
         # away from the face and parallel to face normal
         self.non_intersecting_rays = [
-            geo.ray_from_tangent(start=s, direction=-v) for s in coords1
+            geo.ray_from_tangent(TangentialVector(point=s, vector=-v))
+            for s in coords1
         ]
         coords2 = (
             Coordinates3D((0.9, -math.pi / 2, 0.0)),
             Coordinates3D((0.9, +math.pi / 2, 0.0)),
         )
-        # rays parallel to face normal but starting 'outside' the face
+        # rays parallel to face normal but pointing 'outside' the face
         self.non_intersecting_rays += [
-            geo.ray_from_tangent(start=s, direction=v) for s in coords2
+            geo.ray_from_tangent(TangentialVector(point=s, vector=v))
+            for s in coords2
         ]
         self.non_intersecting_rays += [
-            geo.ray_from_tangent(start=s, direction=-v) for s in coords2
+            geo.ray_from_tangent(TangentialVector(point=s, vector=-v))
+            for s in coords2
         ]
 
         # convert to proper lists
@@ -531,13 +548,15 @@ class SwirlCylindricRungeKuttaGeometryIntersectsTest(
         )
         # parallel (hit)
         self.intersecting_rays = [
-            geo.ray_from_tangent(start=s, direction=v) for s in coords1
+            geo.ray_from_tangent(TangentialVector(point=s, vector=v))
+            for s in coords1
         ]
         self.ray_depths = [1.374, 1.374, 1.374]  # TODO: needs confirmation
         self.ray_depth_places = [2, 2, 2]
         # antiparallel (miss)
         self.non_intersecting_rays = [
-            geo.ray_from_tangent(start=s, direction=-v) for s in coords1
+            geo.ray_from_tangent(TangentialVector(point=s, vector=-v))
+            for s in coords1
         ]
         coords2 = (
             Coordinates3D((0.6, -math.pi / 2, 0.0)),  # (*)
@@ -546,11 +565,13 @@ class SwirlCylindricRungeKuttaGeometryIntersectsTest(
         )
         # parallel (miss)
         self.non_intersecting_rays += [
-            geo.ray_from_tangent(start=s, direction=v) for s in coords2
+            geo.ray_from_tangent(TangentialVector(point=s, vector=v))
+            for s in coords2
         ]
         # antiparallel (miss)
         self.non_intersecting_rays += [
-            geo.ray_from_tangent(start=s, direction=-v) for s in coords2
+            geo.ray_from_tangent(TangentialVector(point=s, vector=-v))
+            for s in coords2
         ]
 
         # convert to proper lists

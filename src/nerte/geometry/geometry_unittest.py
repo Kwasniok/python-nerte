@@ -12,11 +12,15 @@ import math
 
 from nerte.values.coordinates_unittest import CoordinatesTestCaseMixin
 from nerte.values.linalg_unittest import LinAlgTestCaseMixin
+from nerte.values.tangential_vector_unittest import (
+    TangentialVectorTestCaseMixin,
+)
 from nerte.values.ray_segment_unittest import RaySegmentTestCaseMixin
 from nerte.values.ray_segment_delta_unittest import RaySegmentDeltaTestCaseMixin
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector
+from nerte.values.tangential_vector import TangentialVector
 from nerte.values.ray_segment import RaySegment
 from nerte.values.face import Face
 from nerte.geometry.geometry import intersection_ray_depth
@@ -30,6 +34,7 @@ from nerte.geometry.geometry import intersection_ray_depth
 class GeometryTestCaseMixin(
     CoordinatesTestCaseMixin,
     LinAlgTestCaseMixin,
+    TangentialVectorTestCaseMixin,
     RaySegmentTestCaseMixin,
     RaySegmentDeltaTestCaseMixin,
 ):
@@ -55,40 +60,65 @@ class IntersectionRayDepthTest(unittest.TestCase, GeometryTestCaseMixin):
         # rays pointing 'forwards'
         # towards the face and parallel to face normal
         self.intersecting_rays = [
-            RaySegment(start=s, direction=v * 0.1, is_finite=False) for s in ss1
+            RaySegment(
+                tangential_vector=TangentialVector(point=s, vector=v * 0.1),
+                is_finite=False,
+            )
+            for s in ss1
         ]
         self.ray_depths = [10 / 3, 20 / 9, 20 / 9, 20 / 9]
         self.intersecting_ray_segments = [
-            RaySegment(start=s, direction=v * 1.0) for s in ss1
+            RaySegment(
+                tangential_vector=TangentialVector(point=s, vector=v * 1.0)
+            )
+            for s in ss1
         ]
         self.ray_segment_depths = [1 / 3, 2 / 9, 2 / 9, 2 / 9]
         self.non_intersecting_ray_segments = [
-            RaySegment(start=s, direction=v * 0.1) for s in ss1
+            RaySegment(
+                tangential_vector=TangentialVector(point=s, vector=v * 0.1)
+            )
+            for s in ss1
         ]
         # rays pointing 'backwards'
         # away from the face and parallel to face normal
         self.non_intersecting_rays = [
-            RaySegment(start=s, direction=-v, is_finite=False) for s in ss1
+            RaySegment(
+                tangential_vector=TangentialVector(point=s, vector=-v),
+                is_finite=False,
+            )
+            for s in ss1
         ]
         self.non_intersecting_ray_segments += [
-            RaySegment(start=s, direction=-v) for s in ss1
+            RaySegment(tangential_vector=TangentialVector(point=s, vector=-v))
+            for s in ss1
         ]
         s21 = Coordinates3D((0.0, 0.6, 0.6))  # 'complement' of p1
         s22 = Coordinates3D((0.6, 0.0, 0.6))  # 'complement' of p2
         s23 = Coordinates3D((0.6, 0.6, 0.0))  # 'complement' of p3
         ss2 = (s21, s22, s23)
-        # rays parallel to face normal but starting 'outside' the face
+        # rays parallel to face normal but pointing 'outside' the face
         self.non_intersecting_rays += [
-            RaySegment(start=s, direction=v, is_finite=False) for s in ss2
+            RaySegment(
+                tangential_vector=TangentialVector(point=s, vector=v),
+                is_finite=False,
+            )
+            for s in ss2
         ]
         self.non_intersecting_rays += [
-            RaySegment(start=s, direction=-v, is_finite=False) for s in ss2
+            RaySegment(
+                tangential_vector=TangentialVector(point=s, vector=-v),
+                is_finite=False,
+            )
+            for s in ss2
         ]
         self.non_intersecting_ray_segments += [
-            RaySegment(start=s, direction=v) for s in ss2
+            RaySegment(tangential_vector=TangentialVector(point=s, vector=v))
+            for s in ss2
         ]
         self.non_intersecting_ray_segments += [
-            RaySegment(start=s, direction=-v) for s in ss2
+            RaySegment(tangential_vector=TangentialVector(point=s, vector=-v))
+            for s in ss2
         ]
 
         # convert to proper lists

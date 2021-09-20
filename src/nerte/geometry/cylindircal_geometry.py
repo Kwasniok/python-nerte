@@ -12,6 +12,7 @@ from nerte.values.util.convert import (
     cylindric_to_carthesian_coords,
     carthesian_to_cylindric_vector,
 )
+from nerte.values.tangential_vector import TangentialVector
 from nerte.values.ray_segment import RaySegment
 from nerte.values.ray_segment_delta import RaySegmentDelta
 from nerte.values.linalg import (
@@ -33,14 +34,14 @@ class CylindricRungeKuttaGeometry(RungeKuttaGeometry):
 
         def geodesic_equation(ray: RaySegmentDelta) -> RaySegmentDelta:
             return RaySegmentDelta(
-                ray.velocity_delta,
+                ray.vector_delta,
                 AbstractVector(
                     (
-                        ray.coords_delta[0] * ray.velocity_delta[1] ** 2,
+                        ray.point_delta[0] * ray.vector_delta[1] ** 2,
                         -2
-                        * ray.velocity_delta[0]
-                        * ray.velocity_delta[1]
-                        / ray.coords_delta[0],
+                        * ray.vector_delta[0]
+                        * ray.vector_delta[1]
+                        / ray.point_delta[0],
                         0,
                     )
                 ),
@@ -81,19 +82,20 @@ class CylindricRungeKuttaGeometry(RungeKuttaGeometry):
         target_flat_vec = coordinates_as_vector(target_flat)
         delta_flat = target_flat_vec - start_flat_vec
         direction = carthesian_to_cylindric_vector(start_flat, delta_flat)
+        tangent = TangentialVector(point=start, vector=direction)
         return RungeKuttaGeometry.Ray(
             geometry=self,
-            initial_tangent=RaySegment(start=start, direction=direction),
+            initial_tangent=RaySegment(tangential_vector=tangent),
         )
 
     def length(self, ray: RaySegment) -> float:
-        if not self.is_valid_coordinate(ray.start):
+        if not self.is_valid_coordinate(ray.tangential_vector.point):
             raise ValueError(
-                f"Cannot calculate length of ray."
-                f" Coordinates {ray.start} are invalid."
+                f"Cannot calculate length of ray segment."
+                f" Coordinates {ray} are outside of the manifold."
             )
-        metric = self.metric(ray.start)
-        return length(ray.direction, metric=metric)
+        metric = self.metric(ray.tangential_vector.point)
+        return length(ray.tangential_vector.vector, metric=metric)
 
     def geodesic_equation(self) -> Callable[[RaySegmentDelta], RaySegmentDelta]:
         return self._geodesic_equation

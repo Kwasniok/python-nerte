@@ -3,6 +3,7 @@
 from enum import Enum
 
 from nerte.values.coordinates import Coordinates2D
+from nerte.values.tangential_vector import TangentialVector
 from nerte.world.camera import Camera
 from nerte.geometry.geometry import Geometry
 
@@ -48,8 +49,9 @@ def orthographic_ray_for_pixel(
     coords_2d = detector_manifold_coords(camera, pixel_location)
     start = camera.detector_manifold.embed(coords_2d)
     direction = camera.detector_manifold.surface_normal(coords_2d)
+    tangent = TangentialVector(point=start, vector=direction)
     try:
-        return geometry.ray_from_tangent(start=start, direction=direction)
+        return geometry.ray_from_tangent(tangent)
     except ValueError as ex:
         raise ValueError(
             f"Could not generate orthographic ray for pixel {pixel_location}."

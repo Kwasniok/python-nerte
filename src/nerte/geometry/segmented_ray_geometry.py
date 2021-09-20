@@ -11,7 +11,7 @@ import math
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.face import Face
-from nerte.values.linalg import AbstractVector
+from nerte.values.tangential_vector import TangentialVector
 from nerte.values.ray_segment import RaySegment
 from nerte.values.intersection_info import IntersectionInfo, IntersectionInfos
 from nerte.values.extended_intersection_info import ExtendedIntersectionInfo
@@ -92,7 +92,9 @@ class SegmentedRayGeometry(Geometry):
                     f" initial segment {self._segments[0]} at step"
                     f" {self._steps_cached}."
                 )
-            if not self._geometry.is_valid_coordinate(segment.start):
+            if not self._geometry.is_valid_coordinate(
+                segment.tangential_vector.point
+            ):
                 raise RuntimeError(
                     f"Cannot generate next ray segment for ray starting with"
                     f" initial segment {self._segments[0]}."
@@ -170,16 +172,17 @@ class SegmentedRayGeometry(Geometry):
         pass
 
     def ray_from_tangent(
-        self, start: Coordinates3D, direction: AbstractVector
+        self, tangential_vector: TangentialVector
     ) -> "SegmentedRayGeometry.Ray":
-        if not self.is_valid_coordinate(start):
+        if not self.is_valid_coordinate(tangential_vector.point):
             raise ValueError(
-                f"Cannot create ray from tangent."
-                f" Start coordinates {start} are invalid."
+                f"Cannot create segmented ray from tangential vector"
+                f" {tangential_vector}."
+                f" It is illdefined with coordinated outside the manifold."
             )
         return SegmentedRayGeometry.Ray(
             geometry=self,
-            initial_segment=RaySegment(start=start, direction=direction),
+            initial_segment=RaySegment(tangential_vector=tangential_vector),
         )
 
     @abstractmethod

@@ -11,9 +11,13 @@ from abc import ABC
 
 from nerte.values.coordinates_unittest import CoordinatesTestCaseMixin
 from nerte.values.linalg_unittest import LinAlgTestCaseMixin
+from nerte.values.tangential_vector_unittest import (
+    TangentialVectorTestCaseMixin,
+)
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector
+from nerte.values.tangential_vector import TangentialVector
 from nerte.values.ray_segment import RaySegment
 
 
@@ -31,12 +35,12 @@ class RaySegmentTestCaseMixin(ABC):
 
         test_case = cast(unittest.TestCase, self)
         try:
-            cast(CoordinatesTestCaseMixin, self).assertCoordinates3DEquiv(
-                x.start, y.start
+            cast(
+                TangentialVectorTestCaseMixin, self
+            ).assertTangentialVectorEquiv(
+                x.tangential_vector, y.tangential_vector
             )
-            cast(LinAlgTestCaseMixin, self).assertVectorEquiv(
-                x.direction, y.direction
-            )
+            test_case.assertEqual(x.is_finite, y.is_finite)
         except AssertionError as ae:
             msg_full = f"Ray segment {x} is not equivalent to {y}."
             if msg is not None:
@@ -48,14 +52,17 @@ class AssertRaySegmentEquivMixinTest(
     unittest.TestCase,
     CoordinatesTestCaseMixin,
     LinAlgTestCaseMixin,
+    TangentialVectorTestCaseMixin,
     RaySegmentTestCaseMixin,
 ):
     def setUp(self) -> None:
         coords_0 = Coordinates3D((0.0, 0.0, 0.0))
         coords_1 = Coordinates3D((1.0, 2.0, 3.0))
         vec_1 = AbstractVector((4.0, 5.0, 6.0))
-        self.ray_segment_0 = RaySegment(start=coords_0, direction=vec_1)
-        self.ray_segment_1 = RaySegment(start=coords_1, direction=vec_1)
+        tan_vec_0 = TangentialVector(point=coords_0, vector=vec_1)
+        tan_vec_1 = TangentialVector(point=coords_1, vector=vec_1)
+        self.ray_segment_0 = RaySegment(tangential_vector=tan_vec_0)
+        self.ray_segment_1 = RaySegment(tangential_vector=tan_vec_1)
 
     def test_ray_segment_equiv(self) -> None:
         """Tests the ray segment test case mixin."""
@@ -75,42 +82,50 @@ class RaySegmentConstructorTest(
     RaySegmentTestCaseMixin,
 ):
     def setUp(self) -> None:
-        self.v0 = AbstractVector((0.0, 0.0, 0.0))
-        self.start = Coordinates3D((0.0, 0.0, 0.0))
-        self.direction = AbstractVector((1.0, 0.0, 0.0))
+        v0 = AbstractVector((0.0, 0.0, 0.0))
+        v1 = AbstractVector((1.0, 0.0, 0.0))
+        point = Coordinates3D((0.0, 0.0, 0.0))
+        self.tangential_vector_0 = TangentialVector(point=point, vector=v0)
+        self.tangential_vector_1 = TangentialVector(point=point, vector=v1)
 
     def test_constructor(self) -> None:
         """Tests the constructor."""
-        RaySegment(start=self.start, direction=self.direction)
-        RaySegment(start=self.start, direction=self.direction, is_finite=False)
-        RaySegment(start=self.start, direction=self.direction, is_finite=True)
+        RaySegment(tangential_vector=self.tangential_vector_1)
+        RaySegment(tangential_vector=self.tangential_vector_1, is_finite=False)
+        RaySegment(tangential_vector=self.tangential_vector_1, is_finite=True)
         with self.assertRaises(ValueError):
-            RaySegment(start=self.start, direction=self.v0)
+            RaySegment(tangential_vector=self.tangential_vector_0)
         with self.assertRaises(ValueError):
-            RaySegment(start=self.start, direction=self.v0, is_finite=False)
+            RaySegment(
+                tangential_vector=self.tangential_vector_0, is_finite=False
+            )
         with self.assertRaises(ValueError):
-            RaySegment(start=self.start, direction=self.v0, is_finite=True)
+            RaySegment(
+                tangential_vector=self.tangential_vector_0, is_finite=True
+            )
 
 
 class RaySegmentPropertiesTest(
     unittest.TestCase,
     CoordinatesTestCaseMixin,
     LinAlgTestCaseMixin,
+    TangentialVectorTestCaseMixin,
     RaySegmentTestCaseMixin,
 ):
     def setUp(self) -> None:
-        self.start = Coordinates3D((0.0, 0.0, 0.0))
-        self.direction = AbstractVector((1.0, 0.0, 0.0))
+        point = Coordinates3D((0.0, 0.0, 0.0))
+        vector = AbstractVector((1.0, 0.0, 0.0))
+        self.tangential_vector = TangentialVector(point=point, vector=vector)
 
         self.finite_rays = (
-            RaySegment(start=self.start, direction=self.direction),
+            RaySegment(tangential_vector=self.tangential_vector),
             RaySegment(
-                start=self.start, direction=self.direction, is_finite=True
+                tangential_vector=self.tangential_vector, is_finite=True
             ),
         )
         self.infinite_rays = (
             RaySegment(
-                start=self.start, direction=self.direction, is_finite=False
+                tangential_vector=self.tangential_vector, is_finite=False
             ),
         )
 
@@ -122,14 +137,16 @@ class RaySegmentPropertiesTest(
         self.assertTrue(len(self.infinite_rays) > 0)
 
         for ray in self.finite_rays:
-            self.assertCoordinates3DEquiv(ray.start, self.start)
-            self.assertVectorEquiv(ray.direction, self.direction)
+            self.assertTangentialVectorEquiv(
+                ray.tangential_vector, self.tangential_vector
+            )
             self.assertTrue(ray.is_finite)
             self.assertFalse(ray.is_infinite)
 
         for ray in self.infinite_rays:
-            self.assertCoordinates3DEquiv(ray.start, self.start)
-            self.assertVectorEquiv(ray.direction, self.direction)
+            self.assertTangentialVectorEquiv(
+                ray.tangential_vector, self.tangential_vector
+            )
             self.assertFalse(ray.is_finite)
             self.assertTrue(ray.is_infinite)
 

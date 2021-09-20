@@ -9,6 +9,7 @@ import math
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.util.convert import coordinates_as_vector
+from nerte.values.tangential_vector import TangentialVector
 from nerte.values.ray_segment import RaySegment
 from nerte.values.ray_segment_delta import RaySegmentDelta
 from nerte.values.linalg import (
@@ -49,16 +50,16 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
             # pylint: disable=C0103
             # TODO: revert when mypy bug was fixed
             #       see https://github.com/python/mypy/issues/2220
-            # r, _, z = ray.coords_delta
-            # v_r, v_phi, v_z = ray.velocity_delta
-            r = ray.coords_delta[0]
-            z = ray.coords_delta[2]
-            v_r = ray.velocity_delta[0]
-            v_phi = ray.velocity_delta[1]
-            v_z = ray.velocity_delta[2]
+            # r, _, z = ray.point_delta
+            # v_r, v_phi, v_z = ray.vector_delta
+            r = ray.point_delta[0]
+            z = ray.point_delta[2]
+            v_r = ray.vector_delta[0]
+            v_phi = ray.vector_delta[1]
+            v_z = ray.vector_delta[2]
             a = self.swirl_strength()
             return RaySegmentDelta(
-                ray.velocity_delta,
+                ray.vector_delta,
                 AbstractVector(
                     (
                         r * (a * z * v_r + a * r * v_z + v_phi) ** 2,
@@ -117,19 +118,20 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
         target_flat_vec = coordinates_as_vector(target_flat)
         delta_flat = target_flat_vec - start_flat_vec
         direction = mat_vec_mult(self._to_flat_jacobian(start), delta_flat)
+        tangent = TangentialVector(point=start, vector=direction)
         return RungeKuttaGeometry.Ray(
             geometry=self,
-            initial_tangent=RaySegment(start=start, direction=direction),
+            initial_tangent=RaySegment(tangential_vector=tangent),
         )
 
     def length(self, ray: RaySegment) -> float:
-        if not self.is_valid_coordinate(ray.start):
+        if not self.is_valid_coordinate(ray.tangential_vector.point):
             raise ValueError(
-                f"Cannot calculate length of ray."
-                f" Coordinates {ray.start} are invalid."
+                f"Cannot calculate length of ray segment."
+                f" Coordinates {ray} are outside of the manifold."
             )
-        metric = self.metric(ray.start)
-        return length(ray.direction, metric=metric)
+        metric = self.metric(ray.tangential_vector.point)
+        return length(ray.tangential_vector.vector, metric=metric)
 
     def geodesic_equation(self) -> Callable[[RaySegmentDelta], RaySegmentDelta]:
         return self._geodesic_equation

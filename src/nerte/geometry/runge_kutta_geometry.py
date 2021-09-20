@@ -13,7 +13,7 @@ import math
 from nerte.algorithm.runge_kutta import runge_kutta_4_delta
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.face import Face
-from nerte.values.linalg import AbstractVector
+from nerte.values.tangential_vector import TangentialVector
 from nerte.values.ray_segment import RaySegment
 from nerte.values.ray_segment_delta import (
     RaySegmentDelta,
@@ -84,7 +84,7 @@ class RungeKuttaGeometry(Geometry):
             )
 
         def initial_tangent(self) -> RaySegment:
-            """Returs the initial tangent of the ray at its starting point."""
+            """Returs the initial tangent of the ray at its pointing point."""
             return self._initial_tangent
 
         # TODO: test cache generation (for max_steps = 0 etc.)
@@ -95,7 +95,7 @@ class RungeKuttaGeometry(Geometry):
             :precon: self._segments_cached <= self._geometry.max_steps()
             :precon: self._cached_ray_depth <= self._geometry.max_ray_depth()
             :precon: self._geometry.is_valid_coordinate(
-                         self._current_tangent.start
+                         self._current_tangent.point
                      )
 
             :raises: RuntimeError if next segment cannot be created.
@@ -104,27 +104,29 @@ class RungeKuttaGeometry(Geometry):
                 return
             if self._segments_cached > self._geometry.max_steps():
                 raise RuntimeError(
-                    f"Cannot generate next ray segment for ray starting with"
+                    f"Cannot generate next ray segment for ray pointing with"
                     f" initial tangent {self._initial_tangent}."
                     f" Generating segment {self._segments_cached + 1} would"
                     f" exceed the step maximum of {self._geometry.max_steps()}."
                 )
             if self._cached_ray_depth > self._geometry.max_ray_depth():
                 raise RuntimeError(
-                    f"Cannot generate next ray segment for ray starting with"
+                    f"Cannot generate next ray segment for ray pointing with"
                     f" initial tangent {self._initial_tangent}."
                     f" Generating segment {self._segments_cached + 1} would"
                     f" exceed the ray depth maximum of"
                     f" {self._geometry.max_ray_depth()}."
                 )
             tangent = self._current_tangent
-            if not self._geometry.is_valid_coordinate(tangent.start):
+            if not self._geometry.is_valid_coordinate(
+                tangent.tangential_vector.point
+            ):
                 raise RuntimeError(
-                    f"Cannot generate next ray segment for ray starting with"
+                    f"Cannot generate next ray segment for ray pointing with"
                     f" initial tangent {self._initial_tangent}."
                     f" Generating segment {self._segments_cached + 1} is not"
                     f" possible, since it's initial tangent={tangent} has"
-                    f" invalid starting coordinates."
+                    f" invalid pointing coordinates."
                 )
             geometry = self._geometry
             # calculate difference to next point/tangent on the ray
@@ -137,7 +139,10 @@ class RungeKuttaGeometry(Geometry):
                 geometry.step_size(),
             )
             segment = RaySegment(
-                start=tangent.start, direction=tangent_delta.coords_delta
+                tangential_vector=TangentialVector(
+                    point=tangent.tangential_vector.point,
+                    vector=tangent_delta.point_delta,
+                )
             )
             segment_length = geometry.length(segment)
             self._segments_and_lengths[self._segments_cached] = (
@@ -149,7 +154,9 @@ class RungeKuttaGeometry(Geometry):
             )
             self._segments_cached += 1
             self._cached_ray_depth += segment_length
-            if not geometry.is_valid_coordinate(self._current_tangent.start):
+            if not geometry.is_valid_coordinate(
+                self._current_tangent.tangential_vector.point
+            ):
                 self._cached_ray_left_manifold = True
 
         def intersection_info(self, face: Face) -> IntersectionInfo:
@@ -245,16 +252,17 @@ class RungeKuttaGeometry(Geometry):
         pass
 
     def ray_from_tangent(
-        self, start: Coordinates3D, direction: AbstractVector
+        self, tangential_vector: TangentialVector
     ) -> "RungeKuttaGeometry.Ray":
-        if not self.is_valid_coordinate(start):
+        if not self.is_valid_coordinate(tangential_vector.point):
             raise ValueError(
-                f"Cannot create ray from tangent."
-                f" Start coordinates {start} are invalid."
+                f"Cannot create Runge-Kuuta ray from tangential vector"
+                f" {tangential_vector}."
+                f" It is illdefined with coordinated outside the manifold."
             )
         return RungeKuttaGeometry.Ray(
             geometry=self,
-            initial_tangent=RaySegment(start=start, direction=direction),
+            initial_tangent=RaySegment(tangential_vector=tangential_vector),
         )
 
     @abstractmethod
@@ -263,7 +271,7 @@ class RungeKuttaGeometry(Geometry):
         """
         Returns the length of the vector with respect to the tangential space.
 
-        :raises: ValueError if ray.start are invalid coordinates
+        :raises: ValueError if ray.point are invalid coordinates
         """
         pass
 
@@ -271,9 +279,14 @@ class RungeKuttaGeometry(Geometry):
         """
         Returns the normalized vector with respect to the tangential space.
 
-        :raises: ValueError if ray.start are invalid coordinates
+        :raises: ValueError if ray.point are invalid coordinates
         """
-        return RaySegment(ray.start, ray.direction / self.length(ray))
+        return RaySegment(
+            tangential_vector=TangentialVector(
+                point=ray.tangential_vector.point,
+                vector=ray.tangential_vector.vector / self.length(ray),
+            )
+        )
 
     @abstractmethod
     def geodesic_equation(self) -> Callable[[RaySegmentDelta], RaySegmentDelta]:

@@ -6,6 +6,7 @@ import math
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, dot, cross, normalized
+from nerte.values.tangential_vector import TangentialVector
 from nerte.values.face import Face
 from nerte.values.ray_segment import RaySegment
 from nerte.values.intersection_info import IntersectionInfo
@@ -48,9 +49,7 @@ class Geometry(ABC):
         pass
 
     @abstractmethod
-    def ray_from_tangent(
-        self, start: Coordinates3D, direction: AbstractVector
-    ) -> Ray:
+    def ray_from_tangent(self, tangential_vector: TangentialVector) -> Ray:
         """
         Returns the ray, whith the given starting point and direction.
 
@@ -120,8 +119,8 @@ def intersection_ray_depth(ray: RaySegment, face: Face) -> float:
     # (x,y,z) in plane <=> (x,y,z) . n = l
 
     ## ray parameters
-    s = coordinates_as_vector(ray.start)
-    u = ray.direction
+    s = coordinates_as_vector(ray.tangential_vector.point)
+    u = ray.tangential_vector.vector
     # (x,y,z) in line <=> ∃t: s + t*u = (x,y,z)
 
     # intersection of line iff ∃t: (s + t*u) . n = l

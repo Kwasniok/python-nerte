@@ -16,6 +16,7 @@ from nerte.geometry.carthesian_geometry_unittest import (
 from nerte.values.coordinates import Coordinates3D, Coordinates2D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
+from nerte.values.tangential_vector import TangentialVector
 from nerte.values.manifolds.cartesian import Plane as PlaneCartesian
 from nerte.values.manifolds.cylindrical import Plane as PlaneCylindric
 from nerte.world.camera import Camera
@@ -139,8 +140,10 @@ class OrthographicProjectionTest(
         # orthographic ray from detecor manifold coordinates
         def make_ray(coords2d: Coordinates2D) -> CarthesianGeometry.Ray:
             return self.geometry.ray_from_tangent(
-                start=manifold.embed(coords2d),
-                direction=manifold.surface_normal(coords2d),
+                TangentialVector(
+                    point=manifold.embed(coords2d),
+                    vector=manifold.surface_normal(coords2d),
+                )
             )
 
         self.pixel_rays = tuple(
