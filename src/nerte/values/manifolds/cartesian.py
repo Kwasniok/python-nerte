@@ -13,7 +13,38 @@ from nerte.values.linalg import (
     are_linear_dependent,
 )
 from nerte.values.util.convert import vector_as_coordinates
+from nerte.values.linalg import AbstractMatrix, Metric
+from nerte.values.tangential_vector import TangentialVector
+from nerte.values.tangential_vector_delta import TangentialVectorDelta
 from nerte.values.manifold import Manifold1D, Manifold2D, Manifold3D
+
+
+def carthesian_metric(coords: Coordinates3D) -> Metric:
+    # pylint: disable=w0613
+    """Returns the local metric in carthesian coordinates."""
+    return Metric(
+        AbstractMatrix(
+            AbstractVector((1, 0, 0)),
+            AbstractVector((0, 1, 0)),
+            AbstractVector((0, 0, 1)),
+        )
+    )
+
+
+def carthesian_geodesic_equation(
+    tangent: TangentialVector,
+) -> TangentialVectorDelta:
+    """
+    Returns a tangential vector delta which encodes the geodesic equation of
+    carthesian coordinates.
+
+    Let x(𝜆) be a geodesic.
+    For tangent (x, dx/d𝜆) it returns (dx/d𝜆, d^2x/d𝜆^2).
+    """
+    return TangentialVectorDelta(
+        tangent.vector,
+        AbstractVector((0.0, 0.0, 0.0)),
+    )
 
 
 class Line(Manifold1D):
