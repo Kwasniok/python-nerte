@@ -3,7 +3,10 @@
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector
 from nerte.values.tangential_vector import TangentialVector
-from nerte.values.util.convert import coordinates_as_vector
+from nerte.values.util.convert import (
+    coordinates_as_vector,
+    vector_as_coordinates,
+)
 
 
 class TangentialVectorDelta:
@@ -62,6 +65,14 @@ def tangent_as_delta(tangent: TangentialVector) -> TangentialVectorDelta:
     return TangentialVectorDelta(
         coordinates_as_vector(tangent.point),
         tangent.vector,
+    )
+
+
+def delta_as_tangent(tangent_delta: TangentialVectorDelta) -> TangentialVector:
+    """Converts a tangential vector delta to a tangential vector."""
+    return TangentialVector(
+        vector_as_coordinates(tangent_delta.point_delta),
+        tangent_delta.vector_delta,
     )
 
 

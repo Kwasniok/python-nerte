@@ -18,6 +18,7 @@ from nerte.values.tangential_vector_unittest import tan_vec_equiv
 from nerte.values.tangential_vector_delta import (
     TangentialVectorDelta,
     tangent_as_delta,
+    delta_as_tangent,
     add_tangential_vector_delta,
 )
 
@@ -130,7 +131,7 @@ class TangentialVectorDeltaMathTest(BaseTestCase):
         )
 
 
-class RaySegmentToTangentialVectorDeltaConversionTest(BaseTestCase):
+class TangentAsDeltaTest(BaseTestCase):
     def setUp(self) -> None:
         v = AbstractVector((5.5, 7.7, 1.1))
         self.tangent = TangentialVector(
@@ -142,12 +143,33 @@ class RaySegmentToTangentialVectorDeltaConversionTest(BaseTestCase):
             vector_delta=v,
         )
 
-    def test_tangent_as_tangent_delta(self) -> None:
+    def test_tangent_as_delta(self) -> None:
         """Tests tangent to tangent delta conversion."""
         self.assertPredicate2(
             tangential_vector_delta_equiv,
             tangent_as_delta(self.tangent),
             self.tangent_delta,
+        )
+
+
+class DeltaAsTangentTest(BaseTestCase):
+    def setUp(self) -> None:
+        v = AbstractVector((5.5, 7.7, 1.1))
+        self.tangent = TangentialVector(
+            point=Coordinates3D((1.1, 2.2, 3.3)),
+            vector=v,
+        )
+        self.tangent_delta = TangentialVectorDelta(
+            point_delta=AbstractVector((1.1, 2.2, 3.3)),
+            vector_delta=v,
+        )
+
+    def test_delta_as_tangent(self) -> None:
+        """Tests tangent to tangent delta conversion."""
+        self.assertPredicate2(
+            tan_vec_equiv,
+            delta_as_tangent(self.tangent_delta),
+            self.tangent,
         )
 
 
