@@ -15,10 +15,11 @@ from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, AbstractMatrix, Metric
 from nerte.values.linalg_unittest import metric_equiv
 from nerte.values.tangential_vector import TangentialVector
-from nerte.values.ray_segment import RaySegment
-from nerte.values.ray_segment_unittest import ray_segment_equiv
-from nerte.values.ray_segment_delta import RaySegmentDelta
-from nerte.values.ray_segment_delta_unittest import ray_segment_delta_equiv
+from nerte.values.tangential_vector_unittest import tan_vec_equiv
+from nerte.values.tangential_vector_delta import TangentialVectorDelta
+from nerte.values.tangential_vector_delta_unittest import (
+    tangential_vector_delta_equiv,
+)
 from nerte.values.face import Face
 from nerte.geometry.cylindircal_swirl_geometry import (
     SwirlCylindricRungeKuttaGeometry,
@@ -205,8 +206,7 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
             for s, d in zip(self.points, vectors)
         )
         self.initial_tangents = tuple(
-            self.geo.normalized(RaySegment(tangential_vector=it))
-            for it in self.tangents
+            self.geo.normalized(tan) for tan in self.tangents
         )
         self.invalid_coords = (
             Coordinates3D((0.0, 0.0, 0.0)),
@@ -226,7 +226,7 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
             ray = self.geo.ray_from_coords(point, target)
             init_tan = ray.initial_tangent()
             self.assertPredicate2(
-                ray_segment_equiv,
+                tan_vec_equiv,
                 init_tan,
                 initial_tangent,
             )
@@ -247,7 +247,7 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
             ray = self.geo.ray_from_tangent(tangent)
             init_tan = ray.initial_tangent()
             self.assertPredicate2(
-                ray_segment_equiv,
+                tan_vec_equiv,
                 init_tan,
                 initial_tangent,
             )
@@ -268,9 +268,8 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(BaseTestCase):
             Coordinates3D((1.0, math.pi - 1e-8, 0.0)),
             Coordinates3D((2.0, math.pi - 1e-8, 1.0)),
         )
-        self.rays = tuple(
-            RaySegment(tangential_vector=TangentialVector(point=c, vector=v))
-            for c in self.coords
+        self.tangents = tuple(
+            TangentialVector(point=c, vector=v) for c in self.coords
         )
         self.lengths = (
             14.0 ** 0.5,
@@ -280,8 +279,8 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(BaseTestCase):
             26.0 ** 0.5,
         )
         self.ns = tuple(v / length for length in self.lengths)
-        self.rays_normalized = tuple(
-            RaySegment(tangential_vector=TangentialVector(point=c, vector=v))
+        self.tangents_normalized = tuple(
+            TangentialVector(point=c, vector=v)
             for c, v in zip(self.coords, self.ns)
         )
         # geometry (cylindirc & euclidean)
@@ -303,27 +302,28 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(BaseTestCase):
             Coordinates3D((1.0, 0.0, +math.inf)),
             Coordinates3D((1.0, 0.0, math.nan)),
         )
-        self.invalid_rays = tuple(
-            RaySegment(tangential_vector=TangentialVector(point=c, vector=v))
-            for c in invalid_coords
+        self.invalid_tangents = tuple(
+            TangentialVector(point=c, vector=v) for c in invalid_coords
         )
 
     def test_length(self) -> None:
         """Tests vector length."""
-        for ray, length in zip(self.rays, self.lengths):
-            self.assertAlmostEqual(self.geo.length(ray), length)
-        for ray in self.invalid_rays:
+        for tangent, length in zip(self.tangents, self.lengths):
+            self.assertAlmostEqual(self.geo.length(tangent), length)
+        for tangent in self.invalid_tangents:
             with self.assertRaises(ValueError):
-                self.geo.length(ray)
+                self.geo.length(tangent)
 
     def test_normalized(self) -> None:
         """Tests vector normalization."""
-        for ray, ray_normalized in zip(self.rays, self.rays_normalized):
-            ray = self.geo.normalized(ray)
-            self.assertPredicate2(ray_segment_equiv, ray, ray_normalized)
-        for ray in self.invalid_rays:
+        for tangent, tangent_normalized in zip(
+            self.tangents, self.tangents_normalized
+        ):
+            tangent = self.geo.normalized(tangent)
+            self.assertPredicate2(tan_vec_equiv, tangent, tangent_normalized)
+        for tangent in self.invalid_tangents:
             with self.assertRaises(ValueError):
-                self.geo.normalized(ray)
+                self.geo.normalized(tangent)
 
 
 class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(BaseTestCase):
@@ -332,7 +332,9 @@ class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(BaseTestCase):
             max_ray_depth=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
         )
 
-        def geodesic_equation(ray: RaySegmentDelta) -> RaySegmentDelta:
+        def geodesic_equation(
+            ray: TangentialVectorDelta,
+        ) -> TangentialVectorDelta:
             # pylint: disable=C0103
             # TODO: revert when mypy bug was fixed
             #       see https://github.com/python/mypy/issues/2220
@@ -345,7 +347,7 @@ class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(BaseTestCase):
             v_phi = ray.vector_delta[1]
             v_z = ray.vector_delta[2]
             a = self.geo.swirl_strength()
-            return RaySegmentDelta(
+            return TangentialVectorDelta(
                 ray.vector_delta,
                 AbstractVector(
                     (
@@ -368,14 +370,14 @@ class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(BaseTestCase):
 
         self.geodesic_equation = geodesic_equation
         self.xs = (
-            RaySegmentDelta(
+            TangentialVectorDelta(
                 AbstractVector((1.0, 0.0, 0.0)), AbstractVector((0.0, 0.0, 1.0))
             ),
-            RaySegmentDelta(
+            TangentialVectorDelta(
                 AbstractVector((2.0, math.pi / 2, 1.0)),
                 AbstractVector((1.0, -2.0, 3.0)),
             ),
-            RaySegmentDelta(
+            TangentialVectorDelta(
                 AbstractVector((0.001, -math.pi / 2, -10.0)),
                 AbstractVector((1.0, -2.0, 3.0)),
             ),
@@ -386,7 +388,7 @@ class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(BaseTestCase):
         geodesic_equation = self.geo.geodesic_equation()
         for x in self.xs:
             self.assertPredicate2(
-                ray_segment_delta_equiv,
+                tangential_vector_delta_equiv,
                 geodesic_equation(x),
                 self.geodesic_equation(x),
             )

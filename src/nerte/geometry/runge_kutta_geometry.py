@@ -15,10 +15,10 @@ from nerte.values.coordinates import Coordinates3D
 from nerte.values.face import Face
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.ray_segment import RaySegment
-from nerte.values.ray_segment_delta import (
-    RaySegmentDelta,
-    ray_segment_as_delta,
-    add_ray_segment_delta,
+from nerte.values.tangential_vector_delta import (
+    TangentialVectorDelta,
+    tangent_as_delta,
+    add_tangential_vector_delta,
 )
 from nerte.values.intersection_info import IntersectionInfo, IntersectionInfos
 from nerte.values.extended_intersection_info import ExtendedIntersectionInfo
@@ -64,7 +64,9 @@ class RungeKuttaGeometry(Geometry):
         """
 
         def __init__(
-            self, geometry: "RungeKuttaGeometry", initial_tangent: RaySegment
+            self,
+            geometry: "RungeKuttaGeometry",
+            initial_tangent: TangentialVector,
         ) -> None:
             initial_tangent = geometry.normalized(initial_tangent)
             self._geometry = geometry
@@ -83,7 +85,7 @@ class RungeKuttaGeometry(Geometry):
                 f"initial_tangent={self._initial_tangent})"
             )
 
-        def initial_tangent(self) -> RaySegment:
+        def initial_tangent(self) -> TangentialVector:
             """Returs the initial tangent of the ray at its pointing point."""
             return self._initial_tangent
 
@@ -118,7 +120,7 @@ class RungeKuttaGeometry(Geometry):
                     f" {self._geometry.max_ray_depth()}."
                 )
             tangent = self._current_tangent
-            if not self._geometry.is_valid_coordinate(tangent.start()):
+            if not self._geometry.is_valid_coordinate(tangent.point):
                 raise RuntimeError(
                     f"Cannot generate next ray segment for ray pointing with"
                     f" initial tangent {self._initial_tangent}."
@@ -133,26 +135,26 @@ class RungeKuttaGeometry(Geometry):
             # Note: The smaller the step size, the better the approximation.
             tangent_delta = runge_kutta_4_delta(
                 geometry.geodesic_equation(),
-                ray_segment_as_delta(tangent),
+                tangent_as_delta(tangent),
                 geometry.step_size(),
             )
             segment = RaySegment(
                 tangential_vector=TangentialVector(
-                    point=tangent.start(),
+                    point=tangent.point,
                     vector=tangent_delta.point_delta,
                 )
             )
-            segment_length = geometry.length(segment)
+            segment_length = geometry.length(segment.tangential_vector)
             self._segments_and_lengths[self._segments_cached] = (
                 segment,
                 segment_length,
             )
-            self._current_tangent = add_ray_segment_delta(
+            self._current_tangent = add_tangential_vector_delta(
                 tangent, tangent_delta
             )
             self._segments_cached += 1
             self._cached_ray_depth += segment_length
-            if not geometry.is_valid_coordinate(self._current_tangent.start()):
+            if not geometry.is_valid_coordinate(self._current_tangent.point):
                 self._cached_ray_left_manifold = True
 
         def intersection_info(self, face: Face) -> IntersectionInfo:
@@ -257,35 +259,34 @@ class RungeKuttaGeometry(Geometry):
                 f" It is illdefined with coordinated outside the manifold."
             )
         return RungeKuttaGeometry.Ray(
-            geometry=self,
-            initial_tangent=RaySegment(tangential_vector=tangential_vector),
+            geometry=self, initial_tangent=tangential_vector
         )
 
     @abstractmethod
-    def length(self, ray: RaySegment) -> float:
+    def length(self, tangent: TangentialVector) -> float:
         # pylint: disable=W0107
         """
         Returns the length of the vector with respect to the tangential space.
 
-        :raises: ValueError if ray.point are invalid coordinates
+        :raises: ValueError if tangent.point are invalid coordinates
         """
         pass
 
-    def normalized(self, ray: RaySegment) -> RaySegment:
+    def normalized(self, tangent: TangentialVector) -> TangentialVector:
         """
         Returns the normalized vector with respect to the tangential space.
 
-        :raises: ValueError if ray.point are invalid coordinates
+        :raises: ValueError if tangent.point are invalid coordinates
         """
-        return RaySegment(
-            tangential_vector=TangentialVector(
-                point=ray.start(),
-                vector=ray.direction() / self.length(ray),
-            )
+        return TangentialVector(
+            point=tangent.point,
+            vector=tangent.vector / self.length(tangent),
         )
 
     @abstractmethod
-    def geodesic_equation(self) -> Callable[[RaySegmentDelta], RaySegmentDelta]:
+    def geodesic_equation(
+        self,
+    ) -> Callable[[TangentialVectorDelta], TangentialVectorDelta]:
         # pylint: disable=W0107
         """
         Returns the equation of motion for the geodesics encoded in a function
