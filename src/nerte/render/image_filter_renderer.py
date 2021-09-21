@@ -3,7 +3,7 @@ Module for rendering a scene with respect to a geometry.
 The data is rendered first and filters may be applied afterwards.
 """
 
-from typing import Optional, NewType, Iterable
+from typing import Optional, Iterable
 
 from abc import ABC, abstractmethod
 
@@ -18,11 +18,7 @@ from nerte.world.scene import Scene
 from nerte.geometry.geometry import Geometry
 from nerte.render.image_renderer import ImageRenderer
 from nerte.render.projection import ProjectionMode
-
-# TODO: provide proper container type
-IntersectionInfoMatrix = NewType(
-    "IntersectionInfoMatrix", list[list[IntersectionInfo]]
-)
+from nerte.util.generic_matrix import GenericMatrix
 
 
 def color_for_normalized_value(value: float) -> Color:
@@ -78,7 +74,7 @@ class Filter(ABC):
     @abstractmethod
     def apply(
         self,
-        info_matrix: IntersectionInfoMatrix,
+        info_matrix: GenericMatrix[IntersectionInfo],
     ) -> Image:
         """
         Returns color for pixel based.
@@ -112,13 +108,12 @@ class HitFilter(Filter):
             return self.color_hit()
         return color_for_miss_reason(info)
 
-    def apply(self, info_matrix: IntersectionInfoMatrix) -> Image:
-        if len(info_matrix) == 0 or len(info_matrix[0]) == 0:
+    def apply(self, info_matrix: GenericMatrix[IntersectionInfo]) -> Image:
+        width, height = info_matrix.dimensions()
+        if width == 0 or height == 0:
             raise ValueError(
                 "Cannot apply hit filter. Intersection info matrix is empty."
             )
-        width = len(info_matrix)
-        height = len(info_matrix[0])
 
         # initialize image with pink background
         image = Image.new(
@@ -129,7 +124,7 @@ class HitFilter(Filter):
         for pixel_x in range(width):
             for pixel_y in range(height):
                 pixel_location = (pixel_x, pixel_y)
-                info = info_matrix[pixel_x][pixel_y]
+                info = info_matrix[pixel_x, pixel_y]
                 pixel_color = self.color_for_info(info)
                 image.putpixel(pixel_location, pixel_color.rgb)
 
@@ -158,7 +153,7 @@ class ImageFilterRenderer(ImageRenderer):
 
         self._filter = filtr
         self.auto_apply_filter = auto_apply_filter
-        self._last_info_matrix: Optional[IntersectionInfoMatrix] = None
+        self._last_info_matrix: Optional[GenericMatrix[IntersectionInfo]] = None
 
     def has_render_data(self) -> bool:
         """Returns True, iff render was called previously."""
@@ -222,14 +217,14 @@ class ImageFilterRenderer(ImageRenderer):
 
     def render_intersection_info(
         self, scene: Scene, geometry: Geometry
-    ) -> IntersectionInfoMatrix:
+    ) -> GenericMatrix[IntersectionInfo]:
         """
         Returns matrix with intersection infos per pixel.
         """
 
         width, height = scene.camera.canvas_dimensions
         # initialize background with nan
-        info_matrix: IntersectionInfoMatrix = IntersectionInfoMatrix(
+        info_matrix = GenericMatrix[IntersectionInfo](
             [
                 [IntersectionInfos.UNINIALIZED for _ in range(height)]
                 for _ in range(width)
@@ -245,7 +240,7 @@ class ImageFilterRenderer(ImageRenderer):
                     scene.objects(),
                     pixel_location,
                 )
-                info_matrix[pixel_x][pixel_y] = pixel_info
+                info_matrix[pixel_x, pixel_y] = pixel_info
         return info_matrix
 
     def render(self, scene: Scene, geometry: Geometry) -> None:

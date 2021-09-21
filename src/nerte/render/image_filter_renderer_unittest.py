@@ -26,13 +26,13 @@ from nerte.geometry.carthesian_geometry import CarthesianGeometry
 from nerte.geometry.cylindircal_geometry import CylindricRungeKuttaGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_filter_renderer import (
-    IntersectionInfoMatrix,
     Filter,
     HitFilter,
     ImageFilterRenderer,
     color_for_miss_reason,
     color_for_normalized_value,
 )
+from nerte.util.generic_matrix import GenericMatrix
 
 
 class ColorForMissReasonTest(BaseTestCase):
@@ -102,7 +102,7 @@ class FilterImplentationTest(BaseTestCase):
             # pylint: disable=R0903
             def apply(
                 self,
-                info_matrix: IntersectionInfoMatrix,
+                info_matrix: GenericMatrix[IntersectionInfo],
             ) -> Image:
                 return Image.new(
                     mode="RGB", size=(5, 5), color=Colors.BLACK.rgb
@@ -177,7 +177,7 @@ class HitFilterApplyTest(BaseTestCase):
             IntersectionInfos.RAY_INITIALIZED_OUTSIDE_MANIFOLD,
         )
         self.info_matrices = tuple(
-            IntersectionInfoMatrix([[info]]) for info in self.infos
+            GenericMatrix[IntersectionInfo]([[info]]) for info in self.infos
         )
         self.filter = HitFilter()
 

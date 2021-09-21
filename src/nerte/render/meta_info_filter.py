@@ -11,10 +11,10 @@ from nerte.values.color import Color, Colors
 from nerte.values.intersection_info import IntersectionInfo
 from nerte.values.extended_intersection_info import ExtendedIntersectionInfo
 from nerte.render.image_filter_renderer import (
-    IntersectionInfoMatrix,
     Filter,
     color_for_normalized_value,
 )
+from nerte.util.generic_matrix import GenericMatrix
 
 
 def _clip(value: float) -> float:
@@ -79,14 +79,12 @@ class MetaInfoFilter(Filter):
                 return color_for_normalized_value(value)
         return self.color_no_meta_data
 
-    def apply(self, info_matrix: IntersectionInfoMatrix) -> Image:
-        if len(info_matrix) == 0 or len(info_matrix[0]) == 0:
+    def apply(self, info_matrix: GenericMatrix[IntersectionInfo]) -> Image:
+        width, height = info_matrix.dimensions()
+        if width == 0 or height == 0:
             raise ValueError(
-                "Cannot apply meta data filter. Intersection info matrix is"
-                " empty."
+                "Cannot apply hit filter. Intersection info matrix is empty."
             )
-        width = len(info_matrix)
-        height = len(info_matrix[0])
 
         # initialize image with pink background
         image = Image.new(
@@ -97,7 +95,7 @@ class MetaInfoFilter(Filter):
         for pixel_x in range(width):
             for pixel_y in range(height):
                 pixel_location = (pixel_x, pixel_y)
-                info = info_matrix[pixel_x][pixel_y]
+                info = info_matrix[pixel_x, pixel_y]
                 pixel_color = self.color_for_info(info)
                 image.putpixel(pixel_location, pixel_color.rgb)
 

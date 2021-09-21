@@ -13,8 +13,8 @@ from nerte.base_test_case import BaseTestCase
 from nerte.values.color import Color
 from nerte.values.intersection_info import IntersectionInfo
 from nerte.values.extended_intersection_info import ExtendedIntersectionInfo
-from nerte.render.image_filter_renderer import IntersectionInfoMatrix
 from nerte.render.meta_info_filter import MetaInfoFilter
+from nerte.util.generic_matrix import GenericMatrix
 
 
 class MetaInfoFilterConstructorTest(BaseTestCase):
@@ -124,7 +124,7 @@ class MetaInfoFilterApplyTest(BaseTestCase):
             ExtendedIntersectionInfo(ray_depth=0.3, meta_data={"key": 0.5}),
             ExtendedIntersectionInfo(ray_depth=0.3, meta_data={"key": 1.0}),
         )
-        self.info_matrix = IntersectionInfoMatrix([list(self.infos)])
+        self.info_matrix = GenericMatrix[IntersectionInfo]([list(self.infos)])
         self.filter = MetaInfoFilter(
             meta_data_key="key", min_value=0.0, max_value=1.0
         )

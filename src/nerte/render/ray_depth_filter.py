@@ -12,11 +12,11 @@ from PIL import Image
 from nerte.values.color import Color, Colors
 from nerte.values.intersection_info import IntersectionInfo
 from nerte.render.image_filter_renderer import (
-    IntersectionInfoMatrix,
     Filter,
     color_for_normalized_value,
     color_for_miss_reason,
 )
+from nerte.util.generic_matrix import GenericMatrix
 
 
 def _is_finite(mat: np.ndarray) -> np.ndarray:
@@ -146,13 +146,12 @@ class RayDepthFilter(Filter):
             return self.color_for_normalized_ray_depth_value(pixel_value)
         return color_for_miss_reason(info)
 
-    def apply(self, info_matrix: IntersectionInfoMatrix) -> Image:
-        if len(info_matrix) == 0 or len(info_matrix[0]) == 0:
+    def apply(self, info_matrix: GenericMatrix[IntersectionInfo]) -> Image:
+        width, height = info_matrix.dimensions()
+        if width == 0 or height == 0:
             raise ValueError(
-                "Cannot apply ray depth filter. Intersection info matrix is empty."
+                "Cannot apply hit filter. Intersection info matrix is empty."
             )
-        width = len(info_matrix)
-        height = len(info_matrix[0])
 
         # initialize image with pink background
         image = Image.new(
@@ -162,7 +161,7 @@ class RayDepthFilter(Filter):
         ray_depths_raw = np.full((width, height), math.nan)
         for pixel_x in range(width):
             for pixel_y in range(height):
-                info = info_matrix[pixel_x][pixel_y]
+                info = info_matrix[pixel_x, pixel_y]
                 if info.hits():
                     ray_depths_raw[pixel_x, pixel_y] = info.ray_depth()
 
@@ -172,7 +171,7 @@ class RayDepthFilter(Filter):
         for pixel_x in range(width):
             for pixel_y in range(height):
                 pixel_location = (pixel_x, pixel_y)
-                info = info_matrix[pixel_x][pixel_y]
+                info = info_matrix[pixel_x, pixel_y]
                 pixel_value = ray_depth_normalized[pixel_x, pixel_y]
                 pixel_color = self._color_for_pixel(info, pixel_value)
                 image.putpixel(pixel_location, pixel_color.rgb)

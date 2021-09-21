@@ -12,11 +12,9 @@ from nerte.base_test_case import BaseTestCase
 
 from nerte.values.color import Color
 from nerte.values.intersection_info import IntersectionInfo
-from nerte.render.image_filter_renderer import (
-    IntersectionInfoMatrix,
-    color_for_miss_reason,
-)
+from nerte.render.image_filter_renderer import color_for_miss_reason
 from nerte.render.ray_depth_filter import RayDepthFilter
+from nerte.util.generic_matrix import GenericMatrix
 
 
 class RayDepthFilterConstructorTest(BaseTestCase):
@@ -138,7 +136,7 @@ class RayDepthFilterColorForRayDepthTest(BaseTestCase):
 
 class RayDepthFilterApplyTest(BaseTestCase):
     def setUp(self) -> None:
-        self.info_matrix = IntersectionInfoMatrix(
+        self.info_matrix = GenericMatrix[IntersectionInfo](
             [
                 [
                     IntersectionInfo(ray_depth=math.e ** 0),
