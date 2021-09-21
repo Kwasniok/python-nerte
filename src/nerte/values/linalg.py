@@ -149,6 +149,9 @@ class Metric:
         self._g = matrix
         self._g_inv: Optional[AbstractMatrix] = None  # cache
 
+    def __repr__(self) -> str:
+        return repr(self._g)
+
     def matrix(self) -> AbstractMatrix:
         """Returns the metric as a matrix."""
         return self._g
