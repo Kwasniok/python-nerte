@@ -13,10 +13,12 @@ from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_delta import TangentialVectorDelta
 from nerte.values.linalg import (
     AbstractVector,
-    AbstractMatrix,
-    Metric,
     length,
-    mat_vec_mult,
+)
+from nerte.values.manifolds.cylindrical_swirl import (
+    cylindirc_swirl_metric,
+    cylindric_swirl_to_carthesian_coords,
+    carthesian_to_cylindric_swirl_vector,
 )
 from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 
@@ -25,7 +27,7 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
     """
     Represenation of a geometry in cylindircal coordinates. Geodesics are
     'swirled' around the z-axis according to the function:
-    f(r, 𝜑, z) = (r, 𝜑 + swirl_strength * r * z, z)
+    f(r, 𝜑, z) = (r, 𝜑 + swirl * r * z, z)
     """
 
     def __init__(
@@ -33,17 +35,17 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
         max_ray_depth: float,
         step_size: float,
         max_steps: int,
-        swirl_strength: float,
+        swirl: float,
     ):
         RungeKuttaGeometry.__init__(self, max_ray_depth, step_size, max_steps)
 
-        if not -math.inf < swirl_strength < math.inf:
+        if not -math.inf < swirl < math.inf:
             raise ValueError(
-                f"Cannot construct swirl cylindirc Runge-Kutta geometry."
-                f" swirl_strength must be a real number (not {swirl_strength})."
+                f"Cannot construct cylindirc swirl Runge-Kutta geometry."
+                f" Swirl={swirl} must be finite."
             )
 
-        self._swirl_strength = swirl_strength
+        self._swirl = swirl
 
         def geodesic_equation(
             ray: TangentialVectorDelta,
@@ -58,7 +60,7 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
             v_r = ray.vector_delta[0]
             v_phi = ray.vector_delta[1]
             v_z = ray.vector_delta[2]
-            a = self.swirl_strength()
+            a = self.swirl()
             return TangentialVectorDelta(
                 ray.vector_delta,
                 AbstractVector(
@@ -82,9 +84,9 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
 
         self._geodesic_equation = geodesic_equation
 
-    def swirl_strength(self) -> float:
+    def swirl(self) -> float:
         """Returns the swirl strength."""
-        return self._swirl_strength
+        return self._swirl
 
     def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
         # pylint: disable=C0103
@@ -113,12 +115,14 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
         # convert the direction then back to the original coordinates
         # Note: This strategy is possible since the underlying geometry is
         #       curvature-free (Ricci scalar is 0).
-        start_flat = self._to_flat_coordinates(start)
-        target_flat = self._to_flat_coordinates(target)
+        start_flat = cylindric_swirl_to_carthesian_coords(self._swirl, start)
+        target_flat = cylindric_swirl_to_carthesian_coords(self._swirl, target)
         start_flat_vec = coordinates_as_vector(start_flat)
         target_flat_vec = coordinates_as_vector(target_flat)
         delta_flat = target_flat_vec - start_flat_vec
-        direction = mat_vec_mult(self._to_flat_jacobian(start), delta_flat)
+        direction = carthesian_to_cylindric_swirl_vector(
+            self._swirl, start_flat, delta_flat
+        )
         tangent = TangentialVector(point=start, vector=direction)
         return RungeKuttaGeometry.Ray(geometry=self, initial_tangent=tangent)
 
@@ -128,76 +132,10 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
                 f"Cannot calculate length of tangential vector {tangent}."
                 f" Coordinates are outside of the manifold."
             )
-        metric = self.metric(tangent.point)
+        metric = cylindirc_swirl_metric(self._swirl, tangent.point)
         return length(tangent.vector, metric=metric)
 
     def geodesic_equation(
         self,
     ) -> Callable[[TangentialVectorDelta], TangentialVectorDelta]:
         return self._geodesic_equation
-
-    def metric(self, coords: Coordinates3D) -> Metric:
-        # pylint: disable=R0201,C0103
-        """Returns the local metric for the given coordinates."""
-        r, _, _ = coords
-        return Metric(
-            AbstractMatrix(
-                AbstractVector((1, 0, 0)),
-                AbstractVector((0, r ** 2, 0)),
-                AbstractVector((0, 0, 1)),
-            )
-        )
-
-    def _to_flat_coordinates(self, coords: Coordinates3D) -> Coordinates3D:
-        """
-        Returns coordinated transformed to a special domain in which geodesics
-        are staright lines - i.e. into flat space.
-
-        Note: This is possible since the underlying geometry is curvature-free.
-        """
-        # pylint: disable=C0103
-        # TODO: revert when mypy bug was fixed
-        #       see https://github.com/python/mypy/issues/2220
-        # r, phi, z = coords
-        r = coords[0]
-        phi = coords[1]
-        z = coords[2]
-        a = self.swirl_strength()
-        return Coordinates3D(
-            (r * math.cos(phi + a * r * z), r * math.sin(phi + a * r * z), z)
-        )
-
-    def _to_flat_jacobian(self, coords: Coordinates3D) -> AbstractMatrix:
-        """
-        Returns the (local) Jacobian matrix for the transformation to the flat
-        domain.
-
-        :see: _to_flat_coordinates
-        """
-        # pylint: disable=C0103
-        # TODO: revert when mypy bug was fixed
-        #       see https://github.com/python/mypy/issues/2220
-        # r, phi, z = coords
-        r = coords[0]
-        phi = coords[1]
-        z = coords[2]
-        a = self.swirl_strength()
-        return AbstractMatrix(
-            AbstractVector(
-                (
-                    math.cos(a * r * z + phi)
-                    - a * r * z * math.sin(a * r * z + phi),
-                    -(r * math.sin(a * r * z + phi)),
-                    -(a * r ** 2 * math.sin(a * r * z + phi)),
-                )
-            ),
-            AbstractVector(
-                (
-                    a * r * z * math.cos(a * r * z + phi)
-                    + math.sin(a * r * z + phi),
-                    r * math.cos(a * r * z + phi),
-                    a * r ** 2 * math.cos(a * r * z + phi),
-                )
-            ),
-            AbstractVector((0, 0, 1)),
-        )

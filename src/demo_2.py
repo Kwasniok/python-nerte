@@ -150,7 +150,7 @@ def main() -> None:
         max_ray_depth=math.inf,
         step_size=0.1,
         max_steps=50,
-        swirl_strength=5.0,
+        swirl=5.0,
     )
 
     render(

@@ -165,7 +165,7 @@ def main() -> None:
         max_ray_depth=math.inf,
         step_size=0.125,
         max_steps=max_steps,
-        swirl_strength=0.1,
+        swirl=0.1,
     )
 
     output_path = "../images"
