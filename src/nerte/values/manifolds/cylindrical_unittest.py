@@ -139,6 +139,7 @@ class CylindricalCoordinatesTransfomrationTest(BaseTestCase):
             (2.0 * math.sqrt(1 / 2), 2.0 * math.sqrt(1 / 2), 3.0)
         )
         self.invalid_carth_coords = (
+            Coordinates3D((0.0, 0.0, 1.0)),
             Coordinates3D((-math.inf, 0.0, 0.0)),
             Coordinates3D((math.inf, 0.0, 0.0)),
             Coordinates3D((0.0, -math.inf, 0.0)),
@@ -155,7 +156,7 @@ class CylindricalCoordinatesTransfomrationTest(BaseTestCase):
             self.cylin_coords,
         )
         for coords in self.invalid_carth_coords:
-            with self.assertRaises(AssertionError):
+            with self.assertRaises(ValueError):
                 carthesian_to_cylindric_coords(coords)
 
     def test_cylindric_to_carthesian_coords(self) -> None:
@@ -166,7 +167,7 @@ class CylindricalCoordinatesTransfomrationTest(BaseTestCase):
             self.carth_coords,
         )
         for coords in self.invalid_cylin_coords:
-            with self.assertRaises(AssertionError):
+            with self.assertRaises(ValueError):
                 cylindric_to_carthesian_coords(coords)
 
 
@@ -206,6 +207,7 @@ class CylindricalVectorTransfomrationTest(BaseTestCase):
             AbstractVector((5.0, 7.0, 11.0)),
         )
         self.invalid_carth_coords = (
+            Coordinates3D((0.0, 0.0, 1.0)),
             Coordinates3D((-math.inf, 0.0, 0.0)),
             Coordinates3D((math.inf, 0.0, 0.0)),
             Coordinates3D((0.0, -math.inf, 0.0)),
@@ -223,7 +225,7 @@ class CylindricalVectorTransfomrationTest(BaseTestCase):
                 cylin_vec,
             )
         for coords, vec in zip(self.invalid_carth_coords, self.carth_vecs):
-            with self.assertRaises(AssertionError):
+            with self.assertRaises(ValueError):
                 carthesian_to_cylindric_vector(coords, vec)
 
     def test_cylindric_to_carthesian_vector(self) -> None:
@@ -235,7 +237,7 @@ class CylindricalVectorTransfomrationTest(BaseTestCase):
                 carth_vec,
             )
         for coords, vec in zip(self.invalid_cylin_coords, self.cylin_vecs):
-            with self.assertRaises(AssertionError):
+            with self.assertRaises(ValueError):
                 cylindric_to_carthesian_vector(coords, vec)
 
     def test_carthesian_to_cylindric_vector_inversion(self) -> None:
@@ -310,6 +312,7 @@ class CylindricalTangentialVectorTransfomrationTest(BaseTestCase):
             TangentialVector(point=carth_coords, vector=v) for v in carth_vecs
         )
         invalid_carth_coords = (
+            Coordinates3D((0.0, 0.0, 1.0)),
             Coordinates3D((-math.inf, 0.0, 0.0)),
             Coordinates3D((math.inf, 0.0, 0.0)),
             Coordinates3D((0.0, -math.inf, 0.0)),
@@ -333,7 +336,7 @@ class CylindricalTangentialVectorTransfomrationTest(BaseTestCase):
                 cylin_tan,
             )
         for carth_tan in self.invalid_carth_tangents:
-            with self.assertRaises(AssertionError):
+            with self.assertRaises(ValueError):
                 carthesian_to_cylindric_tangential_vector(carth_tan)
 
     def test_cylindric_to_carthesian_tangential_vector(self) -> None:
@@ -347,7 +350,7 @@ class CylindricalTangentialVectorTransfomrationTest(BaseTestCase):
                 carth_tan,
             )
         for cylin_tan in self.invalid_cylin_tangents:
-            with self.assertRaises(AssertionError):
+            with self.assertRaises(ValueError):
                 cylindric_to_carthesian_tangential_vector(cylin_tan)
 
     def test_carthesian_to_cylindric_inversion(self) -> None:

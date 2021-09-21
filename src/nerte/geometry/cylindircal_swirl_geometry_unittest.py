@@ -151,8 +151,12 @@ class SwirlCylindricRungeKuttaGeometryIsValidCoordinateTest(BaseTestCase):
         self.valid_coords = (
             Coordinates3D((1.0, 0.0, 0.0)),
             Coordinates3D((1.0, 0.0, -1.0)),
-            Coordinates3D((1.0, -math.pi + 0.001, -1e8)),
-            Coordinates3D((1.0, +math.pi - 0.001, +1e8)),
+            Coordinates3D((1.0, -math.pi + 1e-3, 0.0)),
+            Coordinates3D((1.0, +math.pi - 1e-3, 0.0)),
+            Coordinates3D((1.0, -math.pi + 1e-3 - 2.0, 2.0)),
+            Coordinates3D((1.0, +math.pi - 1e-3 - 2.0, 2.0)),
+            Coordinates3D((1.0, -math.pi + 1e-3 + 2.0, -2.0)),
+            Coordinates3D((1.0, +math.pi - 1e-3 + 2.0, -2.0)),
         )
         self.invalid_coords = (
             Coordinates3D((0.0, 0.0, 0.0)),
@@ -188,15 +192,15 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
         )
         self.targets = (
             Coordinates3D((1.0, math.pi / 2, 0.0)),
-            Coordinates3D((2.0, -math.pi * 3 / 4, 3.0)),
+            Coordinates3D((2.0, -math.pi * 3 / 4, 1.0)),
         )
         vectors = (
             AbstractVector((-1.0, 1.0, 0.0)),
             AbstractVector(
                 (
-                    -1 - 2 * math.sin(12),
-                    2 * (-3 + math.cos(12)),
-                    3,
+                    -1 - 2 * math.sin(4),
+                    -4 * math.sin(2) ** 2,
+                    1,
                 )
             ),
         )
@@ -211,6 +215,10 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
             Coordinates3D((0.0, 0.0, 0.0)),
             Coordinates3D((1.0, -math.pi, 0.0)),
             Coordinates3D((1.0, +math.pi, 0.0)),
+            Coordinates3D((1.0, -math.pi - 2.0, 1.0)),
+            Coordinates3D((1.0, +math.pi - 2.0, 1.0)),
+            Coordinates3D((1.0, -math.pi + 2.0, -1.0)),
+            Coordinates3D((1.0, +math.pi + 2.0, -1.0)),
         )
         self.invalid_tangents = tuple(
             TangentialVector(point=c, vector=vectors[0])
@@ -229,6 +237,9 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
                 init_tan,
                 initial_tangent,
             )
+
+    def test_ray_from_coords_invalid_values(self) -> None:
+        """Tests ray from coordinates raises."""
         # invalid coordinates
         for invalid_coords in self.invalid_coords:
             with self.assertRaises(ValueError):
@@ -250,6 +261,9 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
                 init_tan,
                 initial_tangent,
             )
+
+    def test_ray_from_tangent_invalid_values(self) -> None:
+        """Tests ray from tangent raises."""
         for tangent in self.invalid_tangents:
             with self.assertRaises(ValueError):
                 self.geo.ray_from_tangent(tangent)
@@ -372,11 +386,11 @@ class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(BaseTestCase):
                 AbstractVector((1.0, 0.0, 0.0)), AbstractVector((0.0, 0.0, 1.0))
             ),
             TangentialVectorDelta(
-                AbstractVector((2.0, math.pi / 2, 1.0)),
+                AbstractVector((2.0, math.pi / 2 - 2.0, 1.0)),
                 AbstractVector((1.0, -2.0, 3.0)),
             ),
             TangentialVectorDelta(
-                AbstractVector((0.001, -math.pi / 2, -10.0)),
+                AbstractVector((0.1, -math.pi / 2 + 1, -10.0)),
                 AbstractVector((1.0, -2.0, 3.0)),
             ),
         )

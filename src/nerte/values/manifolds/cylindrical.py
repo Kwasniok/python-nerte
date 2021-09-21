@@ -21,10 +21,20 @@ from nerte.values.util.convert import vector_as_coordinates
 
 
 def cylindirc_metric(coords: Coordinates3D) -> Metric:
-    # pylint: disable=W0613
     """Returns the local metric for the given coordinates."""
     # pylint: disable=C0103
-    r, _, _ = coords
+    r, phi, z = coords
+    if (
+        not 0 < r < math.inf
+        or not -math.pi < phi < math.pi
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot generate matric for cylindric coordinates"
+            f" at (r, phi, z)={coords}."
+            f" Coordinate values must be restricted to "
+            f" 0 < r < inf, -pi < phi < pi, -inf < z inf."
+        )
     return Metric(
         AbstractMatrix(
             AbstractVector((1, 0, 0)),
@@ -45,7 +55,18 @@ def cylindirc_geodesic_equation(
     For tangent (x, dx/d𝜆) it returns (dx/d𝜆, d^2x/d𝜆^2).
     """
     # pylint: disable=C0103
-    r, _, _ = tangent.point
+    r, phi, z = tangent.point
+    if (
+        not 0 < r < math.inf
+        or not -math.pi < phi < math.pi
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot generate geodesic equation for cylindric"
+            f" coordinates at (r, alpha, z)={tangent.point}."
+            f" Coordinate values must be restricted to "
+            f" 0 < r < inf, -pi < phi < pi, -inf < z inf."
+        )
     v_r, v_phi, _ = tangent.vector[0], tangent.vector[1], tangent.vector[2]
     return TangentialVectorDelta(
         tangent.vector,
@@ -65,14 +86,28 @@ def carthesian_to_cylindric_coords(coords: Coordinates3D) -> Coordinates3D:
 
     :param coords: carthesian coordinates (x, y, z)
                    where -inf < x < inf and -inf < y < inf and -inf < z < inf
+                   and 0 < r = sqrt(x^2 + y^2)
     """
     # pylint:disable=C0103
     x, y, z = coords
-    assert -math.inf < x < math.inf, f"{x} is out of bounds"
-    assert -math.inf < y < math.inf, f"{y} is out of bounds"
-    assert -math.inf < z < math.inf, f"{z} is out of bounds"
+    if (
+        not -math.inf < x < math.inf
+        or not -math.inf < y < math.inf
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot convert carthesian coordinates={coords} to cylindric"
+            f" coordinates. All values must be finte."
+        )
     r = math.sqrt(x ** 2 + y ** 2)
     phi = math.atan2(y, x)
+    if r == 0.0:
+        raise ValueError(
+            f"Cannot convert carthesian coordinates={coords} to cylindric"
+            f" coordinates. All values must be finte."
+            f" and all cylindrical coordinates are restricted by"
+            f" 0 < r but r={r}."
+        )
     return Coordinates3D((r, phi, z))
 
 
@@ -85,9 +120,16 @@ def cylindric_to_carthesian_coords(coords: Coordinates3D) -> Coordinates3D:
     """
     # pylint:disable=C0103
     r, phi, z = coords
-    assert 0 < r < math.inf, f"{r} is out of bounds"
-    assert -math.pi < phi < math.pi, f"{phi} is out of bounds"
-    assert -math.inf < z < math.inf, f"{z} is out of bounds"
+    if (
+        not 0 < r < math.inf
+        or not -math.pi < phi < math.pi
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot convert cylindric coordinates at (r, phi, z)={coords} to"
+            f" carthesian coordinates. Coordinate values must be restricted to "
+            f" 0 < r < inf, -pi < phi < pi, -inf < z inf."
+        )
     x = r * math.cos(phi)
     y = r * math.sin(phi)
     return Coordinates3D((x, y, z))
@@ -107,11 +149,26 @@ def carthesian_to_cylindric_vector(
     """
     # pylint:disable=C0103
     x, y, z = coords
-    assert -math.inf < x < math.inf, f"{x} is out of bounds"
-    assert -math.inf < y < math.inf, f"{y} is out of bounds"
-    assert -math.inf < z < math.inf, f"{z} is out of bounds"
+    if (
+        not -math.inf < x < math.inf
+        or not -math.inf < y < math.inf
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot convert carthesian vector={vec} @ coordinates"
+            f" (x,y,z)={coords} to cylindric vector."
+            f" All carthesian coordinate values must be finte."
+        )
     r = math.sqrt(x ** 2 + y ** 2)
     phi = math.atan2(y, x)
+    if r == 0.0 or not -math.pi < phi < math.pi:
+        raise ValueError(
+            f"Cannot convert carthesian vector={vec} @ coordinates"
+            f" (x,y,z)={coords} to cylindric vector."
+            f" All cylindrical coordinates are restricted by"
+            f" 0 < r, -pi < phi < pi."
+            f" Here r={r} and phi={phi}."
+        )
     jacobian = AbstractMatrix(
         AbstractVector((math.cos(phi), math.sin(phi), 0.0)),
         AbstractVector((-math.sin(phi) / r, math.cos(phi) / r, 0.0)),
@@ -134,9 +191,17 @@ def cylindric_to_carthesian_vector(
     """
     # pylint:disable=C0103
     r, phi, z = coords
-    assert 0 < r < math.inf, f"{r} is out of bounds"
-    assert -math.pi < phi < math.pi, f"{phi} is out of bounds"
-    assert -math.inf < z < math.inf, f"{z} is out of bounds"
+    if (
+        not 0 < r < math.inf
+        or not -math.pi < phi < math.pi
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot convert cylindric vector={vec} @ coordinates"
+            f" (r, phi, z)={coords} to carthesian vector."
+            f" Coordinate values must be restricted to "
+            f" 0 < r < inf, -pi < phi < pi, -inf < z inf."
+        )
     jacobian = AbstractMatrix(
         AbstractVector((math.cos(phi), -r * math.sin(phi), 0.0)),
         AbstractVector((math.sin(phi), r * math.cos(phi), 0.0)),
@@ -154,11 +219,26 @@ def carthesian_to_cylindric_tangential_vector(
     """
     # pylint:disable=C0103
     x, y, z = tangential_vector.point
-    assert -math.inf < x < math.inf, f"{x} is out of bounds"
-    assert -math.inf < y < math.inf, f"{y} is out of bounds"
-    assert -math.inf < z < math.inf, f"{z} is out of bounds"
+    if (
+        not -math.inf < x < math.inf
+        or not -math.inf < y < math.inf
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot convert carthesian tangential vector={tangential_vector}"
+            f" to cylindric tangential vector."
+            f" All carthesian coordinate values must be finte."
+        )
     r = math.sqrt(x ** 2 + y ** 2)
     phi = math.atan2(y, x)
+    if r == 0.0 or not -math.pi < phi < math.pi:
+        raise ValueError(
+            f"Cannot convert carthesian tangential vector={tangential_vector}"
+            f" to cylindric tangential vector."
+            f" All cylindrical coordinates are restricted by"
+            f" 0 < r, -pi < phi < pi."
+            f" Here r={r} and phi={phi}."
+        )
     jacobian = AbstractMatrix(
         AbstractVector((math.cos(phi), math.sin(phi), 0.0)),
         AbstractVector((-math.sin(phi) / r, math.cos(phi) / r, 0.0)),
@@ -179,9 +259,17 @@ def cylindric_to_carthesian_tangential_vector(
     """
     # pylint:disable=C0103
     r, phi, z = tangential_vector.point
-    assert 0 < r < math.inf, f"r={r} is out of bounds"
-    assert -math.pi < phi < math.pi, f"phi={phi} is out of bounds"
-    assert -math.inf < z < math.inf, f"z={z} is out of bounds"
+    if (
+        not 0 < r < math.inf
+        or not -math.pi < phi < math.pi
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot convert cylindric tangential vector={tangential_vector}"
+            f" to carthesian tangential vector."
+            f" Coordinate values must be restricted to "
+            f" 0 < r < inf, -pi < phi < pi, -inf < z inf."
+        )
     x = r * math.cos(phi)
     y = r * math.sin(phi)
     jacobian = AbstractMatrix(

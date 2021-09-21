@@ -21,11 +21,23 @@ from nerte.values.util.convert import vector_as_coordinates
 
 
 def cylindirc_swirl_metric(swirl: float, coords: Coordinates3D) -> Metric:
-    # pylint: disable=W0613
     """Returns the local metric for the given coordinates."""
     # pylint: disable=C0103
-    r, _, z = coords
     a = swirl
+    r, alpha, z = coords
+    # swirl
+    phi = alpha + a * r * z
+    if (
+        not 0 < r < math.inf
+        or not -math.pi < phi < math.pi
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot generate matric for cylindric swirl={swirl} coordinates"
+            f" at (r, alpha, z)={coords}."
+            f" Coordinate values must be restricted to "
+            f" 0 < r < inf, -pi < alpha + swirl * r * z < pi, -inf < z inf."
+        )
     return Metric(
         AbstractMatrix(
             AbstractVector(
@@ -51,23 +63,36 @@ def cylindirc_swirl_geodesic_equation(
     For tangent (x, dx/d𝜆) it returns (dx/d𝜆, d^2x/d𝜆^2).
     """
     # pylint: disable=C0103
-    r, _, z = tangent.point
-    v_r, v_phi, v_z = tangent.vector[0], tangent.vector[1], tangent.vector[2]
     a = swirl
+    r, alpha, z = tangent.point
+    # swirl
+    phi = alpha + a * r * z
+    if (
+        not 0 < r < math.inf
+        or not -math.pi < phi < math.pi
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot generate geodesic equation for cylindric swirl={swirl}"
+            f" coordinates at (r, alpha, z)={tangent.point}."
+            f" Coordinate values must be restricted to "
+            f" 0 < r < inf, -pi < alpha + swirl * r * z < pi, -inf < z inf."
+        )
+    v_r, v_alpha, v_z = tangent.vector[0], tangent.vector[1], tangent.vector[2]
     return TangentialVectorDelta(
         tangent.vector,
         AbstractVector(
             (
-                r * (a * z * v_r + a * r * v_z + v_phi) ** 2,
+                r * (a * z * v_r + a * r * v_z + v_alpha) ** 2,
                 -(
-                    (2 * v_r * v_phi) / r
-                    + 2 * a ** 2 * r * v_phi * z * (r * v_z + v_r * z)
+                    (2 * v_r * v_alpha) / r
+                    + 2 * a ** 2 * r * v_alpha * z * (r * v_z + v_r * z)
                     + a ** 3 * r * z * (r * v_z + v_r * z) ** 2
                     + a
                     * (
                         4 * v_r * v_z
                         + (2 * v_r ** 2 * z) / r
-                        + r * v_phi ** 2 * z
+                        + r * v_alpha ** 2 * z
                     )
                 ),
                 0,
@@ -85,19 +110,32 @@ def carthesian_to_cylindric_swirl_coords(
 
     :param coords: carthesian coordinates (x, y, z)
                    where -inf < x < inf and -inf < y < inf and -inf < z < inf
+                   and 0 < r = sqrt(x^2 + y^2)
     """
     # pylint:disable=C0103
-    x, y, z = coords
     a = swirl
-    assert -math.inf < x < math.inf, f"{x} is out of bounds"
-    assert -math.inf < y < math.inf, f"{y} is out of bounds"
-    assert -math.inf < z < math.inf, f"{z} is out of bounds"
+    x, y, z = coords
+    if (
+        not -math.inf < x < math.inf
+        or not -math.inf < y < math.inf
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot convert carthesian coordinates={coords} to cylindric swirl"
+            f" coordinates. All values must be finte."
+        )
     # from cathesian
     r = math.sqrt(x ** 2 + y ** 2)
     phi = math.atan2(y, x)
+    if r == 0.0:
+        raise ValueError(
+            f"Cannot convert carthesian coordinates={coords} to cylindric swirl"
+            f" coordinates. All cylindrical coordinates are restricted by"
+            f" 0 < r but r={r}."
+        )
     # deswirl
-    phi -= a * r * z
-    return Coordinates3D((r, phi, z))
+    alpha = phi - a * r * z
+    return Coordinates3D((r, alpha, z))
 
 
 def cylindric_swirl_to_carthesian_coords(
@@ -108,16 +146,24 @@ def cylindric_swirl_to_carthesian_coords(
     Returns carthesian coordinates obtained from cylindric swirl coordinates.
 
     :param coords: cylindric swirl coordinates (r, phi, z)
-                   where 0 < r < inf and -pi < phi < pi and -inf < z < inf
+                   where 0 < r < inf and -pi < alpha + swirl * r * z < pi and -inf < z < inf
     """
     # pylint:disable=C0103
-    r, phi, z = coords
     a = swirl
-    assert 0 < r < math.inf, f"{r} is out of bounds"
-    assert -math.pi < phi < math.pi, f"{phi} is out of bounds"
-    assert -math.inf < z < math.inf, f"{z} is out of bounds"
+    r, alpha, z = coords
     # swirl
-    phi += a * r * z
+    phi = alpha + a * r * z
+    if (
+        not 0 < r < math.inf
+        or not -math.pi < phi < math.pi
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot convert cylindric swirl={swirl} coordinates"
+            f" at (r, alpha, z)={coords} to carthesian coordinates."
+            f" Coordinate values must be restricted to "
+            f" 0 < r < inf, -pi < alpha + swirl * r * z < pi, -inf < z inf."
+        )
     # to carthesian
     x = r * math.cos(phi)
     y = r * math.sin(phi)
@@ -133,20 +179,36 @@ def carthesian_to_cylindric_swirl_vector(
 
     :param coords: carthesian coordinates (x, y, z)
                    where -inf < x < inf and -inf < y < inf and -inf < z < inf
+                   and 0 < r = sqrt(x^2 + y^2)
     :param vec: vector in tangential vector space of the carthesian coordinates
                 (x, y, z) such that vec = e_x * x + e_y * y + e_z * z
     """
     # pylint:disable=C0103
-    x, y, z = coords
     a = swirl
-    assert -math.inf < x < math.inf, f"{x} is out of bounds"
-    assert -math.inf < y < math.inf, f"{y} is out of bounds"
-    assert -math.inf < z < math.inf, f"{z} is out of bounds"
+    x, y, z = coords
+    if (
+        not -math.inf < x < math.inf
+        or not -math.inf < y < math.inf
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot convert carthesian vector={vec} @ coordinates"
+            f" (x,y,z)={coords} to cylindric swirl vector."
+            f" All carthesian coordinate values must be finte."
+        )
     r = math.sqrt(x ** 2 + y ** 2)
     phi = math.atan2(y, x)
+    if r == 0.0 or not -math.pi < phi < math.pi:
+        raise ValueError(
+            f"Cannot convert carthesian vector={vec} @ coordinates"
+            f" (x,y,z)={coords} to cylindric swirl vector."
+            f" All cylindrical coordinates are restricted by"
+            f" 0 < r, -pi < phi < pi."
+            f" Here r={r} and phi={phi}."
+        )
     # frequent values
     arz = a * r * z
-    alpha = phi + arz
+    alpha = phi - arz  # deswirl
     cos_alpha = math.cos(alpha)
     sin_alpha = math.sin(alpha)
     # jacobian
@@ -171,20 +233,29 @@ def cylindric_swirl_to_carthesian_vector(
     Returns vector in tangential vector space of carthesian coordinates from
     a vector in tangential vector space in cylindirc swirl  coordinates.
 
-    :param coords: cylindrical coordinates (r, phi, z)
-                   where 0 < r < inf and -pi < phi < pi and -inf < z < inf
+    :param coords: cylindrical coordinates (r, alpha, z)
+                   where 0 < r < inf and -pi < alpha + swirl * r * z < pi
+                   and -inf < z < inf
     :param vec: vector in tangential vector space of the cylindircal coordinates
                 (r, phi, z) such that vec = e_r * r + e_phi * phi + e_z * z
     """
     # pylint:disable=C0103
-    r, phi, z = coords
     a = swirl
-    assert 0 < r < math.inf, f"{r} is out of bounds"
-    assert -math.pi < phi < math.pi, f"{phi} is out of bounds"
-    assert -math.inf < z < math.inf, f"{z} is out of bounds"
-    # frequent values
-    arz = a * r * z
-    alpha = phi + arz
+    r, alpha, z = coords
+    arz = a * r * z  # frequent used
+    phi = alpha + arz  # swirl
+    if (
+        not 0 < r < math.inf
+        or not -math.pi < phi < math.pi
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot convert cylindric swirl={swirl} vector={vec} @ coordinates"
+            f" (r, alpha, z)={coords} to carthesian vector."
+            f" Coordinate values must be restricted to "
+            f" 0 < r < inf, -pi < alpha + swirl * r * z < pi, -inf < z < inf."
+        )
+    # frequent values (continuation)
     cos_alpha = math.cos(alpha)
     sin_alpha = math.sin(alpha)
     # jacobian
@@ -217,16 +288,31 @@ def carthesian_to_cylindric_swirl_tangential_vector(
     coordinates.
     """
     # pylint:disable=C0103
-    x, y, z = tangential_vector.point
     a = swirl
-    assert -math.inf < x < math.inf, f"{x} is out of bounds"
-    assert -math.inf < y < math.inf, f"{y} is out of bounds"
-    assert -math.inf < z < math.inf, f"{z} is out of bounds"
+    x, y, z = tangential_vector.point
+    if (
+        not -math.inf < x < math.inf
+        or not -math.inf < y < math.inf
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot convert carthesian tangential vector={tangential_vector}"
+            f" to cylindric swirl tangential vector."
+            f" All carthesian coordinate values must be finte."
+        )
     r = math.sqrt(x ** 2 + y ** 2)
     phi = math.atan2(y, x)
+    if r == 0.0 or not -math.pi < phi < math.pi:
+        raise ValueError(
+            f"Cannot convert carthesian tangential vector={tangential_vector}"
+            f" to cylindric tangential vector."
+            f" All cylindrical coordinates are restricted by"
+            f" 0 < r, -pi < phi < pi."
+            f" Here r={r} and phi={phi}."
+        )
     # frequent values
     arz = a * r * z
-    alpha = phi + arz
+    alpha = phi - arz  # deswirl
     cos_alpha = math.cos(alpha)
     sin_alpha = math.sin(alpha)
     # jacobian
@@ -256,16 +342,24 @@ def cylindric_swirl_to_carthesian_tangential_vector(
     coordinates.
     """
     # pylint:disable=C0103
-    r, phi, z = tangential_vector.point
     a = swirl
-    assert 0 < r < math.inf, f"r={r} is out of bounds"
-    assert -math.pi < phi < math.pi, f"phi={phi} is out of bounds"
-    assert -math.inf < z < math.inf, f"z={z} is out of bounds"
+    r, alpha, z = tangential_vector.point
+    arz = a * r * z  # frequently used
+    phi = alpha + arz  # swirl
+    if (
+        not 0 < r < math.inf
+        or not -math.pi < phi < math.pi
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot convert cylindric swirl={swirl} tangential vector"
+            f"={tangential_vector} to carthesian tangential vector."
+            f" Coordinate values must be restricted to "
+            f" 0 < r < inf, -pi < alpha + swirl * r * z < pi, -inf < z inf."
+        )
     x = r * math.cos(phi)
     y = r * math.sin(phi)
-    # frequent values
-    arz = a * r * z
-    alpha = phi + arz
+    # frequent values (continuation)
     cos_alpha = math.cos(alpha)
     sin_alpha = math.sin(alpha)
     # jacobian

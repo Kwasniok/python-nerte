@@ -10,13 +10,16 @@ import math
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.util.convert import coordinates_as_vector
 from nerte.values.tangential_vector import TangentialVector
-from nerte.values.tangential_vector_delta import TangentialVectorDelta
+from nerte.values.tangential_vector_delta import (
+    TangentialVectorDelta,
+    delta_as_tangent,
+)
 from nerte.values.linalg import (
-    AbstractVector,
     length,
 )
 from nerte.values.manifolds.cylindrical_swirl import (
     cylindirc_swirl_metric,
+    cylindirc_swirl_geodesic_equation,
     cylindric_swirl_to_carthesian_coords,
     carthesian_to_cylindric_swirl_vector,
 )
@@ -47,42 +50,14 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
 
         self._swirl = swirl
 
-        def geodesic_equation(
-            ray: TangentialVectorDelta,
+        def _geodesic_equation(
+            tan: TangentialVectorDelta,
         ) -> TangentialVectorDelta:
-            # pylint: disable=C0103
-            # TODO: revert when mypy bug was fixed
-            #       see https://github.com/python/mypy/issues/2220
-            # r, _, z = ray.point_delta
-            # v_r, v_phi, v_z = ray.vector_delta
-            r = ray.point_delta[0]
-            z = ray.point_delta[2]
-            v_r = ray.vector_delta[0]
-            v_phi = ray.vector_delta[1]
-            v_z = ray.vector_delta[2]
-            a = self.swirl()
-            return TangentialVectorDelta(
-                ray.vector_delta,
-                AbstractVector(
-                    (
-                        r * (a * z * v_r + a * r * v_z + v_phi) ** 2,
-                        -(
-                            (2 * v_r * v_phi) / r
-                            + 2 * a ** 2 * r * v_phi * z * (r * v_z + v_r * z)
-                            + a ** 3 * r * z * (r * v_z + v_r * z) ** 2
-                            + a
-                            * (
-                                4 * v_r * v_z
-                                + (2 * v_r ** 2 * z) / r
-                                + r * v_phi ** 2 * z
-                            )
-                        ),
-                        0,
-                    )
-                ),
+            return cylindirc_swirl_geodesic_equation(
+                self._swirl, delta_as_tangent(tan)
             )
 
-        self._geodesic_equation = geodesic_equation
+        self._geodesic_equation = _geodesic_equation
 
     def swirl(self) -> float:
         """Returns the swirl strength."""
@@ -90,7 +65,9 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
 
     def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
         # pylint: disable=C0103
-        r, phi, z = coordinates
+        a = self._swirl
+        r, alpha, z = coordinates
+        phi = alpha + a * r * z  # swirl
         return (
             0 < r < math.inf
             and -math.pi < phi < math.pi
@@ -100,16 +77,6 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
     def ray_from_coords(
         self, start: Coordinates3D, target: Coordinates3D
     ) -> RungeKuttaGeometry.Ray:
-        if not self.is_valid_coordinate(start):
-            raise ValueError(
-                f"Cannot create ray from coordinates."
-                f" Start coordinates {start} are invalid."
-            )
-        if not self.is_valid_coordinate(target):
-            raise ValueError(
-                f"Cannot create ray from coordinates."
-                f" Target coordinates {target} are invalid."
-            )
         # convert coordinates to flat space coordinates and
         # calculate the direction there (difference of coordinates)
         # convert the direction then back to the original coordinates

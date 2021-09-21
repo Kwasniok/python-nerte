@@ -52,13 +52,13 @@ from nerte.values.manifolds.cylindrical_swirl import (
 
 class CylindircSwirlMetricTest(BaseTestCase):
     def setUp(self) -> None:
-        self.coords = (
-            Coordinates3D((2.0, 0.0, 0.0)),
-            Coordinates3D((2.0, math.pi * 3 / 4, 7.0)),
-            Coordinates3D((5.0, -math.pi * 3 / 4, 11.0)),
-        )
         self.swirl = 1 / 17
         a = self.swirl
+        self.coords = (
+            Coordinates3D((2.0, 0.0, 0.0)),
+            Coordinates3D((2.0, math.pi * 3 / 4 - a * 14.0, 7.0)),
+            Coordinates3D((5.0, -math.pi * 3 / 4 - a * 55.0, 11.0)),
+        )
         self.metrics = (
             Metric(
                 AbstractMatrix(
@@ -183,7 +183,7 @@ class CylindricalCoordinatesTransfomrationTest(BaseTestCase):
             self.cylin_coords,
         )
         for coords in self.invalid_carth_coords:
-            with self.assertRaises(AssertionError):
+            with self.assertRaises(ValueError):
                 carthesian_to_cylindric_swirl_coords(self.swirl, coords)
 
     def test_cylindric_swirl_to_carthesian_coords(self) -> None:
@@ -194,7 +194,7 @@ class CylindricalCoordinatesTransfomrationTest(BaseTestCase):
             self.carth_coords,
         )
         for coords in self.invalid_cylin_coords:
-            with self.assertRaises(AssertionError):
+            with self.assertRaises(ValueError):
                 cylindric_swirl_to_carthesian_coords(self.swirl, coords)
 
 
@@ -255,7 +255,7 @@ class CylindricSwirlVectorTransfomrationTest(BaseTestCase):
                 cylin_vec,
             )
         for coords, vec in zip(self.invalid_carth_coords, self.carth_vecs):
-            with self.assertRaises(AssertionError):
+            with self.assertRaises(ValueError):
                 carthesian_to_cylindric_swirl_vector(self.swirl, coords, vec)
 
     def test_cylindric_swirl_to_carthesian_vector(self) -> None:
@@ -269,7 +269,7 @@ class CylindricSwirlVectorTransfomrationTest(BaseTestCase):
                 carth_vec,
             )
         for coords, vec in zip(self.invalid_cylin_coords, self.cylin_vecs):
-            with self.assertRaises(AssertionError):
+            with self.assertRaises(ValueError):
                 cylindric_swirl_to_carthesian_vector(self.swirl, coords, vec)
 
     def test_carthesian_to_cylindric_swirl_vector_inversion(self) -> None:
@@ -380,7 +380,7 @@ class CylindricalTangentialVectorTransfomrationTest(BaseTestCase):
                 cylin_tan,
             )
         for carth_tan in self.invalid_carth_tangents:
-            with self.assertRaises(AssertionError):
+            with self.assertRaises(ValueError):
                 carthesian_to_cylindric_swirl_tangential_vector(
                     self.swirl, carth_tan
                 )
@@ -398,7 +398,7 @@ class CylindricalTangentialVectorTransfomrationTest(BaseTestCase):
                 carth_tan,
             )
         for cylin_tan in self.invalid_cylin_tangents:
-            with self.assertRaises(AssertionError):
+            with self.assertRaises(ValueError):
                 cylindric_swirl_to_carthesian_tangential_vector(
                     self.swirl, cylin_tan
                 )
