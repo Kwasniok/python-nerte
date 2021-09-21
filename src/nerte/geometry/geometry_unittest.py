@@ -22,8 +22,6 @@ from nerte.geometry.geometry import intersection_ray_depth
 
 # no test for abstract class/interface Geometry & Geometry.Ray
 
-# TODO: add dedicated tests for intersection infos where ray leaves the manifold
-
 
 class IntersectionRayDepthTest(BaseTestCase):
     def setUp(self) -> None:
