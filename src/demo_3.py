@@ -10,8 +10,8 @@ from nerte.values.coordinates import Coordinates3D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.face import Face
-from nerte.values.manifolds.cylindrical import (
-    Plane as CarthesianPlaneInCylindric,
+from nerte.values.manifolds.cylindrical_swirl import (
+    Plane as CarthesianPlaneInCylindricSwirl,
 )
 from nerte.world.object import Object
 from nerte.world.camera import Camera
@@ -34,11 +34,12 @@ from nerte.util.random_color_generator import RandomColorGenerator
 COLOR = RandomColorGenerator()
 
 
-def make_camera(canvas_dimension: int) -> Camera:
+def make_camera(swirl: float, canvas_dimension: int) -> Camera:
     """Creates a camera with preset values."""
 
     location = Coordinates3D((0.5, 0.0, 0.5))
-    manifold = CarthesianPlaneInCylindric(
+    manifold = CarthesianPlaneInCylindricSwirl(
+        swirl=swirl,
         b0=AbstractVector((0.0, -1.0, 0.0)),
         b1=AbstractVector((-0.4, 0.0, 0.4)),
         x0_domain=Domain1D(-1.0, +1.0),
@@ -107,12 +108,12 @@ def add_cylinder(scene: Scene, radius: float, height: float) -> None:
     scene.add_object(obj)
 
 
-def make_scene(canvas_dimension: int) -> Scene:
+def make_scene(swirl: float, canvas_dimension: int) -> Scene:
     """
     Creates a scene with a camera pointing towards an object.
     """
 
-    camera = make_camera(canvas_dimension=canvas_dimension)
+    camera = make_camera(swirl=swirl, canvas_dimension=canvas_dimension)
     scene = Scene(camera=camera)
     add_cylinder(scene, radius=1.0, height=1.0)
 
@@ -158,14 +159,15 @@ def main() -> None:
     """Creates and renders the demo scene."""
 
     # NOTE: Increase the canvas dimension to improve the image quality.
-    #       This will also increase rendering time!
-    scene = make_scene(canvas_dimension=100)
+    #       This wil
+    swirl = 0.1
+    scene = make_scene(swirl=swirl, canvas_dimension=100)
     max_steps = 25
     geo = SwirlCylindricRungeKuttaGeometry(
         max_ray_depth=math.inf,
         step_size=0.125,
         max_steps=max_steps,
-        swirl=0.1,
+        swirl=swirl,
     )
 
     output_path = "../images"
