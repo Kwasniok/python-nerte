@@ -60,8 +60,8 @@ def _dummy_segmented_ray_geometry_class() -> Type[SegmentedRayGeometry]:
 
         def next_ray_segment(self, segment: RaySegment) -> Optional[RaySegment]:
             # old segment
-            point_old = segment.tangential_vector.point
-            vec_old = segment.tangential_vector.vector
+            point_old = segment.start()
+            vec_old = segment.direction()
             # advance pointing point
             point_new = Coordinates3D(
                 (
@@ -84,8 +84,8 @@ def _dummy_segmented_ray_geometry_class() -> Type[SegmentedRayGeometry]:
             self, segment: RaySegment
         ) -> RaySegment:
             tangent = TangentialVector(
-                point=segment.tangential_vector.point,
-                vector=normalized(segment.tangential_vector.vector)
+                point=segment.start(),
+                vector=normalized(segment.direction())
                 * self.ray_segment_length(),
             )
             return RaySegment(tangential_vector=tangent)

@@ -125,13 +125,13 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
         )
 
     def length(self, ray: RaySegment) -> float:
-        if not self.is_valid_coordinate(ray.tangential_vector.point):
+        if not self.is_valid_coordinate(ray.start()):
             raise ValueError(
                 f"Cannot calculate length of ray segment."
                 f" Coordinates {ray} are outside of the manifold."
             )
-        metric = self.metric(ray.tangential_vector.point)
-        return length(ray.tangential_vector.vector, metric=metric)
+        metric = self.metric(ray.start())
+        return length(ray.direction(), metric=metric)
 
     def geodesic_equation(self) -> Callable[[RaySegmentDelta], RaySegmentDelta]:
         return self._geodesic_equation

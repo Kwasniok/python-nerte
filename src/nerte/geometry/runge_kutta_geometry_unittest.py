@@ -76,7 +76,7 @@ def _make_dummy_runge_kutta_geometry() -> Type[RungeKuttaGeometry]:
             )
 
         def length(self, ray: RaySegment) -> float:
-            return length(ray.tangential_vector.vector)
+            return length(ray.direction())
 
         def geodesic_equation(
             self,

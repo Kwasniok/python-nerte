@@ -49,8 +49,8 @@ class RaySegmentDelta:
 def ray_segment_as_delta(ray: RaySegment) -> RaySegmentDelta:
     """Converts a ray to a ray delta."""
     return RaySegmentDelta(
-        coordinates_as_vector(ray.tangential_vector.point),
-        ray.tangential_vector.vector,
+        coordinates_as_vector(ray.start()),
+        ray.direction(),
     )
 
 
@@ -62,11 +62,11 @@ def add_ray_segment_delta(
         tangential_vector=TangentialVector(
             point=Coordinates3D(
                 (
-                    ray.tangential_vector.point[0] + ray_delta.point_delta[0],
-                    ray.tangential_vector.point[1] + ray_delta.point_delta[1],
-                    ray.tangential_vector.point[2] + ray_delta.point_delta[2],
+                    ray.start()[0] + ray_delta.point_delta[0],
+                    ray.start()[1] + ray_delta.point_delta[1],
+                    ray.start()[2] + ray_delta.point_delta[2],
                 )
             ),
-            vector=ray.tangential_vector.vector + ray_delta.vector_delta,
+            vector=ray.direction() + ray_delta.vector_delta,
         )
     )

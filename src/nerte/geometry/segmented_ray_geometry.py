@@ -92,9 +92,7 @@ class SegmentedRayGeometry(Geometry):
                     f" initial segment {self._segments[0]} at step"
                     f" {self._steps_cached}."
                 )
-            if not self._geometry.is_valid_coordinate(
-                segment.tangential_vector.point
-            ):
+            if not self._geometry.is_valid_coordinate(segment.start()):
                 raise RuntimeError(
                     f"Cannot generate next ray segment for ray starting with"
                     f" initial segment {self._segments[0]}."

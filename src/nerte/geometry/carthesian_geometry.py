@@ -33,8 +33,8 @@ class CarthesianGeometry(Geometry):
         def __repr__(self) -> str:
             return (
                 f"CarthesianGeometry.Ray("
-                f"start={self._segment.tangential_vector.point}"
-                f", direction={self._segment.tangential_vector.vector})"
+                f"start={self._segment.start()}"
+                f", direction={self._segment.direction()})"
             )
 
         def intersection_info(self, face: Face) -> IntersectionInfo:

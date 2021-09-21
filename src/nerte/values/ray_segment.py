@@ -1,6 +1,7 @@
 """Module for representing rays."""
 
-from nerte.values.linalg import is_zero_vector
+from nerte.values.coordinates import Coordinates3D
+from nerte.values.linalg import AbstractVector, is_zero_vector
 from nerte.values.tangential_vector import TangentialVector
 
 
@@ -28,6 +29,14 @@ class RaySegment:
         self.tangential_vector = tangential_vector
         self.is_finite = is_finite
         self.is_infinite = not is_finite
+
+    def start(self) -> Coordinates3D:
+        """Returns the starting point of the ray segment."""
+        return self.tangential_vector.point
+
+    def direction(self) -> AbstractVector:
+        """Returns the direction/delta of the ray segment."""
+        return self.tangential_vector.vector
 
     def __repr__(self) -> str:
         if self.is_finite:

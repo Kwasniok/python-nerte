@@ -118,9 +118,7 @@ class RungeKuttaGeometry(Geometry):
                     f" {self._geometry.max_ray_depth()}."
                 )
             tangent = self._current_tangent
-            if not self._geometry.is_valid_coordinate(
-                tangent.tangential_vector.point
-            ):
+            if not self._geometry.is_valid_coordinate(tangent.start()):
                 raise RuntimeError(
                     f"Cannot generate next ray segment for ray pointing with"
                     f" initial tangent {self._initial_tangent}."
@@ -140,7 +138,7 @@ class RungeKuttaGeometry(Geometry):
             )
             segment = RaySegment(
                 tangential_vector=TangentialVector(
-                    point=tangent.tangential_vector.point,
+                    point=tangent.start(),
                     vector=tangent_delta.point_delta,
                 )
             )
@@ -154,9 +152,7 @@ class RungeKuttaGeometry(Geometry):
             )
             self._segments_cached += 1
             self._cached_ray_depth += segment_length
-            if not geometry.is_valid_coordinate(
-                self._current_tangent.tangential_vector.point
-            ):
+            if not geometry.is_valid_coordinate(self._current_tangent.start()):
                 self._cached_ray_left_manifold = True
 
         def intersection_info(self, face: Face) -> IntersectionInfo:
@@ -283,8 +279,8 @@ class RungeKuttaGeometry(Geometry):
         """
         return RaySegment(
             tangential_vector=TangentialVector(
-                point=ray.tangential_vector.point,
-                vector=ray.tangential_vector.vector / self.length(ray),
+                point=ray.start(),
+                vector=ray.direction() / self.length(ray),
             )
         )
 
