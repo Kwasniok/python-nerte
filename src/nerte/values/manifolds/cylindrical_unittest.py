@@ -17,9 +17,129 @@ from nerte.values.linalg import AbstractVector, dot, are_linear_dependent
 from nerte.values.linalg_unittest import scalar_equiv, vec_equiv
 from nerte.values.manifold import OutOfDomainError
 from nerte.values.manifolds.cylindrical import Plane
-from nerte.values.util.convert import cylindric_to_carthesian_vector
+from nerte.values.manifolds.cylindrical import (
+    carthesian_to_cylindric_coords,
+    cylindric_to_carthesian_coords,
+    carthesian_to_cylindric_vector,
+    cylindric_to_carthesian_vector,
+    Plane,
+)
 
 
+class ConvertCoordinates(BaseTestCase):
+    def setUp(self) -> None:
+        # r, phi, z
+        self.cylin_coords = Coordinates3D((2.0, math.pi / 4, 3.0))
+        self.cylin_vecs = (
+            AbstractVector((5.0, 7.0, 11.0)),
+            AbstractVector(
+                (
+                    (+5.0 + 7.0) * math.sqrt(1 / 2),
+                    (-5.0 + 7.0) / 2.0 * math.sqrt(1 / 2),
+                    11.0,
+                )
+            ),
+        )
+        self.invalid_cylin_coords = (
+            Coordinates3D((-1.0, 0.0, 0.0)),
+            Coordinates3D((1.0, -2 * math.pi, 0.0)),
+            Coordinates3D((1.0, 2 * math.pi, 0.0)),
+            Coordinates3D((1.0, 0.0, -math.inf)),
+            Coordinates3D((1.0, 0.0, math.inf)),
+        )
+        # x, y, z
+        self.carth_coords = Coordinates3D(
+            (2.0 * math.sqrt(1 / 2), 2.0 * math.sqrt(1 / 2), 3.0)
+        )
+        self.carth_vecs = (
+            AbstractVector(
+                (
+                    (+5.0 - 7.0 * 2.0) * math.sqrt(1 / 2),
+                    (+5.0 + 7.0 * 2.0) * math.sqrt(1 / 2),
+                    11.0,
+                )
+            ),
+            AbstractVector((5.0, 7.0, 11.0)),
+        )
+        self.invalid_carth_coords = (
+            Coordinates3D((-math.inf, 0.0, 0.0)),
+            Coordinates3D((math.inf, 0.0, 0.0)),
+            Coordinates3D((0.0, -math.inf, 0.0)),
+            Coordinates3D((0.0, +math.inf, 0.0)),
+            Coordinates3D((0.0, 0.0, -math.inf)),
+            Coordinates3D((0.0, 0.0, +math.inf)),
+        )
+
+    def test_carthesian_to_cylindric_coords(self) -> None:
+        """Tests cathesian to cylindrical coordinates conversion."""
+        self.assertPredicate2(
+            coordinates_3d_equiv,
+            carthesian_to_cylindric_coords(self.carth_coords),
+            self.cylin_coords,
+        )
+        for coords in self.invalid_carth_coords:
+            with self.assertRaises(AssertionError):
+                carthesian_to_cylindric_coords(coords)
+
+    def test_cylindric_to_carthesian_coords(self) -> None:
+        """Tests cylindircal to carthesian coordinates conversion."""
+        self.assertPredicate2(
+            coordinates_3d_equiv,
+            cylindric_to_carthesian_coords(self.cylin_coords),
+            self.carth_coords,
+        )
+        for coords in self.invalid_cylin_coords:
+            with self.assertRaises(AssertionError):
+                cylindric_to_carthesian_coords(coords)
+
+    def test_carthesian_to_cylindric_vector(self) -> None:
+        """Tests cathesian vector to cylindrical vector conversion."""
+        for carth_vec, cylin_vec in zip(self.carth_vecs, self.cylin_vecs):
+            self.assertPredicate2(
+                vec_equiv,
+                carthesian_to_cylindric_vector(self.carth_coords, carth_vec),
+                cylin_vec,
+            )
+        for coords, vec in zip(self.invalid_carth_coords, self.carth_vecs):
+            with self.assertRaises(AssertionError):
+                carthesian_to_cylindric_vector(coords, vec)
+
+    def test_cylindric_to_carthesian_vector(self) -> None:
+        """Tests cylindrical vector to cathesian vector conversion."""
+        for cylin_vec, carth_vec in zip(self.cylin_vecs, self.carth_vecs):
+            self.assertPredicate2(
+                vec_equiv,
+                cylindric_to_carthesian_vector(self.cylin_coords, cylin_vec),
+                carth_vec,
+            )
+        for coords, vec in zip(self.invalid_cylin_coords, self.cylin_vecs):
+            with self.assertRaises(AssertionError):
+                cylindric_to_carthesian_vector(coords, vec)
+
+    def test_cylindric_to_carthesian_vector_inversion(self) -> None:
+        """Tests cylindrical vector to cathesian vector inversion."""
+        for cylin_vec in self.cylin_vecs:
+            vec = cylin_vec
+            vec = cylindric_to_carthesian_vector(self.cylin_coords, vec)
+            vec = carthesian_to_cylindric_vector(self.carth_coords, vec)
+            self.assertPredicate2(vec_equiv, vec, cylin_vec)
+
+    def test_carthesian_to_cylindric_vector_inversion(self) -> None:
+        """Tests carthesian vector to cylindrical vector inversion."""
+        for carth_vec in self.carth_vecs:
+            vec = carth_vec
+            vec = carthesian_to_cylindric_vector(self.carth_coords, vec)
+            vec = cylindric_to_carthesian_vector(self.cylin_coords, vec)
+            self.assertPredicate2(vec_equiv, vec, carth_vec)
+
+    def test_vector_length_preservation(self) -> None:
+        """Tests preservation of length of vectors."""
+        for cylin_vec, carth_vec in zip(self.cylin_vecs, self.carth_vecs):
+            cylin_len = length(
+                cylin_vec, metric=cylindirc_coords_metric(self.cylin_coords)
+            )
+            carth_len = length(carth_vec)
+            self.assertAlmostEqual(cylin_len, carth_len)
 class PlaneConstructorTest(BaseTestCase):
     def setUp(self) -> None:
         self.domain = Domain1D(-1.0, 4.0)

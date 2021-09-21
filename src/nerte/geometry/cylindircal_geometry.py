@@ -7,11 +7,7 @@ from collections.abc import Callable
 import math
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.util.convert import (
-    coordinates_as_vector,
-    cylindric_to_carthesian_coords,
-    carthesian_to_cylindric_vector,
-)
+from nerte.values.util.convert import coordinates_as_vector
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_delta import TangentialVectorDelta
 from nerte.values.linalg import (
@@ -19,6 +15,10 @@ from nerte.values.linalg import (
     AbstractMatrix,
     Metric,
     length,
+)
+from nerte.values.manifolds.cylindrical import (
+    cylindric_to_carthesian_coords,
+    carthesian_to_cylindric_vector,
 )
 from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 

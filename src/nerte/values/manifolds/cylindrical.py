@@ -12,11 +12,92 @@ from nerte.values.linalg import (
     are_linear_dependent,
 )
 from nerte.values.manifold import Manifold2D
-from nerte.values.util.convert import (
-    vector_as_coordinates,
-    carthesian_to_cylindric_coords,
-    carthesian_to_cylindric_vector,
-)
+from nerte.values.util.convert import vector_as_coordinates
+
+
+def carthesian_to_cylindric_coords(coords: Coordinates3D) -> Coordinates3D:
+    """
+    Returns cylindrical coordinates obtained from carthesian coordinates.
+
+    :param coords: carthesian coordinates (x, y, z)
+                   where -inf < x < inf and -inf < y < inf and -inf < z < inf
+    """
+    # pylint:disable=C0103
+    x, y, z = coords
+    assert -math.inf < x < math.inf, f"{x} is out of bounds"
+    assert -math.inf < y < math.inf, f"{y} is out of bounds"
+    assert -math.inf < z < math.inf, f"{z} is out of bounds"
+    r = math.sqrt(x ** 2 + y ** 2)
+    phi = math.atan2(y, x)
+    return Coordinates3D((r, phi, z))
+
+
+def cylindric_to_carthesian_coords(coords: Coordinates3D) -> Coordinates3D:
+    """
+    Returns carthesian coordinates obtained from cylindrical coordinates.
+
+    :param coords: cylindrical coordinates (r, phi, z)
+                   where 0 < r < inf and -pi < phi < pi and -inf < z < inf
+    """
+    # pylint:disable=C0103
+    r, phi, z = coords
+    assert 0 < r < math.inf, f"{r} is out of bounds"
+    assert -math.pi < phi < math.pi, f"{phi} is out of bounds"
+    assert -math.inf < z < math.inf, f"{z} is out of bounds"
+    x = r * math.cos(phi)
+    y = r * math.sin(phi)
+    return Coordinates3D((x, y, z))
+
+def carthesian_to_cylindric_vector(
+    coords: Coordinates3D, vec: AbstractVector
+) -> AbstractVector:
+    """
+    Returns vector in tangential vector space of cylindircal coordinates from
+    a vector in tangential vector space in carthesian coordinates.
+
+    :param coords: carthesian coordinates (x, y, z)
+                   where -inf < x < inf and -inf < y < inf and -inf < z < inf
+    :param vec: vector in tangential vector space of the carthesian coordinates
+                (x, y, z) such that vec = e_x * x + e_y * y + e_z * z
+    """
+    # pylint:disable=C0103
+    x, y, z = coords
+    assert -math.inf < x < math.inf, f"{x} is out of bounds"
+    assert -math.inf < y < math.inf, f"{y} is out of bounds"
+    assert -math.inf < z < math.inf, f"{z} is out of bounds"
+    r = math.sqrt(x ** 2 + y ** 2)
+    phi = math.atan2(y, x)
+    jacobian = AbstractMatrix(
+        AbstractVector((math.cos(phi), math.sin(phi), 0.0)),
+        AbstractVector((-math.sin(phi) / r, math.cos(phi) / r, 0.0)),
+        AbstractVector((0.0, 0.0, 1.0)),
+    )
+    return mat_vec_mult(jacobian, vec)
+
+
+def cylindric_to_carthesian_vector(
+    coords: Coordinates3D, vec: AbstractVector
+) -> AbstractVector:
+    """
+    Returns vector in tangential vector space of carthesian coordinates from
+    a vector in tangential vector space in cylindircal coordinates.
+
+    :param coords: cylindrical coordinates (r, phi, z)
+                   where 0 < r < inf and -pi < phi < pi and -inf < z < inf
+    :param vec: vector in tangential vector space of the cylindircal coordinates
+                (r, phi, z) such that vec = e_r * r + e_phi * phi + e_z * z
+    """
+    # pylint:disable=C0103
+    r, phi, z = coords
+    assert 0 < r < math.inf, f"{r} is out of bounds"
+    assert -math.pi < phi < math.pi, f"{phi} is out of bounds"
+    assert -math.inf < z < math.inf, f"{z} is out of bounds"
+    jacobian = AbstractMatrix(
+        AbstractVector((math.cos(phi), -r * math.sin(phi), 0.0)),
+        AbstractVector((math.sin(phi), r * math.cos(phi), 0.0)),
+        AbstractVector((0.0, 0.0, 1.0)),
+    )
+    return mat_vec_mult(jacobian, vec)
 
 
 class Plane(Manifold2D):
