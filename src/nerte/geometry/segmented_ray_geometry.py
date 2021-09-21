@@ -64,7 +64,6 @@ class SegmentedRayGeometry(Geometry):
                 )
             return self._segments[0]
 
-        # TODO: test cache generation (for max_steps = 0 etc.)
         def _cache_next_segment(self) -> None:
             """
             To be called to cache the next ray segment.

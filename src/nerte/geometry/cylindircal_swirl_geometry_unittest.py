@@ -340,7 +340,6 @@ class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(BaseTestCase):
             #       see https://github.com/python/mypy/issues/2220
             # r, _, z = ray.point_delta
             # v_r, v_phi, v_z = ray.vector_delta
-            # a = self._swirl_strength
             r = ray.point_delta[0]
             z = ray.point_delta[2]
             v_r = ray.vector_delta[0]

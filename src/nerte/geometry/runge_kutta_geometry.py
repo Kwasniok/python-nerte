@@ -89,7 +89,6 @@ class RungeKuttaGeometry(Geometry):
             """Returs the initial tangent of the ray at its pointing point."""
             return self._initial_tangent
 
-        # TODO: test cache generation (for max_steps = 0 etc.)
         def _cache_next_segment(self) -> None:
             """
             To be called to cache the next ray segment.
@@ -194,7 +193,7 @@ class RungeKuttaGeometry(Geometry):
         self,
         max_ray_depth: float,
         step_size: float,
-        max_steps: int,  # TODO: rename to max_segment_count
+        max_steps: int,
     ):
         if not max_ray_depth > 0:
             raise ValueError(
