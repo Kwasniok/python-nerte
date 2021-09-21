@@ -24,11 +24,7 @@ class TangentialVectorDelta:
         self.vector_delta = vector_delta
 
     def __repr__(self) -> str:
-        return (
-            f"TangentialVectorDelta("
-            f"point_delta={self.point_delta}"
-            f",vector_delta={self.vector_delta})"
-        )
+        return f"𝚫{self.vector_delta} @ 𝚫{self.point_delta}"
 
     def __add__(
         self, other: "TangentialVectorDelta"
