@@ -6,20 +6,14 @@
 
 import unittest
 
-from typing import Optional, cast
-from abc import ABC
-
-from nerte.values.coordinates_unittest import CoordinatesTestCaseMixin
-from nerte.values.linalg_unittest import LinAlgTestCaseMixin
-from nerte.values.tangential_vector_unittest import (
-    TangentialVectorTestCaseMixin,
-)
-from nerte.values.ray_segment_unittest import RaySegmentTestCaseMixin
+from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector
+from nerte.values.linalg_unittest import vec_equiv
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.ray_segment import RaySegment
+from nerte.values.ray_segment_unittest import ray_segment_equiv
 from nerte.values.ray_segment_delta import (
     RaySegmentDelta,
     ray_segment_as_delta,
@@ -27,69 +21,16 @@ from nerte.values.ray_segment_delta import (
 )
 
 
-class RaySegmentDeltaTestCaseMixin(ABC):
-    # pylint: disable=R0903
-    def assertRaySegmentDeltaEquiv(
-        self,
-        x: RaySegmentDelta,
-        y: RaySegmentDelta,
-        msg: Optional[str] = None,
-    ) -> None:
-        """
-        Asserts the equivalence of two ray segment deltas.
-        """
-
-        test_case = cast(unittest.TestCase, self)
-        try:
-            cast(LinAlgTestCaseMixin, self).assertVectorEquiv(
-                x.point_delta, y.point_delta
-            )
-            cast(LinAlgTestCaseMixin, self).assertVectorEquiv(
-                x.vector_delta, y.vector_delta
-            )
-        except AssertionError as ae:
-            msg_full = f"Ray segment delta {x} is not equivalent to {y}."
-            if msg is not None:
-                msg_full += f" : {msg}"
-            raise test_case.failureException(msg_full) from ae
+def ray_segment_delta_equiv(x: RaySegmentDelta, y: RaySegmentDelta) -> bool:
+    """
+    Returns true iff both ray segment deltas are considered equivalent.
+    """
+    return vec_equiv(x.point_delta, x.point_delta) and vec_equiv(
+        x.vector_delta, y.vector_delta
+    )
 
 
-class AssertRaySegmentDeltaEquivMixinTest(
-    unittest.TestCase,
-    LinAlgTestCaseMixin,
-    RaySegmentDeltaTestCaseMixin,
-):
-    def setUp(self) -> None:
-        vec_0 = AbstractVector((0.0, 0.0, 0.0))
-        vec_1 = AbstractVector((4.0, 5.0, 6.0))
-        self.ray_segment_0 = RaySegmentDelta(
-            point_delta=vec_0, vector_delta=vec_0
-        )
-        self.ray_segment_1 = RaySegmentDelta(
-            point_delta=vec_0, vector_delta=vec_1
-        )
-        self.ray_segment_2 = RaySegmentDelta(
-            point_delta=vec_1, vector_delta=vec_1
-        )
-
-    def test_ray_segment_equiv(self) -> None:
-        """Tests the ray segment test case mixin."""
-        self.assertRaySegmentDeltaEquiv(self.ray_segment_0, self.ray_segment_0)
-        self.assertRaySegmentDeltaEquiv(self.ray_segment_1, self.ray_segment_1)
-
-    def test_ray_segment_equiv_raise(self) -> None:
-        """Tests the ray segment test case mixin raise."""
-        with self.assertRaises(AssertionError):
-            self.assertRaySegmentDeltaEquiv(
-                self.ray_segment_0, self.ray_segment_1
-            )
-
-
-class RaySegmentDeltaTest(
-    unittest.TestCase,
-    LinAlgTestCaseMixin,
-    RaySegmentDeltaTestCaseMixin,
-):
+class RaySegmentDeltaTest(BaseTestCase):
     def setUp(self) -> None:
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
         self.point_delta = AbstractVector((0.0, 0.0, 0.0))
@@ -107,11 +48,7 @@ class RaySegmentDeltaTest(
         )  # allowed!
 
 
-class RaySegmentDeltaMathTest(
-    unittest.TestCase,
-    LinAlgTestCaseMixin,
-    RaySegmentDeltaTestCaseMixin,
-):
+class RaySegmentDeltaMathTest(BaseTestCase):
     def setUp(self) -> None:
         v0 = AbstractVector((0.0, 0.0, 0.0))
         self.ray_delta0 = RaySegmentDelta(point_delta=v0, vector_delta=v0)
@@ -134,25 +71,39 @@ class RaySegmentDeltaMathTest(
 
     def test_ray_delta_math(self) -> None:
         """Tests ray delta linear operations."""
-        self.assertRaySegmentDeltaEquiv(
-            self.ray_delta1 + self.ray_delta0, self.ray_delta1
+        self.assertPredicate2(
+            ray_segment_delta_equiv,
+            self.ray_delta1 + self.ray_delta0,
+            self.ray_delta1,
         )
-        self.assertRaySegmentDeltaEquiv(
-            self.ray_delta1 + self.ray_delta2, self.ray_delta3
+        self.assertPredicate2(
+            ray_segment_delta_equiv,
+            self.ray_delta1 + self.ray_delta2,
+            self.ray_delta3,
         )
-        self.assertRaySegmentDeltaEquiv(
-            self.ray_delta3 - self.ray_delta2, self.ray_delta1
+        self.assertPredicate2(
+            ray_segment_delta_equiv,
+            self.ray_delta3 - self.ray_delta2,
+            self.ray_delta1,
         )
-        self.assertRaySegmentDeltaEquiv(self.ray_delta1 * 3.0, self.ray_delta2)
-        self.assertRaySegmentDeltaEquiv(self.ray_delta2 / 3.0, self.ray_delta1)
-        self.assertRaySegmentDeltaEquiv(-self.ray_delta1, self.ray_delta4)
+        self.assertPredicate2(
+            ray_segment_delta_equiv,
+            self.ray_delta1 * 3.0,
+            self.ray_delta2,
+        )
+        self.assertPredicate2(
+            ray_segment_delta_equiv,
+            self.ray_delta2 / 3.0,
+            self.ray_delta1,
+        )
+        self.assertPredicate2(
+            ray_segment_delta_equiv,
+            -self.ray_delta1,
+            self.ray_delta4,
+        )
 
 
-class RaySegmentToRaySegmentDeltaConversionTest(
-    unittest.TestCase,
-    LinAlgTestCaseMixin,
-    RaySegmentDeltaTestCaseMixin,
-):
+class RaySegmentToRaySegmentDeltaConversionTest(BaseTestCase):
     def setUp(self) -> None:
         v = AbstractVector((5.5, 7.7, 1.1))
         self.ray = RaySegment(
@@ -168,18 +119,14 @@ class RaySegmentToRaySegmentDeltaConversionTest(
 
     def test_ray_as_ray_delta(self) -> None:
         """Tests ray to ray delta conversion."""
-        self.assertRaySegmentDeltaEquiv(
-            ray_segment_as_delta(self.ray), self.ray_delta
+        self.assertPredicate2(
+            ray_segment_delta_equiv,
+            ray_segment_as_delta(self.ray),
+            self.ray_delta,
         )
 
 
-class AddRaySegmentDeltaTest(
-    unittest.TestCase,
-    CoordinatesTestCaseMixin,
-    LinAlgTestCaseMixin,
-    TangentialVectorTestCaseMixin,
-    RaySegmentTestCaseMixin,
-):
+class AddRaySegmentDeltaTest(BaseTestCase):
     def setUp(self) -> None:
         self.ray1 = RaySegment(
             tangential_vector=TangentialVector(
@@ -200,8 +147,10 @@ class AddRaySegmentDeltaTest(
 
     def test_add_ray_segment_delta(self) -> None:
         """Tests additon of ray delta."""
-        self.assertRaySegmentEquiv(
-            add_ray_segment_delta(self.ray1, self.ray_delta), self.ray2
+        self.assertPredicate2(
+            ray_segment_equiv,
+            add_ray_segment_delta(self.ray1, self.ray_delta),
+            self.ray2,
         )
 
 

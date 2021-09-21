@@ -6,6 +6,8 @@
 
 import unittest
 
+from nerte.base_test_case import BaseTestCase
+
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
@@ -19,7 +21,7 @@ from nerte.geometry.carthesian_geometry import CarthesianGeometry
 from nerte.render.renderer import Renderer
 
 
-class RendererTest(unittest.TestCase):
+class RendererTest(BaseTestCase):
     def setUp(self) -> None:
         # object
         p0 = Coordinates3D((-1.0, -1.0, 0.0))

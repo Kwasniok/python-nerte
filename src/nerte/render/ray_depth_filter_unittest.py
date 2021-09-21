@@ -8,6 +8,8 @@ import unittest
 
 import math
 
+from nerte.base_test_case import BaseTestCase
+
 from nerte.values.color import Color
 from nerte.values.intersection_info import IntersectionInfo
 from nerte.render.image_filter_renderer import (
@@ -17,7 +19,7 @@ from nerte.render.image_filter_renderer import (
 from nerte.render.ray_depth_filter import RayDepthFilter
 
 
-class RayDepthFilterConstructorTest(unittest.TestCase):
+class RayDepthFilterConstructorTest(BaseTestCase):
     def setUp(self) -> None:
         # ray depth parameters
         self.valid_ray_depths = (None, 0.0, 1e-8, 1.0, 1e8)
@@ -72,7 +74,7 @@ class RayDepthFilterConstructorTest(unittest.TestCase):
                 RayDepthFilter(max_color_value=max_col_val)
 
 
-class RayDpethFilterProperties(unittest.TestCase):
+class RayDpethFilterProperties(BaseTestCase):
     def setUp(self) -> None:
         self.filter_min_ray_depth = RayDepthFilter(
             min_ray_depth=1.0,
@@ -106,7 +108,7 @@ class RayDpethFilterProperties(unittest.TestCase):
         self.assertTrue(self.filter_max_color_value.max_color_value == 0.5)
 
 
-class RayDepthFilterColorForRayDepthTest(unittest.TestCase):
+class RayDepthFilterColorForRayDepthTest(BaseTestCase):
     def setUp(self) -> None:
         self.valid_normalized_values = (0.0, 0.25, 1.0)
         self.invalid_normalized_values = (-1.0, 10.0)
@@ -134,7 +136,7 @@ class RayDepthFilterColorForRayDepthTest(unittest.TestCase):
                     filtr.color_for_normalized_ray_depth_value(val)
 
 
-class RayDepthFilterApplyTest(unittest.TestCase):
+class RayDepthFilterApplyTest(BaseTestCase):
     def setUp(self) -> None:
         self.info_matrix = IntersectionInfoMatrix(
             [

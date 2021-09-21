@@ -6,6 +6,8 @@
 
 import unittest
 
+from nerte.base_test_case import BaseTestCase
+
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
@@ -17,7 +19,7 @@ from nerte.render.projection import ProjectionMode
 from nerte.render.image_renderer import ImageRenderer
 
 
-class ImageRendererConstructorTest(unittest.TestCase):
+class ImageRendererConstructorTest(BaseTestCase):
     def test_image_renderer_constructor(self) -> None:
         """Tests constructor."""
 
@@ -33,7 +35,7 @@ class ImageRendererConstructorTest(unittest.TestCase):
         self.assertFalse(r.is_printing_warings())
 
 
-class ImageRendererTest(unittest.TestCase):
+class ImageRendererTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, -1.0))

@@ -6,38 +6,26 @@
 
 import unittest
 
-from typing import TypeVar, Callable
-
 from itertools import permutations
 import math
 
-from nerte.geometry.geometry_unittest import GeometryTestCaseMixin
+from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, AbstractMatrix, Metric
+from nerte.values.linalg_unittest import metric_equiv
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.ray_segment import RaySegment
+from nerte.values.ray_segment_unittest import ray_segment_equiv
 from nerte.values.ray_segment_delta import RaySegmentDelta
+from nerte.values.ray_segment_delta_unittest import ray_segment_delta_equiv
 from nerte.values.face import Face
 from nerte.geometry.cylindircal_swirl_geometry import (
     SwirlCylindricRungeKuttaGeometry,
 )
 
 
-T = TypeVar("T")
-
-
-# apply function n times
-def _iterate(f: Callable[[T], T], n: int, x0: T) -> T:
-    x = x0
-    for _ in range(n):
-        x = f(x)
-    return x
-
-
-class SwirlCylindricRungeKuttaGeometryConstructorTest(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class SwirlCylindricRungeKuttaGeometryConstructorTest(BaseTestCase):
     def test_constructor(self) -> None:
         """Tests constructor."""
         SwirlCylindricRungeKuttaGeometry(
@@ -140,9 +128,7 @@ class SwirlCylindricRungeKuttaGeometryConstructorTest(
             )
 
 
-class SwirlCylindricRungeKuttaGeometryPropertiesTest(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class SwirlCylindricRungeKuttaGeometryPropertiesTest(BaseTestCase):
     def setUp(self) -> None:
         self.swirl_strength = 0.1234
         self.geo = SwirlCylindricRungeKuttaGeometry(
@@ -157,9 +143,7 @@ class SwirlCylindricRungeKuttaGeometryPropertiesTest(
         self.assertAlmostEqual(self.geo.swirl_strength(), self.swirl_strength)
 
 
-class SwirlCylindricRungeKuttaGeometryIsValidCoordinateTest(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class SwirlCylindricRungeKuttaGeometryIsValidCoordinateTest(BaseTestCase):
     def setUp(self) -> None:
         self.geo = SwirlCylindricRungeKuttaGeometry(
             max_ray_depth=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
@@ -192,7 +176,7 @@ class SwirlCylindricRungeKuttaGeometryIsValidCoordinateTest(
 
 
 class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
-    unittest.TestCase, GeometryTestCaseMixin
+    BaseTestCase
 ):
     def setUp(self) -> None:
         self.geo = SwirlCylindricRungeKuttaGeometry(
@@ -206,7 +190,7 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
             Coordinates3D((1.0, math.pi / 2, 0.0)),
             Coordinates3D((2.0, -math.pi * 3 / 4, 3.0)),
         )
-        self.vectors = (
+        vectors = (
             AbstractVector((-1.0, 1.0, 0.0)),
             AbstractVector(
                 (
@@ -218,7 +202,7 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
         )
         self.tangents = tuple(
             TangentialVector(point=s, vector=d)
-            for s, d in zip(self.points, self.vectors)
+            for s, d in zip(self.points, vectors)
         )
         self.initial_tangents = tuple(
             self.geo.normalized(RaySegment(tangential_vector=it))
@@ -230,7 +214,7 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
             Coordinates3D((1.0, +math.pi, 0.0)),
         )
         self.invalid_tangents = tuple(
-            TangentialVector(point=c, vector=self.vectors[0])
+            TangentialVector(point=c, vector=vectors[0])
             for c in self.invalid_coords
         )
 
@@ -241,7 +225,11 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
         ):
             ray = self.geo.ray_from_coords(point, target)
             init_tan = ray.initial_tangent()
-            self.assertRaySegmentEquiv(init_tan, initial_tangent)
+            self.assertPredicate2(
+                ray_segment_equiv,
+                init_tan,
+                initial_tangent,
+            )
         # invalid coordinates
         for invalid_coords in self.invalid_coords:
             with self.assertRaises(ValueError):
@@ -258,15 +246,17 @@ class SwirlCylindricRungeKuttaGeometryRayFromEuclideanEdgeCaseTest(
         ):
             ray = self.geo.ray_from_tangent(tangent)
             init_tan = ray.initial_tangent()
-            self.assertRaySegmentEquiv(init_tan, initial_tangent)
+            self.assertPredicate2(
+                ray_segment_equiv,
+                init_tan,
+                initial_tangent,
+            )
         for tangent in self.invalid_tangents:
             with self.assertRaises(ValueError):
                 self.geo.ray_from_tangent(tangent)
 
 
-class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(BaseTestCase):
     def setUp(self) -> None:
         # coordinates: r, 𝜑, z
         # metric: g = diag(1, r**2, z)
@@ -330,15 +320,13 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseVectorTest(
         """Tests vector normalization."""
         for ray, ray_normalized in zip(self.rays, self.rays_normalized):
             ray = self.geo.normalized(ray)
-            self.assertRaySegmentEquiv(ray, ray_normalized)
+            self.assertPredicate2(ray_segment_equiv, ray, ray_normalized)
         for ray in self.invalid_rays:
             with self.assertRaises(ValueError):
                 self.geo.normalized(ray)
 
 
-class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(BaseTestCase):
     def setUp(self) -> None:
         self.geo = SwirlCylindricRungeKuttaGeometry(
             max_ray_depth=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
@@ -397,14 +385,14 @@ class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(
         """Tests geodesic equation."""
         geodesic_equation = self.geo.geodesic_equation()
         for x in self.xs:
-            self.assertRaySegmentDeltaEquiv(
-                geodesic_equation(x), self.geodesic_equation(x)
+            self.assertPredicate2(
+                ray_segment_delta_equiv,
+                geodesic_equation(x),
+                self.geodesic_equation(x),
             )
 
 
-class SwirlCylindricRungeKuttaGeometryMetricTest(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class SwirlCylindricRungeKuttaGeometryMetricTest(BaseTestCase):
     def setUp(self) -> None:
         self.geo = SwirlCylindricRungeKuttaGeometry(
             max_ray_depth=1.0, step_size=1.0, max_steps=1, swirl_strength=1.0
@@ -434,11 +422,15 @@ class SwirlCylindricRungeKuttaGeometryMetricTest(
     def test_metric(self) -> None:
         """Tests (local) metric."""
         for coords, metric in zip(self.coords, self.metrics):
-            self.assertMetricEquiv(self.geo.metric(coords), metric)
+            self.assertPredicate2(
+                metric_equiv,
+                self.geo.metric(coords),
+                metric,
+            )
 
 
 class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
-    unittest.TestCase, GeometryTestCaseMixin
+    BaseTestCase
 ):
     def setUp(self) -> None:
         # coordinates: r, 𝜑, z
@@ -517,9 +509,7 @@ class SwirlCylindricRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
                 self.assertTrue(info.misses())
 
 
-class SwirlCylindricRungeKuttaGeometryIntersectsTest(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class SwirlCylindricRungeKuttaGeometryIntersectsTest(BaseTestCase):
     def setUp(self) -> None:
         # coordinates: r, 𝜑, z
 

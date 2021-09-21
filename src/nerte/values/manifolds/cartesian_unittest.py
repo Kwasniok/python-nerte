@@ -6,11 +6,13 @@
 
 import unittest
 
-from nerte.values.manifold_unittest import ManifoldTestCaseMixin
+from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates1D, Coordinates2D, Coordinates3D
+from nerte.values.coordinates_unittest import coordinates_3d_equiv
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector, cross
+from nerte.values.linalg_unittest import vec_equiv
 from nerte.values.manifold import OutOfDomainError
 from nerte.values.manifolds.cartesian import (
     Line,
@@ -23,7 +25,7 @@ from nerte.values.util.convert import (
 )
 
 
-class LineConstructorTest(unittest.TestCase, ManifoldTestCaseMixin):
+class LineConstructorTest(BaseTestCase):
     def setUp(self) -> None:
         self.domain = Domain1D(-1.0, 4.0)
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
@@ -38,7 +40,7 @@ class LineConstructorTest(unittest.TestCase, ManifoldTestCaseMixin):
             Line(self.v0)
 
 
-class LineDomainTest(unittest.TestCase, ManifoldTestCaseMixin):
+class LineDomainTest(BaseTestCase):
     def setUp(self) -> None:
         self.v1 = AbstractVector((1.0, 0.0, 0.0))
         self.finite_line = Line(self.v1, Domain1D(-1.0, 2.0))
@@ -63,7 +65,7 @@ class LineDomainTest(unittest.TestCase, ManifoldTestCaseMixin):
             self.infinite_line.tangential_space(coords)
 
 
-class LinePropertiesTest(unittest.TestCase, ManifoldTestCaseMixin):
+class LinePropertiesTest(BaseTestCase):
     def setUp(self) -> None:
         self.v = AbstractVector((1.0, 2.0, 3.0))
         self.offsets = (
@@ -84,7 +86,8 @@ class LinePropertiesTest(unittest.TestCase, ManifoldTestCaseMixin):
         """Tests line's embedding."""
         for line, offset in zip(self.lines, self.offsets):
             for c1d, c3d in zip(self.coords_1d, self.coords_3d):
-                self.assertCoordinates3DEquiv(
+                self.assertPredicate2(
+                    coordinates_3d_equiv,
                     line.embed(c1d),
                     vector_as_coordinates(coordinates_as_vector(c3d) + offset),
                 )
@@ -94,10 +97,10 @@ class LinePropertiesTest(unittest.TestCase, ManifoldTestCaseMixin):
         for line in self.lines:
             for c1d in self.coords_1d:
                 b = line.tangential_space(c1d)
-                self.assertVectorEquiv(b, self.v)
+                self.assertPredicate2(vec_equiv, b, self.v)
 
 
-class PlaneConstructorTest(unittest.TestCase, ManifoldTestCaseMixin):
+class PlaneConstructorTest(BaseTestCase):
     def setUp(self) -> None:
         self.domain = Domain1D(-1.0, 4.0)
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
@@ -121,7 +124,7 @@ class PlaneConstructorTest(unittest.TestCase, ManifoldTestCaseMixin):
             Plane(self.v1, self.v1)
 
 
-class PlaneDomainTest(unittest.TestCase, ManifoldTestCaseMixin):
+class PlaneDomainTest(BaseTestCase):
     def setUp(self) -> None:
         v1 = AbstractVector((1.0, 0.0, 0.0))
         v2 = AbstractVector((0.0, 1.0, 0.0))
@@ -161,7 +164,7 @@ class PlaneDomainTest(unittest.TestCase, ManifoldTestCaseMixin):
             self.infinite_plane.tangential_space(coords)
 
 
-class PlanePropertiesTest(unittest.TestCase, ManifoldTestCaseMixin):
+class PlanePropertiesTest(BaseTestCase):
     def setUp(self) -> None:
         self.v1 = AbstractVector((1.0, 0.0, 0.0))
         self.v2 = AbstractVector((0.0, 1.0, 0.0))
@@ -188,7 +191,8 @@ class PlanePropertiesTest(unittest.TestCase, ManifoldTestCaseMixin):
         """Tests plane coordinates."""
         for plane, offset in zip(self.planes, self.offsets):
             for c2d, c3d in zip(self.coords_2d, self.coords_3d):
-                self.assertCoordinates3DEquiv(
+                self.assertPredicate2(
+                    coordinates_3d_equiv,
                     plane.embed(c2d),
                     vector_as_coordinates(coordinates_as_vector(c3d) + offset),
                 )
@@ -197,18 +201,22 @@ class PlanePropertiesTest(unittest.TestCase, ManifoldTestCaseMixin):
         """Tests plane's surface normal."""
         for plane in self.planes:
             for c2d in self.coords_2d:
-                self.assertVectorEquiv(plane.surface_normal(c2d), self.n)
+                self.assertPredicate2(
+                    vec_equiv,
+                    plane.surface_normal(c2d),
+                    self.n,
+                )
 
     def test_plane_tangential_space(self) -> None:
         """Tests plane's tangential space."""
         for plane in self.planes:
             for c2d in self.coords_2d:
                 b0, b1 = plane.tangential_space(c2d)
-                self.assertVectorEquiv(b0, self.v1)
-                self.assertVectorEquiv(b1, self.v2)
+                self.assertPredicate2(vec_equiv, b0, self.v1)
+                self.assertPredicate2(vec_equiv, b1, self.v2)
 
 
-class ParallelepipedConstructorTest(unittest.TestCase, ManifoldTestCaseMixin):
+class ParallelepipedConstructorTest(BaseTestCase):
     def setUp(self) -> None:
         self.domain = Domain1D(-1.0, 4.0)
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
@@ -237,7 +245,7 @@ class ParallelepipedConstructorTest(unittest.TestCase, ManifoldTestCaseMixin):
             Parallelepiped(b0=self.v3, b1=self.v2, b2=self.v3)
 
 
-class ParallelepipedDomainTest(unittest.TestCase, ManifoldTestCaseMixin):
+class ParallelepipedDomainTest(BaseTestCase):
     def setUp(self) -> None:
         v1 = AbstractVector((1.0, 0.0, 0.0))
         v2 = AbstractVector((0.0, 1.0, 0.0))
@@ -276,7 +284,7 @@ class ParallelepipedDomainTest(unittest.TestCase, ManifoldTestCaseMixin):
             self.infinite_paraep.tangential_space(coords)
 
 
-class ParallelepipedPropertiesTest(unittest.TestCase, ManifoldTestCaseMixin):
+class ParallelepipedPropertiesTest(BaseTestCase):
     def setUp(self) -> None:
         self.v1 = AbstractVector((2.0, 0.0, 0.0))
         self.v2 = AbstractVector((0.0, 3.0, 0.0))
@@ -300,7 +308,8 @@ class ParallelepipedPropertiesTest(unittest.TestCase, ManifoldTestCaseMixin):
         """Tests parallelepiped coordinates."""
         for paraep, offset in zip(self.paraeps, self.offsets):
             for c_pre, c_post in zip(self.coords_pre, self.coords_post):
-                self.assertCoordinates3DEquiv(
+                self.assertPredicate2(
+                    coordinates_3d_equiv,
                     paraep.embed(c_pre),
                     vector_as_coordinates(
                         coordinates_as_vector(c_post) + offset
@@ -312,9 +321,9 @@ class ParallelepipedPropertiesTest(unittest.TestCase, ManifoldTestCaseMixin):
         for paraep in self.paraeps:
             for c_pre in self.coords_pre:
                 b0, b1, b2 = paraep.tangential_space(c_pre)
-                self.assertVectorEquiv(b0, self.v1)
-                self.assertVectorEquiv(b1, self.v2)
-                self.assertVectorEquiv(b2, self.v3)
+                self.assertPredicate2(vec_equiv, b0, self.v1)
+                self.assertPredicate2(vec_equiv, b1, self.v2)
+                self.assertPredicate2(vec_equiv, b2, self.v3)
 
 
 if __name__ == "__main__":

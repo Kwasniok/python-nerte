@@ -8,10 +8,12 @@ import unittest
 
 import math
 
+from nerte.base_test_case import BaseTestCase
+
 from nerte.values.intersection_info import IntersectionInfo, IntersectionInfos
 
 
-class IntersectionInfoConstructorTest(unittest.TestCase):
+class IntersectionInfoConstructorTest(BaseTestCase):
     def test_constructor(self) -> None:
         """Tests constructor."""
         IntersectionInfo()
@@ -32,7 +34,7 @@ class IntersectionInfoConstructorTest(unittest.TestCase):
             )
 
 
-class IntersectionInfoPropertiesTest(unittest.TestCase):
+class IntersectionInfoPropertiesTest(BaseTestCase):
     def setUp(self) -> None:
         self.info0 = IntersectionInfo()
         self.hitting_ray_depths = (0.0, 1.0)
@@ -83,7 +85,7 @@ class IntersectionInfoPropertiesTest(unittest.TestCase):
                 self.assertFalse(info.has_miss_reason(other_miss_reason))
 
 
-class IntersectionInfosPropertiesTest(unittest.TestCase):
+class IntersectionInfosPropertiesTest(BaseTestCase):
     def test_constant_uninitialized(self) -> None:
         """Tests if constant UNINIALIZED is correct."""
         info = IntersectionInfos.UNINIALIZED

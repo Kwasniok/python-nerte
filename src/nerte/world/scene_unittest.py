@@ -6,6 +6,8 @@
 
 import unittest
 
+from nerte.base_test_case import BaseTestCase
+
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
@@ -16,7 +18,7 @@ from nerte.world.camera import Camera
 from nerte.world.scene import Scene
 
 
-class SceneTest(unittest.TestCase):
+class SceneTest(BaseTestCase):
     def setUp(self) -> None:
         # object
         p0 = Coordinates3D((1.0, 0.0, 0.0))

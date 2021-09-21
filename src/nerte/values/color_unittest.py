@@ -6,17 +6,19 @@
 
 import unittest
 
+from nerte.base_test_case import BaseTestCase
+
 from nerte.values.color import Color, Colors
 
 
-class ColorTest(unittest.TestCase):
+class ColorTest(BaseTestCase):
     def test_color(self) -> None:
         """Tests color rgb attribute."""
         c = Color(1, 2, 3)
         self.assertTrue(c.rgb == (1, 2, 3))
 
 
-class ColorsTest(unittest.TestCase):
+class ColorsTest(BaseTestCase):
     def test_colors(self) -> None:
         """Tests color constants."""
         self.assertTrue(Colors.BLACK.rgb == (0, 0, 0))

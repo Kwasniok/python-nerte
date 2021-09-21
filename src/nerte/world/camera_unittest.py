@@ -6,6 +6,8 @@
 
 import unittest
 
+from nerte.base_test_case import BaseTestCase
+
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
@@ -13,7 +15,7 @@ from nerte.values.manifolds.cartesian import Plane
 from nerte.world.camera import Camera
 
 
-class CameraTest(unittest.TestCase):
+class CameraTest(BaseTestCase):
     def setUp(self) -> None:
         self.location = Coordinates3D((1.1, 2.2, 3.3))
         rnge = Domain1D(-1.0, 1.0)

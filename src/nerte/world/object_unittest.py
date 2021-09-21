@@ -6,13 +6,15 @@
 
 import unittest
 
+from nerte.base_test_case import BaseTestCase
+
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.face import Face
 from nerte.values.color import Color, Colors
 from nerte.world.object import Object
 
 
-class ObjectTest(unittest.TestCase):
+class ObjectTest(BaseTestCase):
     def setUp(self) -> None:
         # face
         p0 = Coordinates3D((1.0, 0.0, 0.0))

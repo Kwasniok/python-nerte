@@ -6,12 +6,12 @@ import unittest
 
 import math
 
-from nerte.values.coordinates_unittest import CoordinatesTestCaseMixin
+from nerte.base_test_case import BaseTestCase
 
 from nerte.values.domain import Domain1D
 
 
-class Domain1DConstructorTest(unittest.TestCase):
+class Domain1DConstructorTest(BaseTestCase):
     def setUp(self) -> None:
         self.invalid_values = (math.nan,)
 
@@ -41,7 +41,7 @@ class Domain1DConstructorTest(unittest.TestCase):
             Domain1D(math.inf, math.inf)
 
 
-class Domain1DPropertiesTest(unittest.TestCase, CoordinatesTestCaseMixin):
+class Domain1DPropertiesTest(BaseTestCase):
     def setUp(self) -> None:
         self.domain_params = (
             (1.1, 3.3),

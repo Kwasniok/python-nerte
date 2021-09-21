@@ -6,6 +6,8 @@
 
 import unittest
 
+from nerte.base_test_case import BaseTestCase
+
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
@@ -20,7 +22,7 @@ from nerte.render.projection import ProjectionMode
 from nerte.render.image_color_renderer import ImageColorRenderer
 
 
-class ImageColorRendererConstructorTest(unittest.TestCase):
+class ImageColorRendererConstructorTest(BaseTestCase):
     def test_image_color_renderer_costructor(self) -> None:
         # pylint: disable=R0201
         """Tests constructor."""
@@ -28,7 +30,7 @@ class ImageColorRendererConstructorTest(unittest.TestCase):
             ImageColorRenderer(projection_mode=mode)
 
 
-class ImageColorRendererRenderTest(unittest.TestCase):
+class ImageColorRendererRenderTest(BaseTestCase):
     def setUp(self) -> None:
         # object
         p0 = Coordinates3D((-1.0, -1.0, 0.0))
@@ -69,7 +71,7 @@ class ImageColorRendererRenderTest(unittest.TestCase):
             self.assertTrue(renderer.last_image() is not None)
 
 
-class ImageColorRendererProjectionTest(unittest.TestCase):
+class ImageColorRendererProjectionTest(BaseTestCase):
     def setUp(self) -> None:
         # object
         p0 = Coordinates3D((-1.0, -1.0, 0.0))

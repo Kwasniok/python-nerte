@@ -4,36 +4,26 @@
 # pylint: disable=C0115
 # pylint: disable=C0144
 
-
 import unittest
 
-from typing import Callable, Type, TypeVar, cast
+from typing import Callable, Type, cast
 
 from itertools import permutations
 import math
 
-from nerte.geometry.geometry_unittest import GeometryTestCaseMixin
+from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, length
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.ray_segment import RaySegment
+from nerte.values.ray_segment_unittest import ray_segment_equiv
 from nerte.values.ray_segment_delta import RaySegmentDelta
 from nerte.values.face import Face
 from nerte.values.intersection_info import IntersectionInfo
 from nerte.values.extended_intersection_info import ExtendedIntersectionInfo
 from nerte.values.util.convert import coordinates_as_vector
 from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
-
-T = TypeVar("T")
-
-
-# apply function n times
-def _iterate(f: Callable[[T], T], n: int, x0: T) -> T:
-    x = x0
-    for _ in range(n):
-        x = f(x)
-    return x
 
 
 def _make_dummy_runge_kutta_geometry() -> Type[RungeKuttaGeometry]:
@@ -96,9 +86,7 @@ def _make_dummy_runge_kutta_geometry() -> Type[RungeKuttaGeometry]:
     return DummyRungeKuttaGeometry
 
 
-class RungeKuttaGeometryImplementaionTest(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class RungeKuttaGeometryImplementaionTest(BaseTestCase):
     def test_runge_kutta_geometry_implementation(self) -> None:
         # pylint: disable=R0201
         """
@@ -107,9 +95,7 @@ class RungeKuttaGeometryImplementaionTest(
         _make_dummy_runge_kutta_geometry()
 
 
-class DummyRungeKuttaGeometryConstructorTest(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class DummyRungeKuttaGeometryConstructorTest(BaseTestCase):
     def setUp(self) -> None:
         self.DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
 
@@ -161,9 +147,7 @@ class DummyRungeKuttaGeometryConstructorTest(
             )
 
 
-class DummyRungeKuttaGeometryPropertiesTest(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class DummyRungeKuttaGeometryPropertiesTest(BaseTestCase):
     def setUp(self) -> None:
         self.DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.max_ray_depth = 1.0
@@ -182,9 +166,7 @@ class DummyRungeKuttaGeometryPropertiesTest(
         self.assertTrue(self.geometry.max_steps() == self.max_steps)
 
 
-class DummyRungeKuttaGeometryIsValidCoordinateTest(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class DummyRungeKuttaGeometryIsValidCoordinateTest(BaseTestCase):
     def setUp(self) -> None:
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.geo = DummyRungeKuttaGeometryGeo(
@@ -207,9 +189,7 @@ class DummyRungeKuttaGeometryIsValidCoordinateTest(
             self.assertFalse(self.geo.is_valid_coordinate(coords))
 
 
-class RungeKuttaGeometryRayConstructorTest(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class RungeKuttaGeometryRayConstructorTest(BaseTestCase):
     def setUp(self) -> None:
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.geo = DummyRungeKuttaGeometryGeo(
@@ -231,9 +211,7 @@ class RungeKuttaGeometryRayConstructorTest(
         )
 
 
-class RungeKuttaGeometryRayPropertiesTest(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class RungeKuttaGeometryRayPropertiesTest(BaseTestCase):
     def setUp(self) -> None:
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.geo = DummyRungeKuttaGeometryGeo(
@@ -253,14 +231,14 @@ class RungeKuttaGeometryRayPropertiesTest(
 
     def test_properties(self) -> None:
         """Tests the properties."""
-        self.assertRaySegmentEquiv(
-            self.ray.initial_tangent(), self.initial_tangent
+        self.assertPredicate2(
+            ray_segment_equiv,
+            self.ray.initial_tangent(),
+            self.initial_tangent,
         )
 
 
-class RungeKuttaGeometryRayIntersectsTest(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class RungeKuttaGeometryRayIntersectsTest(BaseTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -336,7 +314,7 @@ class RungeKuttaGeometryRayIntersectsTest(
 
 
 class RungeKuttaGeometryRayIntersectsRayLeftManifoldEventuallyTest(
-    unittest.TestCase, GeometryTestCaseMixin
+    BaseTestCase
 ):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
@@ -374,7 +352,7 @@ class RungeKuttaGeometryRayIntersectsRayLeftManifoldEventuallyTest(
 
 
 class RungeKuttaGeometryRayIntersectsRayLeftManifoldImmediatelyTest(
-    unittest.TestCase, GeometryTestCaseMixin
+    BaseTestCase
 ):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
@@ -413,9 +391,7 @@ class RungeKuttaGeometryRayIntersectsRayLeftManifoldImmediatelyTest(
             )
 
 
-class RungeKuttaGeometryRayIntersectsMetaDataTest(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class RungeKuttaGeometryRayIntersectsMetaDataTest(BaseTestCase):
     def setUp(self) -> None:
         p1 = Coordinates3D((1.0, 0.0, 0.0))
         p2 = Coordinates3D((0.0, 1.0, 0.0))
@@ -462,9 +438,7 @@ class RungeKuttaGeometryRayIntersectsMetaDataTest(
                     self.assertAlmostEqual(meta_data["steps"], steps)
 
 
-class DummyRungeKuttaGeometryRayFromTest(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class DummyRungeKuttaGeometryRayFromTest(BaseTestCase):
     def setUp(self) -> None:
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.geo = DummyRungeKuttaGeometryGeo(
@@ -473,10 +447,10 @@ class DummyRungeKuttaGeometryRayFromTest(
         self.coords1 = Coordinates3D((0.0, 0.0, 0.0))
         self.coords2 = Coordinates3D((0.0, 1.0, 2.0))
         self.invalid_coords = Coordinates3D((-3.0, 0.0, 0.0))
-        self.vector = AbstractVector((0.0, 1.0, 2.0))  # equiv to cords2
-        self.tangent = TangentialVector(point=self.coords1, vector=self.vector)
+        vector = AbstractVector((0.0, 1.0, 2.0))  # equiv to cords2
+        self.tangent = TangentialVector(point=self.coords1, vector=vector)
         self.invalid_tangent = TangentialVector(
-            point=self.invalid_coords, vector=self.vector
+            point=self.invalid_coords, vector=vector
         )
         self.init_seg = self.geo.normalized(
             RaySegment(tangential_vector=self.tangent)
@@ -486,7 +460,7 @@ class DummyRungeKuttaGeometryRayFromTest(
         """Tests ray from coordinates."""
         ray = self.geo.ray_from_coords(self.coords1, self.coords2)
         init_seg = ray.initial_tangent()
-        self.assertRaySegmentEquiv(init_seg, self.init_seg)
+        self.assertPredicate2(ray_segment_equiv, init_seg, self.init_seg)
         with self.assertRaises(ValueError):
             self.geo.ray_from_coords(self.invalid_coords, self.coords2)
         with self.assertRaises(ValueError):
@@ -498,12 +472,12 @@ class DummyRungeKuttaGeometryRayFromTest(
         """Tests ray from tangent."""
         ray = self.geo.ray_from_tangent(self.tangent)
         init_seg = ray.initial_tangent()
-        self.assertRaySegmentEquiv(init_seg, self.init_seg)
+        self.assertPredicate2(ray_segment_equiv, init_seg, self.init_seg)
         with self.assertRaises(ValueError):
             self.geo.ray_from_tangent(self.invalid_tangent)
 
 
-class RungeKuttaGeometryVectorTest(unittest.TestCase, GeometryTestCaseMixin):
+class RungeKuttaGeometryVectorTest(BaseTestCase):
     def setUp(self) -> None:
         v = AbstractVector((1.0, -2.0, 3.0))
         self.coords = Coordinates3D((0.0, 0.0, 0.0))
@@ -526,7 +500,11 @@ class RungeKuttaGeometryVectorTest(unittest.TestCase, GeometryTestCaseMixin):
     def test_dummy_runge_kutta_geometry_normalized(self) -> None:
         """Tests dummy Runge-Kutta geometry vector normalization."""
         ray_normalized = self.geo.normalized(self.ray)
-        self.assertRaySegmentEquiv(ray_normalized, self.ray_normalized)
+        self.assertPredicate2(
+            ray_segment_equiv,
+            ray_normalized,
+            self.ray_normalized,
+        )
 
 
 if __name__ == "__main__":

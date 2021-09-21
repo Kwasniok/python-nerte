@@ -9,11 +9,10 @@ import unittest
 
 from typing import cast
 
-from nerte.geometry.carthesian_geometry_unittest import (
-    CarthesianGeometryTestCaseMixin,
-)
+from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D, Coordinates2D
+from nerte.values.coordinates_unittest import coordinates_2d_equiv
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.tangential_vector import TangentialVector
@@ -21,6 +20,7 @@ from nerte.values.manifolds.cartesian import Plane as PlaneCartesian
 from nerte.values.manifolds.cylindrical import Plane as PlaneCylindric
 from nerte.world.camera import Camera
 from nerte.geometry.carthesian_geometry import CarthesianGeometry
+from nerte.geometry.carthesian_geometry_unittest import carthesian_ray_equiv
 from nerte.render.projection import (
     detector_manifold_coords,
     orthographic_ray_for_pixel,
@@ -31,9 +31,7 @@ from nerte.render.projection import (
 )
 
 
-class DetectorManifoldCoordsTest(
-    unittest.TestCase, CarthesianGeometryTestCaseMixin
-):
+class DetectorManifoldCoordsTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, 0.0))
@@ -85,7 +83,7 @@ class DetectorManifoldCoordsTest(
             c2d = detector_manifold_coords(
                 camera=self.camera, pixel_location=pix_loc
             )
-            self.assertCoordinates2DEquiv(c2d, coords2d)
+            self.assertPredicate2(coordinates_2d_equiv, c2d, coords2d)
 
     def test_detector_manifold_coords_invalid_values(self) -> None:
         """Tests detector manifold coordinate caulation's invalid values."""
@@ -100,9 +98,7 @@ class DetectorManifoldCoordsTest(
                 )
 
 
-class OrthographicProjectionTest(
-    unittest.TestCase, CarthesianGeometryTestCaseMixin
-):
+class OrthographicProjectionTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, 0.0))
@@ -166,7 +162,7 @@ class OrthographicProjectionTest(
             )
             self.assertIsInstance(ray, CarthesianGeometry.Ray)
             cart_ray = cast(CarthesianGeometry.Ray, ray)
-            self.assertCarthRayEquiv(cart_ray, pix_ray)
+            self.assertPredicate2(carthesian_ray_equiv, cart_ray, pix_ray)
 
     def test_orthographic_ray_for_pixel_invalid_values(self) -> None:
         """Tests orthographic projection for pixel's invalid values."""
@@ -183,9 +179,7 @@ class OrthographicProjectionTest(
                 )
 
 
-class PerspectiveProjectionTest(
-    unittest.TestCase, CarthesianGeometryTestCaseMixin
-):
+class PerspectiveProjectionTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, 0.0))
@@ -249,7 +243,7 @@ class PerspectiveProjectionTest(
             )
             self.assertIsInstance(ray, CarthesianGeometry.Ray)
             cart_ray = cast(CarthesianGeometry.Ray, ray)
-            self.assertCarthRayEquiv(cart_ray, pix_ray)
+            self.assertPredicate2(carthesian_ray_equiv, cart_ray, pix_ray)
 
     def test_perspective_ray_for_pixel_invalid_values(self) -> None:
         """Tests perspective projection for pixel's invalid values."""
@@ -266,7 +260,7 @@ class PerspectiveProjectionTest(
                 )
 
 
-class ObscuraProjectionTest(unittest.TestCase, CarthesianGeometryTestCaseMixin):
+class ObscuraProjectionTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, 1.0))
@@ -330,7 +324,7 @@ class ObscuraProjectionTest(unittest.TestCase, CarthesianGeometryTestCaseMixin):
             )
             self.assertIsInstance(ray, CarthesianGeometry.Ray)
             cart_ray = cast(CarthesianGeometry.Ray, ray)
-            self.assertCarthRayEquiv(cart_ray, pix_ray)
+            self.assertPredicate2(carthesian_ray_equiv, cart_ray, pix_ray)
 
     def test_perspective_ray_for_pixel_invalid_values(self) -> None:
         """Tests perspective projection for pixel's invalid values."""
@@ -347,7 +341,7 @@ class ObscuraProjectionTest(unittest.TestCase, CarthesianGeometryTestCaseMixin):
                 )
 
 
-class RaySegmentForPixelTest(unittest.TestCase):
+class RaySegmentForPixelTest(BaseTestCase):
     def test_ray_for_pixel(self) -> None:
         # pylint: disable=W0143
         """Test ray generator selector."""

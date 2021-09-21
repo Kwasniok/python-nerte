@@ -4,19 +4,13 @@
 # pylint: disable=C0115
 # pylint: disable=C0144
 
-
 import unittest
+
 
 from itertools import permutations
 import math
 
-from nerte.values.coordinates_unittest import CoordinatesTestCaseMixin
-from nerte.values.linalg_unittest import LinAlgTestCaseMixin
-from nerte.values.tangential_vector_unittest import (
-    TangentialVectorTestCaseMixin,
-)
-from nerte.values.ray_segment_unittest import RaySegmentTestCaseMixin
-from nerte.values.ray_segment_delta_unittest import RaySegmentDeltaTestCaseMixin
+from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector
@@ -31,17 +25,7 @@ from nerte.geometry.geometry import intersection_ray_depth
 # TODO: add dedicated tests for intersection infos where ray leaves the manifold
 
 
-class GeometryTestCaseMixin(
-    CoordinatesTestCaseMixin,
-    LinAlgTestCaseMixin,
-    TangentialVectorTestCaseMixin,
-    RaySegmentTestCaseMixin,
-    RaySegmentDeltaTestCaseMixin,
-):
-    pass
-
-
-class IntersectionRayDepthTest(unittest.TestCase, GeometryTestCaseMixin):
+class IntersectionRayDepthTest(BaseTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!

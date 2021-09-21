@@ -3,13 +3,14 @@
 # pylint: disable=C0114
 # pylint: disable=C0115
 
-
 import unittest
 
 from typing import Callable, TypeVar
 
 import math
 import numpy as np
+
+from nerte.base_test_case import BaseTestCase
 
 from nerte.algorithm.runge_kutta import runge_kutta_4_delta
 
@@ -24,7 +25,7 @@ def _iterate(f: Callable[[T], T], n: int, x0: T) -> T:
     return x
 
 
-class RungeKutta4DeltaFreeTest(unittest.TestCase):
+class RungeKutta4DeltaFreeTest(BaseTestCase):
     def setUp(self) -> None:
         self.x0 = np.array((1.0, 1.0))
         # force-free propagation (in carthesian coordinates)
@@ -45,7 +46,7 @@ class RungeKutta4DeltaFreeTest(unittest.TestCase):
         self.assertAlmostEqual(x1[1], self.x1[1])
 
 
-class RungeKutta4DeltaConstantForceTest(unittest.TestCase):
+class RungeKutta4DeltaConstantForceTest(BaseTestCase):
     def setUp(self) -> None:
         self.x0 = np.array((0.0, 0.0))
         # constant force propagation (in carthesian coordinates)
@@ -66,7 +67,7 @@ class RungeKutta4DeltaConstantForceTest(unittest.TestCase):
         self.assertAlmostEqual(x1[1], self.x1[1])
 
 
-class RungeKutta4DeltaHamonicOscillatorTest(unittest.TestCase):
+class RungeKutta4DeltaHamonicOscillatorTest(BaseTestCase):
     def setUp(self) -> None:
         self.x0 = np.array((1.0, 0.0))
         # harmonic oscillator (in carthesian coordinates)
@@ -85,3 +86,7 @@ class RungeKutta4DeltaHamonicOscillatorTest(unittest.TestCase):
         )
         self.assertAlmostEqual(x1[0], self.x1[0], places=5)
         self.assertAlmostEqual(x1[1], self.x1[1], places=2)
+
+
+if __name__ == "__main__":
+    unittest.main()

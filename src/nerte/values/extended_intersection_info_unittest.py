@@ -10,11 +10,12 @@ from typing import Optional
 
 import math
 
+from nerte.base_test_case import BaseTestCase
 from nerte.values.intersection_info import IntersectionInfo
 from nerte.values.extended_intersection_info import ExtendedIntersectionInfo
 
 
-class ExtendedIntersectionInfoConstructorTest(unittest.TestCase):
+class ExtendedIntersectionInfoConstructorTest(BaseTestCase):
     def test_basic_constructor(self) -> None:
         """Tests basic constructor calls without meta data."""
         ExtendedIntersectionInfo()
@@ -43,7 +44,7 @@ class ExtendedIntersectionInfoConstructorTest(unittest.TestCase):
         ExtendedIntersectionInfo(meta_data={"a": 1.0, "b": 2.0})
 
 
-class ExtendedIntersectionInfoInheritedPropertiesTest(unittest.TestCase):
+class ExtendedIntersectionInfoInheritedPropertiesTest(BaseTestCase):
     def setUp(self) -> None:
         self.info0 = ExtendedIntersectionInfo()
         self.hitting_ray_depths = (0.0, 1.0)
@@ -87,7 +88,7 @@ class ExtendedIntersectionInfoInheritedPropertiesTest(unittest.TestCase):
             self.assertTrue(info.has_miss_reason(miss_reason))
 
 
-class ExtendedIntersectionPropertiesTest(unittest.TestCase):
+class ExtendedIntersectionPropertiesTest(BaseTestCase):
     def setUp(self) -> None:
         ray_depths = (0.0, 1.0, math.inf, math.inf, math.inf, math.inf)
         miss_reasons = (

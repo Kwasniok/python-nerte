@@ -8,11 +8,12 @@ import unittest
 
 import math
 
-from nerte.values.coordinates_unittest import CoordinatesTestCaseMixin
-from nerte.values.linalg_unittest import LinAlgTestCaseMixin
+from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
+from nerte.values.coordinates_unittest import coordinates_3d_equiv
 from nerte.values.linalg import AbstractVector
+from nerte.values.linalg_unittest import vec_equiv
 from nerte.values.util.convert import (
     coordinates_as_vector,
     vector_as_coordinates,
@@ -23,9 +24,7 @@ from nerte.values.util.convert import (
 )
 
 
-class ConvertCoordinatesVectorTypeTest(
-    unittest.TestCase, CoordinatesTestCaseMixin, LinAlgTestCaseMixin
-):
+class ConvertCoordinatesVectorTypeTest(BaseTestCase):
     def setUp(self) -> None:
         cs0 = (0.0, 0.0, 0.0)
         cs1 = (1.1, 2.2, 3.3)
@@ -36,22 +35,32 @@ class ConvertCoordinatesVectorTypeTest(
 
     def test_coordinates_to_vector(self) -> None:
         """Tests coordinates to vector reinterpretation."""
-        self.assertVectorEquiv(coordinates_as_vector(self.coords0), self.vec0)
-        self.assertVectorEquiv(coordinates_as_vector(self.coords1), self.vec1)
+        self.assertPredicate2(
+            vec_equiv,
+            coordinates_as_vector(self.coords0),
+            self.vec0,
+        )
+        self.assertPredicate2(
+            vec_equiv,
+            coordinates_as_vector(self.coords1),
+            self.vec1,
+        )
 
     def test_vector_to_coordinates(self) -> None:
         """Tests vector to coordinates reinterpretation."""
-        self.assertCoordinates3DEquiv(
-            vector_as_coordinates(self.vec0), self.coords0
+        self.assertPredicate2(
+            coordinates_3d_equiv,
+            vector_as_coordinates(self.vec0),
+            self.coords0,
         )
-        self.assertCoordinates3DEquiv(
-            vector_as_coordinates(self.vec1), self.coords1
+        self.assertPredicate2(
+            coordinates_3d_equiv,
+            vector_as_coordinates(self.vec1),
+            self.coords1,
         )
 
 
-class ConvertCoordinates(
-    unittest.TestCase, CoordinatesTestCaseMixin, LinAlgTestCaseMixin
-):
+class ConvertCoordinates(BaseTestCase):
     def setUp(self) -> None:
         # r, phi, z
         self.cylin_coords = Coordinates3D((2.0, math.pi / 4, -3.0))
@@ -97,7 +106,8 @@ class ConvertCoordinates(
 
     def test_carthesian_to_cylindric_coords(self) -> None:
         """Tests cathesian to cylindrical coordinates conversion."""
-        self.assertCoordinates3DEquiv(
+        self.assertPredicate2(
+            coordinates_3d_equiv,
             carthesian_to_cylindric_coords(self.carth_coords),
             self.cylin_coords,
         )
@@ -107,7 +117,8 @@ class ConvertCoordinates(
 
     def test_cylindric_to_carthesian_coords(self) -> None:
         """Tests cylindircal to carthesian coordinates conversion."""
-        self.assertCoordinates3DEquiv(
+        self.assertPredicate2(
+            coordinates_3d_equiv,
             cylindric_to_carthesian_coords(self.cylin_coords),
             self.carth_coords,
         )
@@ -118,7 +129,8 @@ class ConvertCoordinates(
     def test_carthesian_to_cylindric_vector(self) -> None:
         """Tests cathesian vector to cylindrical vector conversion."""
         for carth_vec, cylin_vec in zip(self.carth_vecs, self.cylin_vecs):
-            self.assertVectorEquiv(
+            self.assertPredicate2(
+                vec_equiv,
                 carthesian_to_cylindric_vector(self.carth_coords, carth_vec),
                 cylin_vec,
             )
@@ -129,7 +141,8 @@ class ConvertCoordinates(
     def test_cylindric_to_carthesian_vector(self) -> None:
         """Tests cylindrical vector to cathesian vector conversion."""
         for cylin_vec, carth_vec in zip(self.cylin_vecs, self.carth_vecs):
-            self.assertVectorEquiv(
+            self.assertPredicate2(
+                vec_equiv,
                 cylindric_to_carthesian_vector(self.cylin_coords, cylin_vec),
                 carth_vec,
             )

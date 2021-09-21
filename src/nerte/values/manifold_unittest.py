@@ -8,8 +8,7 @@ import unittest
 
 import itertools
 
-from nerte.values.coordinates_unittest import CoordinatesTestCaseMixin
-from nerte.values.linalg_unittest import LinAlgTestCaseMixin
+from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates1D, Coordinates2D, Coordinates3D
 from nerte.values.domain import Domain1D
@@ -22,11 +21,7 @@ from nerte.values.manifold import (
 )
 
 
-class ManifoldTestCaseMixin(CoordinatesTestCaseMixin, LinAlgTestCaseMixin):
-    pass
-
-
-class Manifold1DImplementationTest(unittest.TestCase, ManifoldTestCaseMixin):
+class Manifold1DImplementationTest(BaseTestCase):
     def setUp(self) -> None:
         self.domain = Domain1D(-1.0, 1.0)
         self.coord_inside_domain = (-1.0, 0.0, 1.0)
@@ -63,7 +58,7 @@ class Manifold1DImplementationTest(unittest.TestCase, ManifoldTestCaseMixin):
         self.assertTrue(man.domain[0] is self.domain)
 
 
-class Manifold2DImplementationTest(unittest.TestCase, ManifoldTestCaseMixin):
+class Manifold2DImplementationTest(BaseTestCase):
     def setUp(self) -> None:
         self.domain = Domain1D(-1.0, 1.0)
         self.coord_inside_domain = (-1.0, 0.0, 1.0)
@@ -117,7 +112,7 @@ class Manifold2DImplementationTest(unittest.TestCase, ManifoldTestCaseMixin):
         self.assertTrue(man.domain[1] is self.domain)
 
 
-class Manifold3DImplementationTest(unittest.TestCase, ManifoldTestCaseMixin):
+class Manifold3DImplementationTest(BaseTestCase):
     def setUp(self) -> None:
         self.domain = Domain1D(-1.0, 1.0)
         self.coord_inside_domain = (-1.0, 0.0, 1.0)

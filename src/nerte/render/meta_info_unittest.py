@@ -8,6 +8,8 @@ import unittest
 
 import math
 
+from nerte.base_test_case import BaseTestCase
+
 from nerte.values.color import Color
 from nerte.values.intersection_info import IntersectionInfo
 from nerte.values.extended_intersection_info import ExtendedIntersectionInfo
@@ -15,7 +17,7 @@ from nerte.render.image_filter_renderer import IntersectionInfoMatrix
 from nerte.render.meta_info_filter import MetaInfoFilter
 
 
-class MetaInfoFilterConstructorTest(unittest.TestCase):
+class MetaInfoFilterConstructorTest(BaseTestCase):
     def setUp(self) -> None:
         self.meta_data_keys = ("", "a", "B")
         self.valid_values = (-1.0, 0.0, 1.0)
@@ -60,7 +62,7 @@ class MetaInfoFilterConstructorTest(unittest.TestCase):
                         )
 
 
-class MetaInfoFilterProperties(unittest.TestCase):
+class MetaInfoFilterProperties(BaseTestCase):
     def setUp(self) -> None:
         self.key = "key"
         self.min_val = 0.0
@@ -79,7 +81,7 @@ class MetaInfoFilterProperties(unittest.TestCase):
         self.assertTupleEqual(self.filter.color_no_meta_data.rgb, (0, 255, 255))
 
 
-class MetaInfoFilterColorForInfoTest(unittest.TestCase):
+class MetaInfoFilterColorForInfoTest(BaseTestCase):
     def setUp(self) -> None:
         self.infos = (
             IntersectionInfo(ray_depth=0.3),
@@ -112,7 +114,7 @@ class MetaInfoFilterColorForInfoTest(unittest.TestCase):
             self.assertTupleEqual(c.rgb, col.rgb)
 
 
-class MetaInfoFilterApplyTest(unittest.TestCase):
+class MetaInfoFilterApplyTest(BaseTestCase):
     def setUp(self) -> None:
         self.infos = (
             IntersectionInfo(ray_depth=0.3),

@@ -4,59 +4,36 @@
 # pylint: disable=C0115
 # pylint: disable=C0144
 
-
 import unittest
 
-from typing import Optional, cast
 from itertools import permutations
 
-from nerte.values.ray_segment_unittest import RaySegmentTestCaseMixin
-from nerte.geometry.geometry_unittest import GeometryTestCaseMixin
+from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, normalized
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.face import Face
 from nerte.values.ray_segment import RaySegment
+from nerte.values.ray_segment_unittest import ray_segment_equiv
 from nerte.geometry.carthesian_geometry import CarthesianGeometry
 
 
-class CarthesianGeometryTestCaseMixin(GeometryTestCaseMixin):
-    # pylint: disable=R0903
-    def assertCarthRayEquiv(
-        self,
-        x: CarthesianGeometry.Ray,
-        y: CarthesianGeometry.Ray,
-        msg: Optional[str] = None,
-    ) -> None:
-        """
-        Asserts the equivalence of two ray's.
-        """
-
-        test_case = cast(unittest.TestCase, self)
-        try:
-            cast(RaySegmentTestCaseMixin, self).assertRaySegmentEquiv(
-                x.as_segment(), y.as_segment()
-            )
-        except AssertionError as ae:
-            msg_full = f"Ray segment {x} is not equivalent to {y}."
-            if msg is not None:
-                msg_full += f" : {msg}"
-            raise test_case.failureException(msg_full) from ae
+def carthesian_ray_equiv(
+    x: CarthesianGeometry.Ray, y: CarthesianGeometry.Ray
+) -> bool:
+    """Returns true iff both carthesian rays are considered equivalent."""
+    return ray_segment_equiv(x.as_segment(), y.as_segment())
 
 
-class CarthesianGeometryConstructorTest(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class CarthesianGeometryConstructorTest(BaseTestCase):
     def test_constructor(self) -> None:
         # pylint: disable=R0201
         """Test the constructor."""
         CarthesianGeometry()
 
 
-class CarthesianGeometryIsValidCoordinateTest(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class CarthesianGeometryIsValidCoordinateTest(BaseTestCase):
     def setUp(self) -> None:
         self.geo = CarthesianGeometry()
         self.valid_coords = (Coordinates3D((0.0, 0.0, 0.0)),)
@@ -67,7 +44,7 @@ class CarthesianGeometryIsValidCoordinateTest(
             self.assertTrue(self.geo.is_valid_coordinate(coords))
 
 
-class CarthesianGeometryRayFromTest(unittest.TestCase, GeometryTestCaseMixin):
+class CarthesianGeometryRayFromTest(BaseTestCase):
     def setUp(self) -> None:
         self.geo = CarthesianGeometry()
         self.coords1 = Coordinates3D((0.0, 0.0, 0.0))
@@ -84,18 +61,16 @@ class CarthesianGeometryRayFromTest(unittest.TestCase, GeometryTestCaseMixin):
         """Tests ray from coordinates."""
         ray = self.geo.ray_from_coords(self.coords1, self.coords2)
         init_seg = ray.as_segment()
-        self.assertRaySegmentEquiv(init_seg, self.init_seg)
+        self.assertPredicate2(ray_segment_equiv, init_seg, self.init_seg)
 
     def test_ray_from_tangent(self) -> None:
         """Tests ray from tangent."""
         ray = self.geo.ray_from_tangent(self.tangent)
         init_seg = ray.as_segment()
-        self.assertRaySegmentEquiv(init_seg, self.init_seg)
+        self.assertPredicate2(ray_segment_equiv, init_seg, self.init_seg)
 
 
-class CarthesianGeometryIntersectsTest1(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class CarthesianGeometryIntersectsTest1(BaseTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -129,9 +104,7 @@ class CarthesianGeometryIntersectsTest1(
                 self.assertTrue(info.hits())
 
 
-class CarthesianGeometryIntersectsTest2(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class CarthesianGeometryIntersectsTest2(BaseTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -165,9 +138,7 @@ class CarthesianGeometryIntersectsTest2(
                 self.assertTrue(info.misses())
 
 
-class CarthesianGeometryIntersectsTest3(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class CarthesianGeometryIntersectsTest3(BaseTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -199,9 +170,7 @@ class CarthesianGeometryIntersectsTest3(
                 self.assertTrue(info.misses())
 
 
-class CarthesianGeometryIntersectsTest4(
-    unittest.TestCase, GeometryTestCaseMixin
-):
+class CarthesianGeometryIntersectsTest4(BaseTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!

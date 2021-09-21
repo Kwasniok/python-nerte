@@ -6,84 +6,23 @@
 
 import unittest
 
-from typing import Optional, cast
-from abc import ABC
-
-from nerte.values.coordinates_unittest import CoordinatesTestCaseMixin
-from nerte.values.linalg_unittest import LinAlgTestCaseMixin
+from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
+from nerte.values.coordinates_unittest import coordinates_3d_equiv
 from nerte.values.linalg import AbstractVector
+from nerte.values.linalg_unittest import vec_equiv
 from nerte.values.tangential_vector import TangentialVector
 
 
-class TangentialVectorTestCaseMixin(ABC):
-    # pylint: disable=R0903
-    def assertTangentialVectorEquiv(
-        self,
-        x: TangentialVector,
-        y: TangentialVector,
-        msg: Optional[str] = None,
-    ) -> None:
-        """
-        Asserts the equivalence of two tangential vectors.
-        """
-
-        test_case = cast(unittest.TestCase, self)
-        try:
-            cast(CoordinatesTestCaseMixin, self).assertCoordinates3DEquiv(
-                x.point, y.point
-            )
-            cast(LinAlgTestCaseMixin, self).assertVectorEquiv(
-                x.vector, y.vector
-            )
-        except AssertionError as ae:
-            msg_full = f"Tangential vector {x} is not equivalent to {y}."
-            if msg is not None:
-                msg_full += f" : {msg}"
-            raise test_case.failureException(msg_full) from ae
+def tan_vec_equiv(x: TangentialVector, y: TangentialVector) -> bool:
+    """Returns true iff both tangential vectors are considered equivalent."""
+    return coordinates_3d_equiv(x.point, y.point) and vec_equiv(
+        x.vector, y.vector
+    )
 
 
-class AssertTangentialVectorEquivMixinTest(
-    unittest.TestCase,
-    CoordinatesTestCaseMixin,
-    LinAlgTestCaseMixin,
-    TangentialVectorTestCaseMixin,
-):
-    def setUp(self) -> None:
-        coords_0 = Coordinates3D((0.0, 0.0, 0.0))
-        coords_1 = Coordinates3D((1.0, 2.0, 3.0))
-        vec_1 = AbstractVector((4.0, 5.0, 6.0))
-        self.tangential_vector_0 = TangentialVector(
-            point=coords_0, vector=vec_1
-        )
-        self.tangential_vector_1 = TangentialVector(
-            point=coords_1, vector=vec_1
-        )
-
-    def test_tangential_vector_equiv(self) -> None:
-        """Tests the tangential vector test case mixin."""
-        self.assertTangentialVectorEquiv(
-            self.tangential_vector_0, self.tangential_vector_0
-        )
-        self.assertTangentialVectorEquiv(
-            self.tangential_vector_1, self.tangential_vector_1
-        )
-
-    def test_tangential_vector_equiv_raise(self) -> None:
-        """Tests the tangential vector test case mixin raise."""
-        with self.assertRaises(AssertionError):
-            self.assertTangentialVectorEquiv(
-                self.tangential_vector_0, self.tangential_vector_1
-            )
-
-
-class TangentialVectorConstructorTest(
-    unittest.TestCase,
-    CoordinatesTestCaseMixin,
-    LinAlgTestCaseMixin,
-    TangentialVectorTestCaseMixin,
-):
+class TangentialVectorConstructorTest(BaseTestCase):
     def setUp(self) -> None:
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
         self.point = Coordinates3D((0.0, 0.0, 0.0))
@@ -94,12 +33,7 @@ class TangentialVectorConstructorTest(
         TangentialVector(point=self.point, vector=self.vector)
 
 
-class TangentialVectorPropertiesTest(
-    unittest.TestCase,
-    CoordinatesTestCaseMixin,
-    LinAlgTestCaseMixin,
-    TangentialVectorTestCaseMixin,
-):
+class TangentialVectorPropertiesTest(BaseTestCase):
     def setUp(self) -> None:
         self.point = Coordinates3D((0.0, 0.0, 0.0))
         self.vector = AbstractVector((1.0, 0.0, 0.0))
@@ -112,8 +46,12 @@ class TangentialVectorPropertiesTest(
         """Tests the properties."""
 
         for tan_vec in self.tangential_vectors:
-            self.assertCoordinates3DEquiv(tan_vec.point, self.point)
-            self.assertVectorEquiv(tan_vec.vector, self.vector)
+            self.assertPredicate2(
+                coordinates_3d_equiv,
+                tan_vec.point,
+                self.point,
+            )
+            self.assertPredicate2(vec_equiv, tan_vec.vector, self.vector)
 
 
 if __name__ == "__main__":

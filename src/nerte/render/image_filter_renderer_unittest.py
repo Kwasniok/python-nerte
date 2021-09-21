@@ -9,6 +9,8 @@ import unittest
 import math
 from PIL import Image
 
+from nerte.base_test_case import BaseTestCase
+
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
@@ -33,7 +35,7 @@ from nerte.render.image_filter_renderer import (
 )
 
 
-class ColorForMissReasonTest(unittest.TestCase):
+class ColorForMissReasonTest(BaseTestCase):
     def assertAllColorsUnique(self, colors: list[Color]) -> None:
         """ "Asserts all colors in the list are unique."""
 
@@ -73,7 +75,7 @@ class ColorForMissReasonTest(unittest.TestCase):
             color_for_miss_reason(self.info_hit)
 
 
-class ColorForNormalizedValueTest(unittest.TestCase):
+class ColorForNormalizedValueTest(BaseTestCase):
     def setUp(self) -> None:
         norm_values = (0, 34, 128, 163, 255)
         self.norm_value_colors = tuple(Color(v, v, v) for v in norm_values)
@@ -91,7 +93,7 @@ class ColorForNormalizedValueTest(unittest.TestCase):
                 color_for_normalized_value(val)
 
 
-class FilterImplentationTest(unittest.TestCase):
+class FilterImplentationTest(BaseTestCase):
     def test_implementation(self) -> None:
         # pylint: disable=R0201
         """Tests the implementation of the interface."""
@@ -109,14 +111,14 @@ class FilterImplentationTest(unittest.TestCase):
         DummyFilter()
 
 
-class HitFilterConstructorTest(unittest.TestCase):
+class HitFilterConstructorTest(BaseTestCase):
     def test_constructor(self) -> None:
         # pylint: disable=R0201
         """Tests the constructor."""
         HitFilter()
 
 
-class HitFilterColorsTest(unittest.TestCase):
+class HitFilterColorsTest(BaseTestCase):
     def assertAllColorsUnique(self, colors: list[Color]) -> None:
         """ "Asserts all colors in the list are unique."""
 
@@ -165,7 +167,7 @@ class HitFilterColorsTest(unittest.TestCase):
             )
 
 
-class HitFilterApplyTest(unittest.TestCase):
+class HitFilterApplyTest(BaseTestCase):
     def setUp(self) -> None:
         self.infos = (
             IntersectionInfo(ray_depth=1.0),
@@ -187,7 +189,7 @@ class HitFilterApplyTest(unittest.TestCase):
             self.assertTrue(image.getpixel((0, 0)) == pixel_color.rgb)
 
 
-class ImageFilterRendererConstructorTest(unittest.TestCase):
+class ImageFilterRendererConstructorTest(BaseTestCase):
     def setUp(self) -> None:
         self.filter = HitFilter()
 
@@ -198,7 +200,7 @@ class ImageFilterRendererConstructorTest(unittest.TestCase):
             ImageFilterRenderer(projection_mode=mode, filtr=self.filter)
 
 
-class ImageFilterRendererPropertiesTest(unittest.TestCase):
+class ImageFilterRendererPropertiesTest(BaseTestCase):
     def setUp(self) -> None:
         # filter
         self.filter = HitFilter()
@@ -215,7 +217,7 @@ class ImageFilterRendererPropertiesTest(unittest.TestCase):
             self.assertIs(renderer.filter(), self.filter)
 
 
-class ImageFilterRendererChangeFilterTest(unittest.TestCase):
+class ImageFilterRendererChangeFilterTest(BaseTestCase):
     def setUp(self) -> None:
         # filters
         self.filter1 = HitFilter()
@@ -246,7 +248,7 @@ class ImageFilterRendererChangeFilterTest(unittest.TestCase):
             self.assertIs(renderer.filter(), self.filter2)
 
 
-class ImageFilterRendererAutoApplyFilterTest(unittest.TestCase):
+class ImageFilterRendererAutoApplyFilterTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, -1.0))
@@ -315,7 +317,7 @@ class ImageFilterRendererAutoApplyFilterTest(unittest.TestCase):
             self.assertIsNone(img1)
 
 
-class ImageFilterRendererRenderTest(unittest.TestCase):
+class ImageFilterRendererRenderTest(BaseTestCase):
     def setUp(self) -> None:
         # object
         p0 = Coordinates3D((-1.0, -1.0, 0.0))
@@ -359,7 +361,7 @@ class ImageFilterRendererRenderTest(unittest.TestCase):
             self.assertTrue(renderer.last_image() is not None)
 
 
-class ImageFilterProjectionTest(unittest.TestCase):
+class ImageFilterProjectionTest(BaseTestCase):
     def assertGrayPixel(self, rgb: tuple[int, int, int]) -> None:
         """Asserts the RGB triple is gray."""
         self.assertTrue(rgb[0] == rgb[1] == rgb[2])
@@ -478,7 +480,7 @@ class ImageFilterProjectionTest(unittest.TestCase):
                 )
 
 
-class ImageFilterRendererProjectionFailureTest1(unittest.TestCase):
+class ImageFilterRendererProjectionFailureTest1(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, 0.0))
@@ -534,7 +536,7 @@ class ImageFilterRendererProjectionFailureTest1(unittest.TestCase):
             self.assertTrue(found_failure_pixel)
 
 
-class ImageFilterRendererProjectionFailureTest2(unittest.TestCase):
+class ImageFilterRendererProjectionFailureTest2(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, 0.0))

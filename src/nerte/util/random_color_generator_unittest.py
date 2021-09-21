@@ -3,14 +3,16 @@
 # pylint: disable=C0114
 # pylint: disable=C0115
 # pylint: disable=C0144
-
 import unittest
+
 import itertools
+
+from nerte.base_test_case import BaseTestCase
 
 from nerte.util.random_color_generator import RandomColorGenerator
 
 
-class RandomColorGeneratorTest(unittest.TestCase):
+class RandomColorGeneratorTest(BaseTestCase):
     def test_colors_generated_consistently(self) -> None:
         """Tests (pseudo-)random color generator for consistency."""
         # RandomColorGenerator with identical seeds must behave identical
