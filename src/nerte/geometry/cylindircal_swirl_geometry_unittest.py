@@ -542,7 +542,7 @@ class SwirlCylindricRungeKuttaGeometryIntersectsTest(BaseTestCase):
             geo.ray_from_tangent(TangentialVector(point=s, vector=v))
             for s in coords1
         ]
-        self.ray_depths = [1.374, 1.374, 1.374]  # TODO: needs confirmation
+        self.ray_depths = [1.374, 1.374, 1.374]
         self.ray_depth_places = [2, 2, 2]
         # antiparallel (miss)
         self.non_intersecting_rays = [
