@@ -6,6 +6,8 @@
 
 import unittest
 
+from typing import Callable, Optional
+
 import math
 
 from nerte.base_test_case import BaseTestCase
@@ -32,6 +34,30 @@ def scalar_equiv(x: float, y: float) -> bool:
     return math.isclose(x, y)
 
 
+def scalar_almost_equal(
+    places: Optional[int] = None, delta: Optional[float] = None
+) -> Callable[[float, float], bool]:
+    """
+    Returns a function which true iff both scalars are considered almost equal.
+    """
+
+    # pylint: disable=W0621
+    def scalar_almost_equal(x: float, y: float) -> bool:
+        if delta is None:
+            if places is None:
+                return round(x - y, 7) == 0
+            return round(x - y, places) == 0
+        if places is not None:
+            raise ValueError(
+                f"Cannot determine scalar almost equal if both"
+                f" places={places} and delta={delta} is given."
+                f" Select only one of them!"
+            )
+        return abs(x - y) <= delta
+
+    return scalar_almost_equal
+
+
 def vec_equiv(x: AbstractVector, y: AbstractVector) -> bool:
     """Returns true iff both vectors are considered equivalent."""
     return (
@@ -39,6 +65,21 @@ def vec_equiv(x: AbstractVector, y: AbstractVector) -> bool:
         and scalar_equiv(x[1], y[1])
         and scalar_equiv(x[2], y[2])
     )
+
+
+def vec_almost_equal(
+    places: Optional[int] = None, delta: Optional[float] = None
+) -> Callable[[AbstractVector, AbstractVector], bool]:
+    """
+    Returns a function which true iff both vectors are considered almost equal.
+    """
+
+    # pylint: disable=W0621
+    def vec_almost_equal(x: AbstractVector, y: AbstractVector) -> bool:
+        pred = scalar_almost_equal(places=places, delta=delta)
+        return pred(x[0], y[0]) and pred(x[1], y[1]) and pred(x[2], y[2])
+
+    return vec_almost_equal
 
 
 def mat_equiv(x: AbstractMatrix, y: AbstractMatrix) -> bool:

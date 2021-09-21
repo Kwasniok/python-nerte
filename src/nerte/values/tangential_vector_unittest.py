@@ -6,12 +6,17 @@
 
 import unittest
 
+from typing import Callable, Optional
+
 from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.coordinates_unittest import coordinates_3d_equiv
+from nerte.values.coordinates_unittest import (
+    coordinates_3d_equiv,
+    coordinates_3d_almost_equal,
+)
 from nerte.values.linalg import AbstractVector
-from nerte.values.linalg_unittest import vec_equiv
+from nerte.values.linalg_unittest import vec_equiv, vec_almost_equal
 from nerte.values.tangential_vector import TangentialVector
 
 
@@ -20,6 +25,23 @@ def tan_vec_equiv(x: TangentialVector, y: TangentialVector) -> bool:
     return coordinates_3d_equiv(x.point, y.point) and vec_equiv(
         x.vector, y.vector
     )
+
+
+def tan_vec_almost_equal(
+    places: Optional[int] = None, delta: Optional[float] = None
+) -> Callable[[TangentialVector, TangentialVector], bool]:
+    """
+    Returns a function which true iff both tangential vector are considered
+    almost equal.
+    """
+
+    # pylint: disable=W0621
+    def tan_vec_almost_equal(x: TangentialVector, y: TangentialVector) -> bool:
+        pred_coords = coordinates_3d_almost_equal(places=places, delta=delta)
+        pred_vec = vec_almost_equal(places=places, delta=delta)
+        return pred_coords(x.point, y.point) and pred_vec(x.vector, y.vector)
+
+    return tan_vec_almost_equal
 
 
 class TangentialVectorConstructorTest(BaseTestCase):
