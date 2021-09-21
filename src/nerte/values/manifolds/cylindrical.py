@@ -5,14 +5,58 @@ import math
 from typing import Optional
 
 from nerte.values.coordinates import Coordinates2D, Coordinates3D
+from nerte.values.tangential_vector import TangentialVector
+from nerte.values.tangential_vector_delta import TangentialVectorDelta
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import (
     AbstractVector,
+    AbstractMatrix,
+    Metric,
+    mat_vec_mult,
     cross,
     are_linear_dependent,
 )
 from nerte.values.manifold import Manifold2D
 from nerte.values.util.convert import vector_as_coordinates
+
+
+def cylindirc_metric(coords: Coordinates3D) -> Metric:
+    # pylint: disable=W0613
+    """Returns the local metric for the given coordinates."""
+    # pylint: disable=C0103
+    r, _, _ = coords
+    return Metric(
+        AbstractMatrix(
+            AbstractVector((1, 0, 0)),
+            AbstractVector((0, r ** 2, 0)),
+            AbstractVector((0, 0, 1)),
+        )
+    )
+
+
+def cylindirc_geodesic_equation(
+    tangent: TangentialVector,
+) -> TangentialVectorDelta:
+    """
+    Returns a tangential vector delta which encodes the geodesic equation of
+    cylindric coordinates.
+
+    Let x(𝜆) be a geodesic.
+    For tangent (x, dx/d𝜆) it returns (dx/d𝜆, d^2x/d𝜆^2).
+    """
+    # pylint: disable=C0103
+    r, _, _ = tangent.point
+    v_r, v_phi, _ = tangent.vector[0], tangent.vector[1], tangent.vector[2]
+    return TangentialVectorDelta(
+        tangent.vector,
+        AbstractVector(
+            (
+                r * v_phi ** 2,
+                -2 * v_r * v_phi / r,
+                0,
+            )
+        ),
+    )
 
 
 def carthesian_to_cylindric_coords(coords: Coordinates3D) -> Coordinates3D:
@@ -47,6 +91,7 @@ def cylindric_to_carthesian_coords(coords: Coordinates3D) -> Coordinates3D:
     x = r * math.cos(phi)
     y = r * math.sin(phi)
     return Coordinates3D((x, y, z))
+
 
 def carthesian_to_cylindric_vector(
     coords: Coordinates3D, vec: AbstractVector
@@ -98,6 +143,56 @@ def cylindric_to_carthesian_vector(
         AbstractVector((0.0, 0.0, 1.0)),
     )
     return mat_vec_mult(jacobian, vec)
+
+
+def carthesian_to_cylindric_tangential_vector(
+    tangential_vector: TangentialVector,
+) -> TangentialVector:
+    """
+    Returns tangential vector transformed from carthesian to cylindircal
+    coordinates.
+    """
+    # pylint:disable=C0103
+    x, y, z = tangential_vector.point
+    assert -math.inf < x < math.inf, f"{x} is out of bounds"
+    assert -math.inf < y < math.inf, f"{y} is out of bounds"
+    assert -math.inf < z < math.inf, f"{z} is out of bounds"
+    r = math.sqrt(x ** 2 + y ** 2)
+    phi = math.atan2(y, x)
+    jacobian = AbstractMatrix(
+        AbstractVector((math.cos(phi), math.sin(phi), 0.0)),
+        AbstractVector((-math.sin(phi) / r, math.cos(phi) / r, 0.0)),
+        AbstractVector((0.0, 0.0, 1.0)),
+    )
+    return TangentialVector(
+        point=Coordinates3D((r, phi, z)),
+        vector=mat_vec_mult(jacobian, tangential_vector.vector),
+    )
+
+
+def cylindric_to_carthesian_tangential_vector(
+    tangential_vector: TangentialVector,
+) -> TangentialVector:
+    """
+    Returns tangential vector transformed from cylindirc to carthesian
+    coordinates.
+    """
+    # pylint:disable=C0103
+    r, phi, z = tangential_vector.point
+    assert 0 < r < math.inf, f"r={r} is out of bounds"
+    assert -math.pi < phi < math.pi, f"phi={phi} is out of bounds"
+    assert -math.inf < z < math.inf, f"z={z} is out of bounds"
+    x = r * math.cos(phi)
+    y = r * math.sin(phi)
+    jacobian = AbstractMatrix(
+        AbstractVector((math.cos(phi), -r * math.sin(phi), 0.0)),
+        AbstractVector((math.sin(phi), r * math.cos(phi), 0.0)),
+        AbstractVector((0.0, 0.0, 1.0)),
+    )
+    return TangentialVector(
+        point=Coordinates3D((x, y, z)),
+        vector=mat_vec_mult(jacobian, tangential_vector.vector),
+    )
 
 
 class Plane(Manifold2D):

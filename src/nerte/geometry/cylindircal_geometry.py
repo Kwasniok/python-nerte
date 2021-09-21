@@ -12,11 +12,10 @@ from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_delta import TangentialVectorDelta
 from nerte.values.linalg import (
     AbstractVector,
-    AbstractMatrix,
-    Metric,
     length,
 )
 from nerte.values.manifolds.cylindrical import (
+    cylindirc_metric,
     cylindric_to_carthesian_coords,
     carthesian_to_cylindric_vector,
 )
@@ -92,22 +91,10 @@ class CylindricRungeKuttaGeometry(RungeKuttaGeometry):
                 f"Cannot calculate length of tangential vector {tangent}."
                 f" Coordinates are outside of the manifold."
             )
-        metric = self.metric(tangent.point)
+        metric = cylindirc_metric(tangent.point)
         return length(tangent.vector, metric=metric)
 
     def geodesic_equation(
         self,
     ) -> Callable[[TangentialVectorDelta], TangentialVectorDelta]:
         return self._geodesic_equation
-
-    def metric(self, coords: Coordinates3D) -> Metric:
-        # pylint: disable=R0201,C0103
-        """Returns the local metric for the given coordinates."""
-        r, _, _ = coords
-        return Metric(
-            AbstractMatrix(
-                AbstractVector((1, 0, 0)),
-                AbstractVector((0, r ** 2, 0)),
-                AbstractVector((0, 0, 1)),
-            )
-        )
