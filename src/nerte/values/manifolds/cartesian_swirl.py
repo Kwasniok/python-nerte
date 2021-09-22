@@ -9,6 +9,7 @@ from nerte.values.domain import Domain1D
 from nerte.values.linalg import (
     AbstractVector,
     is_zero_vector,
+    mat_vec_mult,
     cross,
     are_linear_dependent,
 )
@@ -222,3 +223,249 @@ def carthesian_swirl_to_cartesian_coords(
                    and 0 < r = sqrt(x^2 + y^2)
     """
     return carthesian_to_cartesian_swirl_coords(-swirl, coords)
+
+
+def carthesian_to_cartesian_swirl_vector(
+    swirl: float, coords: Coordinates3D, vec: AbstractVector
+) -> AbstractVector:
+    """
+    Returns vector in tangential vector space of cartesian swirl coordinate
+    from a vector in tangential vector space in carthesian coordinates.
+
+    :param coords: carthesian coordinates (x, y, z)
+                   where -inf < x < inf and -inf < y < inf and -inf < z < inf
+                   and 0 < r = sqrt(x^2 + y^2)
+    :param vec: vector in tangential vector space of the carthesian coordinates
+                (x, y, z) such that vec = e_x * x + e_y * y + e_z * z
+    """
+    # pylint:disable=C0103
+    a = swirl
+    x, y, z = coords
+    if (
+        not -math.inf < x < math.inf
+        or not -math.inf < y < math.inf
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot convert carthesian vector={vec} @ coordinates"
+            f" (x,y,z)={coords} to cartesian swirl={swirl} vector."
+            f" All carthesian coordinate values must be finte."
+        )
+    r = math.sqrt(x ** 2 + y ** 2)
+    if not 0 < r < math.inf:
+        raise ValueError(
+            f"Cannot convert carthesian vector={vec} @ coordinates"
+            f" (x,y,z)={coords} to cartesian swirl={swirl} vector."
+            f" All cartesian coordinates are restricted by"
+            f" 0 < r."
+            f" Here r={r}."
+        )
+    # frequent values
+    phi = math.atan2(y, x)
+    arz = a * r * z
+    alpha = phi - arz  # deswirl
+    cos_alpha = math.cos(alpha)
+    sin_alpha = math.sin(alpha)
+    # jacobian
+    jacobian = AbstractMatrix(
+        AbstractVector(
+            (
+                ((x + y * arz) * cos_alpha + y * sin_alpha) / r,
+                -(y * cos_alpha + (x + y * arz) * sin_alpha) / r,
+                a * y * r,
+            )
+        ),
+        AbstractVector(
+            (
+                ((y - x * arz) * cos_alpha - x * sin_alpha) / r,
+                (x * cos_alpha + (y - x * arz) * sin_alpha) / r,
+                -(a * x * r),
+            )
+        ),
+        AbstractVector((0, 0, 1)),
+    )
+
+    return mat_vec_mult(jacobian, vec)
+
+
+def cartesian_swirl_to_carthesian_vector(
+    swirl: float, coords: Coordinates3D, vec: AbstractVector
+) -> AbstractVector:
+    """
+    Returns vector in tangential vector space of carthesian coordinates from
+    a vector in tangential vector space in cartesian swirl  coordinates.
+
+    :param coords: cartesian swirl coordinates (x, y, z)
+                   where -inf < x < inf and -inf < y < inf and -inf < z < inf
+                   and 0 < r = sqrt(x^2 + y^2)
+    :param vec: vector in tangential vector space of the cartesian swirl
+                coordinates (x, y, z) such that
+                vec = e_x * x + e_y * y + e_z * z
+    """
+    # pylint:disable=C0103
+    a = swirl
+    x, y, z = coords
+    if (
+        not -math.inf < x < math.inf
+        or not -math.inf < y < math.inf
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot convert carthesian swirl={swirl} vector={vec} @ coordinates"
+            f" (x,y,z)={coords} to cartesian vector."
+            f" All carthesian swirl coordinate values must be finte."
+        )
+    r = math.sqrt(x ** 2 + y ** 2)
+    if not 0 < r < math.inf:
+        raise ValueError(
+            f"Cannot convert cartesian swirl={swirl} vector={vec} @ coordinates"
+            f" (x,y,z)={coords} to carthesian vector."
+            f" All cartesian swirl coordinates are restricted by"
+            f" 0 < r."
+            f" Here r={r}."
+        )
+    # frequent values
+    alpha = math.atan2(y, x)  # already swirled
+    arz = a * r * z
+    cos_alpha = math.cos(alpha)
+    sin_alpha = math.sin(alpha)
+    # jacobian
+    jacobian = AbstractMatrix(
+        AbstractVector(
+            (
+                (x * cos_alpha + (y - x * arz) * sin_alpha) / r,
+                (y * cos_alpha - (x + y * arz) * sin_alpha) / r,
+                -(a * (r ** 2) * sin_alpha),
+            )
+        ),
+        AbstractVector(
+            (
+                ((-y + x * arz) * cos_alpha + x * sin_alpha) / r,
+                ((x + y * arz) * cos_alpha + y * sin_alpha) / r,
+                a * (r ** 2) * cos_alpha,
+            )
+        ),
+        AbstractVector((0, 0, 1)),
+    )
+    return mat_vec_mult(jacobian, vec)
+
+
+def carthesian_to_cartesian_swirl_tangential_vector(
+    swirl: float,
+    tangential_vector: TangentialVector,
+) -> TangentialVector:
+    """
+    Returns tangential vector transformed from cartesian to cylindircal
+    coordinates.
+    """
+    # pylint:disable=C0103
+    a = swirl
+    x, y, z = tangential_vector.point
+    if (
+        not -math.inf < x < math.inf
+        or not -math.inf < y < math.inf
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot convert carthesian tangential vector={tangential_vector}"
+            f" to cartesian swirl={swirl} tangential vector."
+            f" All carthesian coordinate values must be finte."
+        )
+    r = math.sqrt(x ** 2 + y ** 2)
+    if 0 < r < math.inf:
+        raise ValueError(
+            f"Cannot convert carthesian tangential vector={tangential_vector}"
+            f" to cartesian swirl={swirl} tangential vector."
+            f" All cartesian coordinates are restricted by"
+            f" 0 < r."
+            f" Here r={r}."
+        )
+    # frequent values
+    phi = math.atan2(y, x)
+    arz = a * r * z
+    alpha = phi + arz  # swirl
+    cos_alpha = math.cos(alpha)
+    sin_alpha = math.sin(alpha)
+    # jacobian
+    jacobian = AbstractMatrix(
+        AbstractVector(
+            (
+                ((x + y * arz) * cos_alpha + y * sin_alpha) / r,
+                -(y * cos_alpha + (x + y * arz) * sin_alpha) / r,
+                a * y * r,
+            )
+        ),
+        AbstractVector(
+            (
+                ((y - x * arz) * cos_alpha - x * sin_alpha) / r,
+                (x * cos_alpha + (y - x * arz) * sin_alpha) / r,
+                -(a * x * r),
+            )
+        ),
+        AbstractVector((0, 0, 1)),
+    )
+
+    return TangentialVector(
+        point=Coordinates3D((r * cos_alpha, r * sin_alpha, z)),
+        vector=mat_vec_mult(jacobian, tangential_vector.vector),
+    )
+
+
+def cartesian_swirl_to_carthesian_tangential_vector(
+    swirl: float,
+    tangential_vector: TangentialVector,
+) -> TangentialVector:
+    """
+    Returns tangential vector transformed from cartesian swirl to carthesian
+    coordinates.
+    """
+    # pylint:disable=C0103
+    a = swirl
+    x, y, z = tangential_vector.point
+    if (
+        not -math.inf < x < math.inf
+        or not -math.inf < y < math.inf
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot convert carthesian swirl={swirl} tangential vector={tangential_vector}"
+            f" to cartesian tangential vector."
+            f" All carthesian coordinate values must be finte."
+        )
+    r = math.sqrt(x ** 2 + y ** 2)
+    if 0 < r < math.inf:
+        raise ValueError(
+            f"Cannot convert carthesian swirl={swirl} tangential vector={tangential_vector}"
+            f" to cartesian tangential vector."
+            f" All cartesian coordinates are restricted by"
+            f" 0 < r."
+            f" Here r={r}."
+        )
+    # frequent values
+    alpha = math.atan2(y, x)  # already swirled
+    arz = a * r * z
+    phi = alpha - arz  # deswirl
+    cos_alpha = math.cos(alpha)
+    sin_alpha = math.sin(alpha)
+    # jacobian
+    jacobian = AbstractMatrix(
+        AbstractVector(
+            (
+                (x * cos_alpha + (y - x * arz) * sin_alpha) / r,
+                (y * cos_alpha - (x + y * arz) * sin_alpha) / r,
+                -(a * (r ** 2) * sin_alpha),
+            )
+        ),
+        AbstractVector(
+            (
+                ((-y + x * arz) * cos_alpha + x * sin_alpha) / r,
+                ((x + y * arz) * cos_alpha + y * sin_alpha) / r,
+                a * (r ** 2) * cos_alpha,
+            )
+        ),
+        AbstractVector((0, 0, 1)),
+    )
+    return TangentialVector(
+        point=Coordinates3D((r * math.cos(phi), r * math.sin(phi), z)),
+        vector=mat_vec_mult(jacobian, tangential_vector.vector),
+    )
