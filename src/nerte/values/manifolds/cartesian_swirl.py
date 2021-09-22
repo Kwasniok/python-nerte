@@ -172,3 +172,53 @@ def carthesian_swirl_geodesic_equation(
             )
         ),
     )
+
+
+def carthesian_to_cartesian_swirl_coords(
+    swirl: float,
+    coords: Coordinates3D,
+) -> Coordinates3D:
+    """
+    Returns cartesian swirl coordinates obtained from carthesian coordinates.
+
+    :param coords: carthesian coordinates (x, y, z)
+                   where -inf < x < inf and -inf < y < inf and -inf < z < inf
+                   and 0 < r = sqrt(x^2 + y^2)
+    """
+    # pylint:disable=C0103
+    a = swirl
+    x, y, z = coords
+    if (
+        not -math.inf < x < math.inf
+        or not -math.inf < y < math.inf
+        or not -math.inf < z < math.inf
+    ):
+        raise ValueError(
+            f"Cannot convert carthesian coordinates={coords} to carthesian swirl"
+            f" coordinates. All values must be finte."
+        )
+    r = math.sqrt(x ** 2 + y ** 2)
+    if not r > 0.0:
+        raise ValueError(
+            f"Cannot convert carthesian coordinates={coords} to cartesian swirl"
+            f" coordinates. All cartesian swirl coordinates are restricted by"
+            f" 0 < r but r={r}."
+        )
+    phi = math.atan2(y, x)
+    return Coordinates3D(
+        (r * math.cos(a * r * z + phi), r * math.sin(a * r * z + phi), z)
+    )
+
+
+def carthesian_swirl_to_cartesian_coords(
+    swirl: float,
+    coords: Coordinates3D,
+) -> Coordinates3D:
+    """
+    Returns cartesian coordinates obtained from carthesian swirl coordinates.
+
+    :param coords: carthesian swirl coordinates (x, y, z)
+                   where -inf < x < inf and -inf < y < inf and -inf < z < inf
+                   and 0 < r = sqrt(x^2 + y^2)
+    """
+    return carthesian_to_cartesian_swirl_coords(-swirl, coords)
