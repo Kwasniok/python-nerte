@@ -285,7 +285,7 @@ def carthesian_to_carthesian_swirl_vector(
         AbstractVector(
             (
                 ((x + y * arz) * cos_alpha + y * sin_alpha) / r,
-                -(y * cos_alpha + (x + y * arz) * sin_alpha) / r,
+                (-y * cos_alpha + (x + y * arz) * sin_alpha) / r,
                 a * y * r,
             )
         ),
@@ -298,7 +298,6 @@ def carthesian_to_carthesian_swirl_vector(
         ),
         AbstractVector((0, 0, 1)),
     )
-
     return mat_vec_mult(jacobian, vec)
 
 
@@ -386,7 +385,7 @@ def carthesian_to_carthesian_swirl_tangential_vector(
             f" All carthesian coordinate values must be finte."
         )
     r = math.sqrt(x ** 2 + y ** 2)
-    if 0 < r < math.inf:
+    if not 0 < r < math.inf:
         raise ValueError(
             f"Cannot convert carthesian tangential vector={tangential_vector}"
             f" to carthesian swirl={swirl} tangential vector."
@@ -405,7 +404,7 @@ def carthesian_to_carthesian_swirl_tangential_vector(
         AbstractVector(
             (
                 ((x + y * arz) * cos_alpha + y * sin_alpha) / r,
-                -(y * cos_alpha + (x + y * arz) * sin_alpha) / r,
+                (-y * cos_alpha + (x + y * arz) * sin_alpha) / r,
                 a * y * r,
             )
         ),
@@ -447,7 +446,7 @@ def carthesian_swirl_to_carthesian_tangential_vector(
             f" All carthesian coordinate values must be finte."
         )
     r = math.sqrt(x ** 2 + y ** 2)
-    if 0 < r < math.inf:
+    if not 0 < r < math.inf:
         raise ValueError(
             f"Cannot convert carthesian swirl={swirl} tangential vector={tangential_vector}"
             f" to carthesian tangential vector."
