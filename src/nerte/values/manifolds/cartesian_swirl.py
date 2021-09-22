@@ -34,19 +34,34 @@ def carthesian_swirl_metric(swirl: float, coords: Coordinates3D) -> Metric:
         )
 
     # frequent factors
-    axyz2 = 2 * a * x * y * z
-    r2z2 = r ** 2 + z ** 2
-    R = x ** 2 - y ** 2
-    u = -((a * (R * z + a * r * x * y * r2z2)) / r)
-    w = a ** 2 * r2z2
-    ary = a * r * y
-    arx = a * r * x
+    s = x ** 2 - y ** 2
+    axz = a * x * z
+    ayz = a * y * z
+    axyrz = a * x * y * r * z
 
     return Metric(
         AbstractMatrix(
-            AbstractVector((1 + axyz2 / r + w * y ** 2, u, ary)),
-            AbstractVector((u, 1 - axyz2 / r + w * x ** 2, -arx)),
-            AbstractVector((ary, -arx, 1)),
+            AbstractVector(
+                (
+                    1 + axz * ((-2 * y) / r + axz),
+                    (a * z * (s + axyrz)) / r,
+                    a * (-(y * r) + axz * (r ** 2)),
+                )
+            ),
+            AbstractVector(
+                (
+                    (a * z * (s + axyrz)) / r,
+                    1 + ayz * ((2 * x) / r + ayz),
+                    a * (x * r + ayz * (r ** 2)),
+                )
+            ),
+            AbstractVector(
+                (
+                    a * (-(y * r) + axz * (r ** 2)),
+                    a * (x * r + ayz * (r ** 2)),
+                    1 + a ** 2 * (r ** 2) ** 2,
+                )
+            ),
         )
     )
 
