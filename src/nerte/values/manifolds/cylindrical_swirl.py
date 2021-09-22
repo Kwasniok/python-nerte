@@ -1,4 +1,4 @@
-"""Module for representing manifolds in cylindrical coordinates."""
+"""Module for representing manifolds in cylindrical swirl coordinates."""
 
 import math
 
