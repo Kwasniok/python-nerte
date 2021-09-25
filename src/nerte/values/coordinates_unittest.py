@@ -10,33 +10,12 @@ from typing import Callable, Optional
 
 import math
 
-from nerte.base_test_case import BaseTestCase
+from nerte.base_test_case import BaseTestCase, float_almost_equal
 
 from nerte.values.coordinates import Coordinates3D, Coordinates2D, Coordinates1D
 
 
-def scalar_almost_equal(
-    places: Optional[int] = None, delta: Optional[float] = None
-) -> Callable[[float, float], bool]:
-    """
-    Returns a function which true iff both scalars are considered almost equal.
-    """
-
-    # pylint: disable=W0621
-    def scalar_almost_equal(x: float, y: float) -> bool:
-        if delta is None:
-            if places is None:
-                return round(x - y, 7) == 0
-            return round(x - y, places) == 0
-        if places is not None:
-            raise ValueError(
-                f"Cannot determine scalar almost equal if both"
-                f" places={places} and delta={delta} is given."
-                f" Select only one of them!"
-            )
-        return abs(x - y) <= delta
-
-    return scalar_almost_equal
+scalar_almost_equal = float_almost_equal
 
 
 def coordinates_3d_equiv(x: Coordinates3D, y: Coordinates3D) -> bool:
