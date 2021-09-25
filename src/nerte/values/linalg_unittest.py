@@ -70,6 +70,21 @@ def mat_equiv(x: AbstractMatrix, y: AbstractMatrix) -> bool:
     )
 
 
+def mat_almost_equal(
+    places: Optional[int] = None, delta: Optional[float] = None
+) -> Callable[[AbstractMatrix, AbstractMatrix], bool]:
+    """
+    Returns a function which true iff both matrices are considered almost equal.
+    """
+
+    # pylint: disable=W0621
+    def mat_almost_equal(x: AbstractMatrix, y: AbstractMatrix) -> bool:
+        pred = vec_almost_equal(places=places, delta=delta)
+        return pred(x[0], y[0]) and pred(x[1], y[1]) and pred(x[2], y[2])
+
+    return mat_almost_equal
+
+
 def metric_equiv(x: Metric, y: Metric) -> bool:
     """Returns true iff both metrics are considered equivalent."""
     return mat_equiv(x.matrix(), y.matrix())
