@@ -20,6 +20,7 @@ from nerte.values.linalg import (
     contravariant,
     is_zero_vector,
     mat_vec_mult,
+    mat_mult,
     dot,
     cross,
     length,
@@ -293,6 +294,40 @@ class MatVecMultTest(BaseTestCase):
         self.assertPredicate2(vec_equiv, v, self.vec0)
         v = mat_vec_mult(self.mat1, self.vec4)
         self.assertPredicate2(vec_equiv, v, self.vec5)
+
+
+class MatMultTest(BaseTestCase):
+    # pylint: disable=R0902
+    def setUp(self) -> None:
+        self.vec0 = AbstractVector((0.0, 0.0, 0.0))
+        self.mat0 = AbstractMatrix(self.vec0, self.vec0, self.vec0)
+        self.mat1 = AbstractMatrix(
+            AbstractVector((02.0, 03.0, 05.0)),
+            AbstractVector((07.0, 11.0, 13.0)),
+            AbstractVector((17.0, 19.0, 23.0)),
+        )
+        self.mat2 = AbstractMatrix(
+            AbstractVector((29.0, 31.0, 37.0)),
+            AbstractVector((41.0, 43.0, 47.0)),
+            AbstractVector((53.0, 59.0, 61)),
+        )
+        self.mat3 = AbstractMatrix(
+            AbstractVector((446, 486, 520)),
+            AbstractVector((1343, 1457, 1569)),
+            AbstractVector((2491, 2701, 2925)),
+        )
+
+    def test_mat_mult(self) -> None:
+        """Tests the multiplication of two matrices."""
+        self.assertPredicate2(
+            mat_equiv, mat_mult(self.mat1, self.mat0), self.mat0
+        )
+        self.assertPredicate2(
+            mat_equiv, mat_mult(self.mat0, self.mat1), self.mat0
+        )
+        self.assertPredicate2(
+            mat_equiv, mat_mult(self.mat1, self.mat2), self.mat3
+        )
 
 
 class LengthTest(BaseTestCase):

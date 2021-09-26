@@ -207,6 +207,15 @@ def mat_vec_mult(
     )
 
 
+def mat_mult(
+    matrix1: AbstractMatrix, matrix2: AbstractMatrix
+) -> AbstractMatrix:
+    """Return the product m3 = m1.m2 of the matrices m1 and m2."""
+    return _abstract_matrix_from_numpy(
+        np.dot(matrix1._m, matrix2._m)  # type: ignore[no-untyped-call]
+    )
+
+
 def dot(
     vec1: AbstractVector,
     vec2: AbstractVector,
