@@ -3,6 +3,7 @@
 # pylint: disable=C0114
 # pylint: disable=C0115
 # pylint: disable=C0144
+# pylint: disable=C0302
 
 import unittest
 
@@ -32,15 +33,21 @@ from nerte.values.linalg import (
     AbstractMatrix,
     Metric,
     dot,
-    length,
     are_linear_dependent,
 )
-from nerte.values.linalg_unittest import scalar_equiv, vec_equiv, metric_equiv
-from nerte.values.manifold import OutOfDomainError
-from nerte.values.manifolds.cartesian import (
-    carthesian_metric,
+from nerte.values.linalg_unittest import (
+    scalar_equiv,
+    vec_equiv,
+    mat_equiv,
+    mat_almost_equal,
+    metric_equiv,
 )
+from nerte.values.manifold import OutOfDomainError
 from nerte.values.manifolds.cartesian_swirl import (
+    _metric,
+    _metric_inverted,
+    _christoffel_1,
+    _christoffel_2,
     carthesian_swirl_metric,
     carthesian_swirl_geodesic_equation,
     carthesian_to_carthesian_swirl_coords,
@@ -51,6 +58,221 @@ from nerte.values.manifolds.cartesian_swirl import (
     carthesian_swirl_to_carthesian_tangential_vector,
     Plane,
 )
+
+
+class InternalMetricTest(BaseTestCase):
+    def setUp(self) -> None:
+        self.swirl = 1 / 17
+        self.coords = Coordinates3D((1 / 2, 1 / 3, 1 / 5))
+        self.result = AbstractMatrix(
+            AbstractVector(
+                (
+                    1 + 1 / 170 * (1 / 170 - 4 / math.sqrt(13)),
+                    1 / 43350 + 1 / (102 * math.sqrt(13)),
+                    (13 - 340 * math.sqrt(13)) / 104040,
+                )
+            ),
+            AbstractVector(
+                (
+                    1 / 43350 + 1 / (102 * math.sqrt(13)),
+                    1 + 1 / 255 * (1 / 255 + 6 / math.sqrt(13)),
+                    (13 + 765 * math.sqrt(13)) / 156060,
+                )
+            ),
+            AbstractVector(
+                (
+                    (13 - 340 * math.sqrt(13)) / 104040,
+                    (13 + 765 * math.sqrt(13)) / 156060,
+                    374713 / 374544,
+                )
+            ),
+        )
+
+    def test_metric_fixed_values(self) -> None:
+        """
+        Tests fixed values of metric function.
+        """
+        # pylint: disable=E1133
+        res = _metric(self.swirl, *self.coords)
+        self.assertPredicate2(mat_equiv, res, self.result)
+
+
+class InternalMetricInvertedTest(BaseTestCase):
+    def setUp(self) -> None:
+        self.swirl = 1 / 17
+        self.coords = Coordinates3D((1 / 2, 1 / 3, 1 / 5))
+        self.result = AbstractMatrix(
+            AbstractVector(
+                (
+                    2341261 / 2340900 + 2 / (85 * math.sqrt(13)),
+                    -(361 / 1560600) - 1 / (102 * math.sqrt(13)),
+                    math.sqrt(13) / 306,
+                )
+            ),
+            AbstractVector(
+                (
+                    -(361 / 1560600) - 1 / (102 * math.sqrt(13)),
+                    1040761 / 1040400 - 2 / (85 * math.sqrt(13)),
+                    -(math.sqrt(13) / 204),
+                )
+            ),
+            AbstractVector((math.sqrt(13) / 306, -(math.sqrt(13) / 204), 1)),
+        )
+
+    def test_metric_inverted_fixed_values(self) -> None:
+        """
+        Tests fixed values of metric inverted function.
+        """
+        # pylint: disable=E1133
+        res = _metric_inverted(self.swirl, *self.coords)
+        self.assertPredicate2(mat_equiv, res, self.result)
+
+
+class InternalChristoffel1Test(BaseTestCase):
+    def setUp(self) -> None:
+        self.swirl = 1 / 17
+        self.coords = Coordinates3D((1 / 2, 1 / 3, 1 / 5))
+        self.result = (
+            AbstractMatrix(
+                AbstractVector(
+                    (
+                        1 / 14450 - 8 / (1105 * math.sqrt(13)),
+                        -(27 / (1105 * math.sqrt(13))),
+                        1 / 5780 - 1 / (17 * math.sqrt(13)),
+                    )
+                ),
+                AbstractVector(
+                    (
+                        -(27 / (1105 * math.sqrt(13))),
+                        1 / 14450 - 14 / (221 * math.sqrt(13)),
+                        1 / 8670 - 1 / (6 * math.sqrt(13)),
+                    )
+                ),
+                AbstractVector(
+                    (
+                        1 / 5780 - 1 / (17 * math.sqrt(13)),
+                        1 / 8670 - 1 / (6 * math.sqrt(13)),
+                        -(13 / 20808),
+                    )
+                ),
+            ),
+            AbstractMatrix(
+                AbstractVector(
+                    (
+                        1 / 21675 + 18 / (221 * math.sqrt(13)),
+                        8 / (1105 * math.sqrt(13)),
+                        1 / 8670 + 11 / (51 * math.sqrt(13)),
+                    )
+                ),
+                AbstractVector(
+                    (
+                        8 / (1105 * math.sqrt(13)),
+                        1 / 21675 + 27 / (1105 * math.sqrt(13)),
+                        1 / 51 * (1 / 255 + 3 / math.sqrt(13)),
+                    )
+                ),
+                AbstractVector(
+                    (
+                        1 / 8670 + 11 / (51 * math.sqrt(13)),
+                        1 / 51 * (1 / 255 + 3 / math.sqrt(13)),
+                        -(13 / 31212),
+                    )
+                ),
+            ),
+            AbstractMatrix(
+                AbstractVector((11 / 26010, 1 / 8670, 13 / 10404)),
+                AbstractVector((1 / 8670, 1 / 3060, 13 / 15606)),
+                AbstractVector((13 / 10404, 13 / 15606, 0)),
+            ),
+        )
+
+    def test_christoffel_1_fixed_values(self) -> None:
+        """
+        Tests fixed values of internal Christoffel symbols of first kind
+        function.
+        """
+        # pylint: disable=E1133
+        res = _christoffel_1(self.swirl, *self.coords)
+        self.assertPredicate2(mat_equiv, res[0], self.result[0])
+        self.assertPredicate2(mat_equiv, res[1], self.result[1])
+        self.assertPredicate2(mat_equiv, res[2], self.result[2])
+
+
+class InternalChristoffel2Test(BaseTestCase):
+    def setUp(self) -> None:
+        self.swirl = 1 / 17
+        self.coords = Coordinates3D((1 / 2, 1 / 3, 1 / 5))
+        self.result = (
+            AbstractMatrix(
+                AbstractVector(
+                    (
+                        (-1105 - 115613 * math.sqrt(13)) / 207574250,
+                        -((2 * (7735 + 292619 * math.sqrt(13))) / 311361375),
+                        (-5525 - 260113 * math.sqrt(13)) / 57482100,
+                    )
+                ),
+                AbstractVector(
+                    (
+                        -(2 * (7735 + 292619 * math.sqrt(13))) / 311361375,
+                        -((2 * (29835 + 2275888 * math.sqrt(13))) / 934084125),
+                        (-9945 - 552719 * math.sqrt(13)) / 43111575,
+                    )
+                ),
+                AbstractVector(
+                    (
+                        (-5525 - 260113 * math.sqrt(13)) / 57482100,
+                        (-9945 - 552719 * math.sqrt(13)) / 43111575,
+                        -((13 * (765 + math.sqrt(13))) / 15918120),
+                    ),
+                ),
+            ),
+            AbstractMatrix(
+                AbstractVector(
+                    (
+                        (3 * (-13260 + 867013 * math.sqrt(13))) / 415148500,
+                        (1105 + 115613 * math.sqrt(13)) / 207574250,
+                        (-8840 + 635813 * math.sqrt(13)) / 38321400,
+                    )
+                ),
+                AbstractVector(
+                    (
+                        (1105 + 115613 * math.sqrt(13)) / 207574250,
+                        (2 * (7735 + 292619 * math.sqrt(13))) / 311361375,
+                        (5525 + 260113 * math.sqrt(13)) / 57482100,
+                    )
+                ),
+                AbstractVector(
+                    (
+                        (-8840 + 635813 * math.sqrt(13)) / 38321400,
+                        (5525 + 260113 * math.sqrt(13)) / 57482100,
+                        (13 * (-340 + math.sqrt(13))) / 10612080,
+                    )
+                ),
+            ),
+            AbstractMatrix(
+                AbstractVector((0, 0, 0)),
+                AbstractVector((0, 0, 0)),
+                AbstractVector((0, 0, 0)),
+            ),
+        )
+        self.places = 12
+
+    def test_christoffel_2_fixed_values(self) -> None:
+        """
+        Tests fixed values of internal Christoffel symbols of second kind
+        function.
+        """
+        # pylint: disable=E1133
+        res = _christoffel_2(self.swirl, *self.coords)
+        self.assertPredicate2(
+            mat_almost_equal(places=self.places), res[0], self.result[0]
+        )
+        self.assertPredicate2(
+            mat_almost_equal(places=self.places), res[1], self.result[1]
+        )
+        self.assertPredicate2(
+            mat_almost_equal(places=self.places), res[2], self.result[2]
+        )
 
 
 class CarthesianSwirlMetricTest(BaseTestCase):
@@ -112,75 +334,148 @@ class CarthesianSwirlMetricTest(BaseTestCase):
             )
 
 
-# TODO: edge case + non-edge case
-class CarthesianSwirlGeodesicEquationTest(BaseTestCase):
+class CarthesianSwirlGeodesicEquationFixedValuesTest(BaseTestCase):
     def setUp(self) -> None:
-        self.swirl = 0.0
+        self.swirls = (1 / 17,)
+        self.tangents = (
+            TangentialVector(
+                Coordinates3D((1 / 2, 1 / 3, 1 / 5)),
+                AbstractVector((1 / 7, 1 / 11, 1 / 13)),
+            ),
+        )
+        self.tangent_expected = (
+            TangentialVector(
+                Coordinates3D((1 / 7, 1 / 11, 1 / 13)),
+                AbstractVector(
+                    (
+                        (4371354585 - 151216999357 * math.sqrt(13))
+                        / 398749303953000,
+                        (2019475900 + 155727653557 * math.sqrt(13))
+                        / 265832869302000,
+                        0,
+                    )
+                ),
+            ),
+        )
+        self.places = (10,)
+
+    def test_fixed_values(self) -> None:
+        """Test the carthesian swirl geodesic equation for fixed values."""
+        for swirl, tan, tan_expect, places in zip(
+            self.swirls, self.tangents, self.tangent_expected, self.places
+        ):
+            tan_del = carthesian_swirl_geodesic_equation(swirl, tan)
+            self.assertPredicate2(
+                tan_vec_almost_equal(places),
+                delta_as_tangent(tan_del),
+                tan_expect,
+            )
+
+
+class CarthesianSwirlGeodesicEquationPropagationTest(BaseTestCase):
+    def setUp(self) -> None:
+        self.swirls = (0.0, 1)
         self.carth_initial_tangent = TangentialVector(
-            point=Coordinates3D((1.0, 2.0, 3.0)),
-            vector=AbstractVector((4.0, 5.0, 6.0)),
+            point=Coordinates3D((0.1, 0.2, 0.3)),
+            vector=AbstractVector((0.4, 0.5, 0.6)),
         )
         self.carth_final_tangent = TangentialVector(
-            point=Coordinates3D((5.0, 7.0, 9.0)),
-            vector=AbstractVector((4.0, 5.0, 6.0)),
+            point=Coordinates3D((0.5, 0.7, 0.9)),
+            vector=AbstractVector((0.4, 0.5, 0.6)),
         )
-        self.carth_swirl_initial_tangent = (
+        self.swirl_initial_tangents = tuple(
             carthesian_to_carthesian_swirl_tangential_vector(
-                self.swirl, self.carth_initial_tangent
+                a, self.carth_initial_tangent
             )
+            for a in self.swirls
         )
-        self.step_size = 0.1
+        self.step_size = 0.01
         self.steps = math.floor(1 / self.step_size)
-        self.places = 3
+        self.places = (10, 8)
 
-    def test_geodesic_equation(self) -> None:
-        """Tests the carthesian swirl geodesic equation."""
+    def _propagate_in_carthesian_swirl(
+        self, swirl: float, carth_swirl_tangent_delta: TangentialVectorDelta
+    ) -> TangentialVectorDelta:
 
-        # initial in carthesian coordinates
-        carth_swirl_tangent_delta = tangent_as_delta(
-            self.carth_swirl_initial_tangent
-        )
-
-        # propagate in carthesian coordinates
+        # wrapper of swirl geodesics equation for Runge-Kutta algorithm
         def carth_swirl_geo_eq(
             x: TangentialVectorDelta,
         ) -> TangentialVectorDelta:
             return carthesian_swirl_geodesic_equation(
-                self.swirl, delta_as_tangent(x)
+                swirl, delta_as_tangent(x)
             )
 
-        def carth_swirl_next(x: TangentialVectorDelta) -> TangentialVectorDelta:
+        # Runge-Kutta propataion step
+        def carth_swirl_next(
+            x: TangentialVectorDelta,
+        ) -> TangentialVectorDelta:
             return x + runge_kutta_4_delta(
                 carth_swirl_geo_eq, x, self.step_size
             )
 
+        # propagate in carthesian swirl coordinates
         for _ in range(self.steps):
             carth_swirl_tangent_delta = carth_swirl_next(
                 carth_swirl_tangent_delta
             )
 
-        # final to carthesian coordinates
-        carth_final_tangent = carthesian_swirl_to_carthesian_tangential_vector(
-            self.swirl, delta_as_tangent(carth_swirl_tangent_delta)
-        )
+        return carth_swirl_tangent_delta
 
-        # compare with expectations
-        self.assertPredicate2(
-            tan_vec_almost_equal(places=self.places),
-            carth_final_tangent,
-            self.carth_final_tangent,
-        )
+    def test_geodesic_equation(self) -> None:
+        """Tests the carthesian swirl geodesic equation."""
+
+        for swirl, swirl_initial_tan, places in zip(
+            self.swirls, self.swirl_initial_tangents, self.places
+        ):
+            # initial swirl tangent as delta
+            carth_swirl_tangent_delta = tangent_as_delta(swirl_initial_tan)
+            # propagate the ray using the geodesic equation
+            carth_swirl_tangent_delta = self._propagate_in_carthesian_swirl(
+                swirl,
+                carth_swirl_tangent_delta,
+            )
+            # final tangent to carthesian coordinates
+            carth_final_tangent = (
+                carthesian_swirl_to_carthesian_tangential_vector(
+                    swirl, delta_as_tangent(carth_swirl_tangent_delta)
+                )
+            )
+            # compare with expectations
+            self.assertPredicate2(
+                tan_vec_almost_equal(places=places),
+                carth_final_tangent,
+                self.carth_final_tangent,
+            )
 
 
-# TODO: edge case + non-edge case
-class CarthesianCoordinatesTransfomrationNoSwirlTest(BaseTestCase):
+class CarthesianSwirlCoordinatesTransfomrationTest(BaseTestCase):
     def setUp(self) -> None:
-        # NO SWIRL!
-        self.swirl = 0.0
-
+        self.swirls = (7.0, -11.0)
         # x, y, z
-        self.carth_coords = Coordinates3D((2.0, 3.0, 5.0))
-        self.invalid_carth_coords = (
+        self.carth_coords = (
+            Coordinates3D((1.0, 2.0, 3.0)),
+            Coordinates3D((2.0, -3.0, 5.0)),
+        )
+        # u, v, z
+        self.swirl_coords = (
+            Coordinates3D(
+                (
+                    math.sqrt(5) * math.cos(21 * math.sqrt(5) + math.atan(2)),
+                    math.sqrt(5) * math.sin(21 * math.sqrt(5) + math.atan(2)),
+                    3,
+                )
+            ),
+            Coordinates3D(
+                (
+                    +math.sqrt(13)
+                    * math.cos(55 * math.sqrt(13) + math.atan2(3, 2)),
+                    -math.sqrt(13)
+                    * math.sin(55 * math.sqrt(13) + math.atan2(3, 2)),
+                    5,
+                )
+            ),
+        )
+        self.invalid_coords = (
             Coordinates3D((0.0, 0.0, 0.0)),
             Coordinates3D((0.0, 0.0, 1.0)),
             Coordinates3D((0.0, 0.0, -1.0)),
@@ -189,43 +484,130 @@ class CarthesianCoordinatesTransfomrationNoSwirlTest(BaseTestCase):
             Coordinates3D((0.0, 0.0, math.inf)),
         )
 
-    def test_carthesian_to_carthesian_swirl_coords(self) -> None:
-        """Tests cathesian to carthesian coordinates conversion."""
-        self.assertPredicate2(
-            coordinates_3d_equiv,
-            carthesian_to_carthesian_swirl_coords(
-                self.swirl, self.carth_coords
-            ),
-            self.carth_coords,
-        )
-        for coords in self.invalid_carth_coords:
-            with self.assertRaises(ValueError):
-                carthesian_to_carthesian_swirl_coords(self.swirl, coords)
+    def test_carthesian_to_carthesian_swirl_invalid_values(self) -> None:
+        """
+        Tests cathesian to carthesian swirl coordinates conversion invalid
+        values.
+        """
+        for swirl in self.swirls:
+            for coords in self.invalid_coords:
+                with self.assertRaises(ValueError):
+                    carthesian_to_carthesian_swirl_coords(swirl, coords)
 
-    def test_carthesian_swirl_to_carthesian_coords(self) -> None:
-        """Tests carthesianal to carthesian coordinates conversion."""
-        self.assertPredicate2(
-            coordinates_3d_equiv,
-            carthesian_swirl_to_carthesian_coords(
-                self.swirl, self.carth_coords
-            ),
-            self.carth_coords,
-        )
-        for coords in self.invalid_carth_coords:
-            with self.assertRaises(ValueError):
-                carthesian_swirl_to_carthesian_coords(self.swirl, coords)
+    def test_carthesian_to_carthesian_swirl_identity_case(self) -> None:
+        """
+        Tests cathesian to carthesian swirl coordinates conversion identity
+        special case.
+        """
+        for coords in self.carth_coords:
+            self.assertPredicate2(
+                coordinates_3d_equiv,
+                carthesian_to_carthesian_swirl_coords(swirl=0.0, coords=coords),
+                coords,
+            )
+
+    def test_carthesian_to_carthesian_swirl_fixed_values(self) -> None:
+        """Tests cathesian to carthesian swirl coordinates conversion."""
+        for (
+            swirl,
+            carth_coords,
+            swirl_coords,
+        ) in zip(self.swirls, self.carth_coords, self.swirl_coords):
+            self.assertPredicate2(
+                coordinates_3d_equiv,
+                carthesian_to_carthesian_swirl_coords(swirl, carth_coords),
+                swirl_coords,
+            )
+
+    def test_carthesian_swirl_to_carthesian_invalid_values(self) -> None:
+        """
+        Tests cathesian swirl to carthesian coordinates conversion invalid values.
+        """
+        for swirl in self.swirls:
+            for coords in self.invalid_coords:
+                with self.assertRaises(ValueError):
+                    carthesian_swirl_to_carthesian_coords(swirl, coords)
+
+    def test_carthesian_swirl_to_carthesian_identity_case(self) -> None:
+        """
+        Tests cathesian swirl to carthesian coordinates conversion identity special
+        case.
+        """
+        for coords in self.carth_coords:
+            self.assertPredicate2(
+                coordinates_3d_equiv,
+                carthesian_swirl_to_carthesian_coords(swirl=0.0, coords=coords),
+                coords,
+            )
+
+    def test_carthesian_swirl_to_carthesian_fixed_values(self) -> None:
+        """Tests cathesian swirl to carthesian coordinates conversion."""
+        for (
+            swirl,
+            swirl_coords,
+            carth_coords,
+        ) in zip(self.swirls, self.swirl_coords, self.carth_coords):
+            self.assertPredicate2(
+                coordinates_3d_equiv,
+                carthesian_swirl_to_carthesian_coords(swirl, swirl_coords),
+                carth_coords,
+            )
 
 
-# TODO: edge case + non-edge case
-class CarthesianSwirlVectorTransfomrationNoSwirlTest(BaseTestCase):
+class CarthesianSwirlVectorTransfomrationTest(BaseTestCase):
     def setUp(self) -> None:
-        # NO SWIRL!
-        self.swirl = 0.0
-
+        self.swirls = (7.0, -11.0)
         # x, y, z
-        self.carth_coords = Coordinates3D((2.0, 3.0, 4.0))
-        self.carth_vecs = (AbstractVector((5.0, 7.0, 11.0)),)
-        self.invalid_carth_coords = (
+        self.carth_coords = (
+            Coordinates3D((1.0, 2.0, 3.0)),
+            Coordinates3D((2.0, -3.0, 5.0)),
+        )
+        self.carth_vecs = (
+            AbstractVector((-4.0, 5.0, -6.0)),
+            AbstractVector((-7.0, 11.0, 13.0)),
+        )
+        # u, v, z
+        alpha = 21 * math.sqrt(5) + math.atan(2)
+        beta = 55 * math.sqrt(13) + math.atan2(3, 2)
+        self.swirl_coords = (
+            Coordinates3D(
+                (
+                    math.sqrt(5) * math.cos(21 * math.sqrt(5) + math.atan(2)),
+                    math.sqrt(5) * math.sin(21 * math.sqrt(5) + math.atan(2)),
+                    3,
+                )
+            ),
+            Coordinates3D(
+                (
+                    +math.sqrt(13)
+                    * math.cos(55 * math.sqrt(13) + math.atan2(3, 2)),
+                    -math.sqrt(13)
+                    * math.sin(55 * math.sqrt(13) + math.atan2(3, 2)),
+                    5,
+                )
+            ),
+        )
+        self.swirl_vecs = (
+            AbstractVector(
+                (
+                    (6 * math.cos(alpha)) / math.sqrt(5)
+                    + 1 / 5 * (420 - 13 * math.sqrt(5)) * math.sin(alpha),
+                    (-84 + 13 / math.sqrt(5)) * math.cos(alpha)
+                    + (6 * math.sin(alpha)) / math.sqrt(5),
+                    -6,
+                )
+            ),
+            AbstractVector(
+                (
+                    -((47 * math.cos(beta)) / math.sqrt(13))
+                    + 1 / 13 * (9438 + math.sqrt(13)) * math.sin(beta),
+                    (726 + 1 / math.sqrt(13)) * math.cos(beta)
+                    + (47 * math.sin(beta)) / math.sqrt(13),
+                    13,
+                )
+            ),
+        )
+        self.invalid_coords = (
             Coordinates3D((0.0, 0.0, 0.0)),
             Coordinates3D((0.0, 0.0, 1.0)),
             Coordinates3D((0.0, 0.0, -1.0)),
@@ -233,83 +615,149 @@ class CarthesianSwirlVectorTransfomrationNoSwirlTest(BaseTestCase):
             Coordinates3D((0.0, math.inf, 0.0)),
             Coordinates3D((0.0, 0.0, math.inf)),
         )
+        self.v0 = AbstractVector((0.0, 0.0, 0.0))
 
-    def test_carthesian_to_carthesian_swirl_vector(self) -> None:
-        """Tests cathesian to carthesian swirl vector conversion."""
-        for carth_vec in self.carth_vecs:
+    def test_carthesian_to_carthesian_swirl_invalid_values(self) -> None:
+        """
+        Tests cathesian to carthesian swirl vector conversion invalid values.
+        """
+        for swirl in self.swirls:
+            for coords in self.invalid_coords:
+                with self.assertRaises(ValueError):
+                    carthesian_to_carthesian_swirl_vector(
+                        swirl, coords, self.v0
+                    )
+
+    def test_carthesian_to_carthesian_swirl_identity_case(self) -> None:
+        """
+        Tests cathesian to carthesian swirl vector conversion identity special
+        case.
+        """
+        for coords, vec in zip(self.carth_coords, self.carth_vecs):
             self.assertPredicate2(
                 vec_equiv,
                 carthesian_to_carthesian_swirl_vector(
-                    self.swirl, self.carth_coords, carth_vec
+                    swirl=0.0, coords=coords, vec=vec
                 ),
-                carth_vec,
+                vec,
             )
-        for coords, vec in zip(self.invalid_carth_coords, self.carth_vecs):
-            with self.assertRaises(ValueError):
-                carthesian_to_carthesian_swirl_vector(self.swirl, coords, vec)
 
-    def test_carthesian_swirl_to_carthesian_vector(self) -> None:
-        """Tests carthesian swirl to cathesian vector conversion."""
-        for carth_vec in self.carth_vecs:
+    def test_carthesian_to_carthesian_swirl_fixed_values(self) -> None:
+        """Tests cathesian to carthesian swirl vector conversion."""
+        for (swirl, carth_coords, carth_vec, swirl_vec) in zip(
+            self.swirls,
+            self.carth_coords,
+            self.carth_vecs,
+            self.swirl_vecs,
+        ):
+            self.assertPredicate2(
+                vec_equiv,
+                carthesian_to_carthesian_swirl_vector(
+                    swirl, carth_coords, carth_vec
+                ),
+                swirl_vec,
+            )
+
+    def test_carthesian_swirl_to_carthesian_invalid_values(self) -> None:
+        """
+        Tests cathesian swirl to carthesian vector conversion invalid
+        values.
+        """
+        for swirl in self.swirls:
+            for coords in self.invalid_coords:
+                with self.assertRaises(ValueError):
+                    carthesian_swirl_to_carthesian_vector(
+                        swirl, coords, self.v0
+                    )
+
+    def test_carthesian_swirl_to_carthesian_identity_case(self) -> None:
+        """
+        Tests cathesian swirl to carthesian vector conversion
+        identity special case.
+        """
+        for carth_coords, carth_vec in zip(self.carth_coords, self.carth_vecs):
             self.assertPredicate2(
                 vec_equiv,
                 carthesian_swirl_to_carthesian_vector(
-                    self.swirl, self.carth_coords, carth_vec
+                    swirl=0.0, coords=carth_coords, vec=carth_vec
                 ),
                 carth_vec,
             )
-        for coords, vec in zip(self.invalid_carth_coords, self.carth_vecs):
-            with self.assertRaises(ValueError):
-                carthesian_swirl_to_carthesian_vector(self.swirl, coords, vec)
 
-    def test_carthesian_to_carthesian_swirl_vector_inversion(self) -> None:
-        """Tests carthesian to carthesian swirl vector inversion."""
-        for carth_vec in self.carth_vecs:
-            vec = carth_vec
-            vec = carthesian_to_carthesian_swirl_vector(
-                self.swirl, self.carth_coords, vec
+    def test_carthesian_swirl_to_carthesian_fixed_values(self) -> None:
+        """Tests cathesian swirl to carthesian vector conversion."""
+        for (swirl, swirl_coords, swirl_vec, carth_vec) in zip(
+            self.swirls, self.swirl_coords, self.swirl_vecs, self.carth_vecs
+        ):
+            self.assertPredicate2(
+                vec_equiv,
+                carthesian_swirl_to_carthesian_vector(
+                    swirl, swirl_coords, swirl_vec
+                ),
+                carth_vec,
             )
-            vec = carthesian_swirl_to_carthesian_vector(
-                self.swirl, self.carth_coords, vec
-            )
-            self.assertPredicate2(vec_equiv, vec, carth_vec)
-
-    def test_carthesian_swirl_to_carthesian_vector_inversion(self) -> None:
-        """Tests carthesian swirl to cathesian vector inversion."""
-        for carth_vec in self.carth_vecs:
-            vec = carth_vec
-            vec = carthesian_swirl_to_carthesian_vector(
-                self.swirl, self.carth_coords, vec
-            )
-            vec = carthesian_to_carthesian_swirl_vector(
-                self.swirl, self.carth_coords, vec
-            )
-            self.assertPredicate2(vec_equiv, vec, carth_vec)
-
-    def test_vector_length_preservation(self) -> None:
-        """Tests carthesian to carthesian swirl preservation of length."""
-        for carth_swirl_vec in self.carth_vecs:
-            carth_swirl_len = length(
-                carth_swirl_vec,
-                metric=carthesian_swirl_metric(self.swirl, self.carth_coords),
-            )
-            carth_len = length(carth_swirl_vec)
-            self.assertAlmostEqual(carth_swirl_len, carth_len)
 
 
-# TODO: edge case + non-edge case
-class CarthesianTangentialVectorTransfomrationNoSwirlTest(BaseTestCase):
+class CarthesianSwirlTangentialVectorTransfomrationTest(BaseTestCase):
     def setUp(self) -> None:
-        # NO SWIRL!
-        self.swirl = 0.0
-
-        # x, y z
-        carth_coords = Coordinates3D((2.0, 3.0, 5.0))
-        carth_vecs = (AbstractVector((7.0, 11.0, 13.0)),)
-        self.carth_tangents = tuple(
-            TangentialVector(point=carth_coords, vector=v) for v in carth_vecs
+        self.swirls = (7.0, -11.0)
+        # x, y, z
+        self.carth_tans = (
+            TangentialVector(
+                Coordinates3D((1.0, 2.0, 3.0)),
+                AbstractVector((-4.0, 5.0, -6.0)),
+            ),
+            TangentialVector(
+                Coordinates3D((2.0, -3.0, 5.0)),
+                AbstractVector((-7.0, 11.0, 13.0)),
+            ),
         )
-        invalid_carth_coords = (
+        # u, v, z
+        alpha = 21 * math.sqrt(5) + math.atan(2)
+        beta = 55 * math.sqrt(13) + math.atan2(3, 2)
+        self.swirl_tans = (
+            TangentialVector(
+                Coordinates3D(
+                    (
+                        math.sqrt(5)
+                        * math.cos(21 * math.sqrt(5) + math.atan(2)),
+                        math.sqrt(5)
+                        * math.sin(21 * math.sqrt(5) + math.atan(2)),
+                        3,
+                    )
+                ),
+                AbstractVector(
+                    (
+                        (6 * math.cos(alpha)) / math.sqrt(5)
+                        + 1 / 5 * (420 - 13 * math.sqrt(5)) * math.sin(alpha),
+                        (-84 + 13 / math.sqrt(5)) * math.cos(alpha)
+                        + (6 * math.sin(alpha)) / math.sqrt(5),
+                        -6,
+                    )
+                ),
+            ),
+            TangentialVector(
+                Coordinates3D(
+                    (
+                        +math.sqrt(13)
+                        * math.cos(55 * math.sqrt(13) + math.atan2(3, 2)),
+                        -math.sqrt(13)
+                        * math.sin(55 * math.sqrt(13) + math.atan2(3, 2)),
+                        5,
+                    )
+                ),
+                AbstractVector(
+                    (
+                        -((47 * math.cos(beta)) / math.sqrt(13))
+                        + 1 / 13 * (9438 + math.sqrt(13)) * math.sin(beta),
+                        (726 + 1 / math.sqrt(13)) * math.cos(beta)
+                        + (47 * math.sin(beta)) / math.sqrt(13),
+                        13,
+                    )
+                ),
+            ),
+        )
+        invalid_coords = (
             Coordinates3D((0.0, 0.0, 0.0)),
             Coordinates3D((0.0, 0.0, 1.0)),
             Coordinates3D((0.0, 0.0, -1.0)),
@@ -317,82 +765,88 @@ class CarthesianTangentialVectorTransfomrationNoSwirlTest(BaseTestCase):
             Coordinates3D((0.0, math.inf, 0.0)),
             Coordinates3D((0.0, 0.0, math.inf)),
         )
-        self.invalid_carth_tangents = tuple(
-            TangentialVector(point=p, vector=carth_vecs[0])
-            for p in invalid_carth_coords
+        v0 = AbstractVector((0.0, 0.0, 0.0))
+        self.invalid_tans = tuple(
+            TangentialVector(c, v0) for c in invalid_coords
         )
 
-    def test_carthesian_to_carthesian_swirl_tangential_vector(self) -> None:
-        """Tests carthesian to carthesian tangential vector conversion."""
-        for carth_tan in self.carth_tangents:
+    def test_carthesian_to_carthesian_swirl_invalid_values(self) -> None:
+        """
+        Tests cathesian to carthesian swirl tangential vector conversion invalid
+        values.
+        """
+        for swirl in self.swirls:
+            for tan in self.invalid_tans:
+                with self.assertRaises(ValueError):
+                    carthesian_to_carthesian_swirl_tangential_vector(swirl, tan)
+
+    def test_carthesian_to_carthesian_swirl_identity_case(self) -> None:
+        """
+        Tests cathesian to carthesian swirl tangential vector conversion
+        identity special case.
+        """
+        for tan in self.carth_tans:
             self.assertPredicate2(
                 tan_vec_equiv,
                 carthesian_to_carthesian_swirl_tangential_vector(
-                    self.swirl, carth_tan
+                    swirl=0.0, tangential_vector=tan
                 ),
-                carth_tan,
+                tan,
             )
-        for carth_tan in self.invalid_carth_tangents:
-            with self.assertRaises(ValueError):
-                carthesian_to_carthesian_swirl_tangential_vector(
-                    self.swirl, carth_tan
-                )
 
-    def test_carthesian_swirl_to_carthesian_tangential_vector(self) -> None:
-        """Tests carthesian to carthesian tangential vector conversion."""
-        for carth_tan in self.carth_tangents:
+    def test_carthesian_to_carthesian_swirl_fixed_values(self) -> None:
+        """Tests cathesian to carthesian swirl tangential vector conversion."""
+        for (
+            swirl,
+            carth_tan,
+            swirl_tan,
+        ) in zip(self.swirls, self.carth_tans, self.swirl_tans):
+            self.assertPredicate2(
+                tan_vec_equiv,
+                carthesian_to_carthesian_swirl_tangential_vector(
+                    swirl, carth_tan
+                ),
+                swirl_tan,
+            )
+
+    def test_carthesian_swirl_to_carthesian_invalid_values(self) -> None:
+        """
+        Tests cathesian swirl to carthesian tangential vector conversion invalid
+        values.
+        """
+        for swirl in self.swirls:
+            for tan in self.invalid_tans:
+                with self.assertRaises(ValueError):
+                    carthesian_swirl_to_carthesian_tangential_vector(swirl, tan)
+
+    def test_carthesian_swirl_to_carthesian_identity_case(self) -> None:
+        """
+        Tests cathesian swirl to carthesian tangential vector conversion
+        identity special case.
+        """
+        for tan in self.carth_tans:
             self.assertPredicate2(
                 tan_vec_equiv,
                 carthesian_swirl_to_carthesian_tangential_vector(
-                    self.swirl, carth_tan
+                    swirl=0.0, tangential_vector=tan
                 ),
-                carth_tan,
+                tan,
             )
-        for carth_tan in self.invalid_carth_tangents:
-            with self.assertRaises(ValueError):
+
+    def test_carthesian_swirl_to_carthesian_fixed_values(self) -> None:
+        """Tests cathesian swirl to carthesian tangential vector conversion."""
+        for (
+            swirl,
+            swirl_tans,
+            carth_tans,
+        ) in zip(self.swirls, self.swirl_tans, self.carth_tans):
+            self.assertPredicate2(
+                tan_vec_equiv,
                 carthesian_swirl_to_carthesian_tangential_vector(
-                    self.swirl, carth_tan
-                )
-
-    def test_carthesian_to_carthesian_swirl_inversion(self) -> None:
-        """Tests carthesian to carthesian tangential vector inversion."""
-        for carth_tan in self.carth_tangents:
-            tan = carth_tan
-            tan = carthesian_to_carthesian_swirl_tangential_vector(
-                self.swirl, tan
-            )
-            tan = carthesian_swirl_to_carthesian_tangential_vector(
-                self.swirl, tan
-            )
-            self.assertPredicate2(tan_vec_equiv, tan, carth_tan)
-
-    def test_carthesian_swirl_to_carthesian_inversion(self) -> None:
-        """Tests carthesian to carthesian tangential vector inversion."""
-        for carth_tan in self.carth_tangents:
-            tan = carth_tan
-            tan = carthesian_swirl_to_carthesian_tangential_vector(
-                self.swirl, tan
-            )
-            tan = carthesian_to_carthesian_swirl_tangential_vector(
-                self.swirl, tan
-            )
-            self.assertPredicate2(tan_vec_equiv, tan, carth_tan)
-
-    def test_length_preservation(self) -> None:
-        """Tests preservation of length of tangential vectors."""
-        for carth_tan in self.carth_tangents:
-            carth_swirl_tan = carth_tan
-            carth_swirl_len = length(
-                carth_swirl_tan.vector,
-                metric=carthesian_swirl_metric(
-                    self.swirl, carth_swirl_tan.point
+                    swirl, swirl_tans
                 ),
+                carth_tans,
             )
-            carth_len = length(
-                carth_tan.vector,
-                metric=carthesian_metric(carth_tan.point),
-            )
-            self.assertAlmostEqual(carth_swirl_len, carth_len)
 
 
 class PlaneConstructorTest(BaseTestCase):
@@ -471,26 +925,64 @@ class PlaneDomainTest(BaseTestCase):
             self.infinite_plane.tangential_space(coords)
 
 
-# TODO: edge case + non-edge case
-class PlanePropertiesNoSwirlTest(BaseTestCase):
+class PlanePropertiesTest(BaseTestCase):
     # pylint: disable=R0902
     def setUp(self) -> None:
-        # NO SWIRL!
-        self.swirl = 0.0
+        self.swirl = 1 / 17
 
         self.v1 = AbstractVector((1.0, 0.0, 0.0))
         self.v2 = AbstractVector((0.0, 1.0, 0.0))
-        self.offset = AbstractVector((0.0, 0.0, 7.0))
+        self.offset = AbstractVector((2.0, 3.0, 5.0))
         self.plane = Plane(self.swirl, self.v1, self.v2, offset=self.offset)
         c2d_1 = Coordinates2D((1.0, 0.0))
         c2d_2 = Coordinates2D((0.0, 1.0))
         c2d_3 = Coordinates2D((2.0, -3.0))
-        c3d_1 = Coordinates3D((1.0, 0.0, 7.0))
-        c3d_2 = Coordinates3D((0.0, 1.0, 7.0))
-        c3d_3 = Coordinates3D((2.0, -3.0, 7.0))
+        c3d_1 = Coordinates3D(
+            (
+                3
+                * math.sqrt(2)
+                * math.cos((15 * math.sqrt(2)) / 17 + math.pi / 4),
+                3
+                * math.sqrt(2)
+                * math.sin((15 * math.sqrt(2)) / 17 + math.pi / 4),
+                5,
+            )
+        )
+        c3d_2 = Coordinates3D(
+            (
+                2
+                * math.sqrt(5)
+                * math.cos((10 * math.sqrt(5)) / 17 + math.atan(2)),
+                2
+                * math.sqrt(5)
+                * math.sin((10 * math.sqrt(5)) / 17 + math.atan(2)),
+                5,
+            )
+        )
+        c3d_3 = Coordinates3D((4 * math.cos(20 / 17), 4 * math.sin(20 / 17), 5))
         self.coords_2d = (c2d_1, c2d_2, c2d_3)
         self.coords_3d = (c3d_1, c3d_2, c3d_3)
-        self.n = AbstractVector((0.0, 0.0, 1.0))
+        self.ns = (
+            AbstractVector(
+                (
+                    -(18 / 17)
+                    * math.sin((15 * math.sqrt(2)) / 17 + math.pi / 4),
+                    18 / 17 * math.cos((15 * math.sqrt(2)) / 17 + math.pi / 4),
+                    1,
+                )
+            ),
+            AbstractVector(
+                (
+                    -(20 / 17)
+                    * math.sin((10 * math.sqrt(5)) / 17 + math.atan(2)),
+                    20 / 17 * math.cos((10 * math.sqrt(5)) / 17 + math.atan(2)),
+                    1,
+                )
+            ),
+            AbstractVector(
+                (-(16 / 17) * math.sin(20 / 17), 16 / 17 * math.cos(20 / 17), 1)
+            ),
+        )
         self.n_cartesian = AbstractVector((0.0, 0.0, 1.0))
 
     def test_plane_embed(self) -> None:
@@ -504,11 +996,11 @@ class PlanePropertiesNoSwirlTest(BaseTestCase):
 
     def test_plane_surface_normal(self) -> None:
         """Tests plane's surface normal."""
-        for c2d in self.coords_2d:
+        for c2d, n in zip(self.coords_2d, self.ns):
             self.assertPredicate2(
                 vec_equiv,
                 self.plane.surface_normal(c2d),
-                self.n,
+                n,
             )
 
     def test_plane_tangential_space(self) -> None:
