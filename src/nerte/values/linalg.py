@@ -234,7 +234,7 @@ def dot(
     return np.dot(
         vec1._v,
         np.dot(metric.matrix()._m, vec2._v),  # type: ignore[no-untyped-call]
-    )  # TODO: optimize
+    )  # POSSIBLE-OPTIMIZATION: hard code
 
 
 def cross(
@@ -270,8 +270,9 @@ def length(vec: AbstractVector, metric: Optional[Metric] = None) -> float:
     Returns the length of the vector (with respect to an orthonormal basis).
     """
     if metric is None:
+        # POSSIBLE-OPTIMIZATION: hard code
         return np.linalg.norm(vec._v)  # type: ignore[no-untyped-call]
-    return dot(vec, vec, metric) ** 0.5  # TODO: optimize
+    return dot(vec, vec, metric) ** 0.5
 
 
 def normalized(
@@ -285,7 +286,7 @@ def normalized(
         return _abstract_vector_from_numpy(vec._v * (dot(vec, vec) ** -0.5))
         # NOTE: DON'T use this:
         # return Vector.__from_numpy((1 / np.linalg.norm(vec._v)) * vec._v)
-    return vec / length(vec, metric)  # TODO: optimize
+    return vec / length(vec, metric)  # POSSIBLE-OPTIMIZATION: hard code
 
 
 def are_linear_dependent(vectors: tuple[AbstractVector, ...]) -> bool:

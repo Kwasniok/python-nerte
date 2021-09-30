@@ -97,7 +97,6 @@ class CylindircSwirlMetricTest(BaseTestCase):
             )
 
 
-# TODO: edge case + non-edge case
 class CylindircSwirlGeodesicEquationTest(BaseTestCase):
     def setUp(self) -> None:
         self.swirl = 0.0
@@ -149,7 +148,6 @@ class CylindircSwirlGeodesicEquationTest(BaseTestCase):
         )
 
 
-# TODO: edge case + non-edge case
 class CylindricalCoordinatesTransfomrationTest(BaseTestCase):
     def setUp(self) -> None:
         self.swirl = 0.0
@@ -198,7 +196,6 @@ class CylindricalCoordinatesTransfomrationTest(BaseTestCase):
                 cylindric_swirl_to_carthesian_coords(self.swirl, coords)
 
 
-# TODO: edge case + non-edge case
 class CylindricSwirlVectorTransfomrationTest(BaseTestCase):
     def setUp(self) -> None:
         self.swirl = 0.0
@@ -307,7 +304,6 @@ class CylindricSwirlVectorTransfomrationTest(BaseTestCase):
             self.assertAlmostEqual(cylin_len, carth_len)
 
 
-# TODO: edge case + non-edge case
 class CylindricalTangentialVectorTransfomrationTest(BaseTestCase):
     def setUp(self) -> None:
         self.swirl = 0.0
@@ -519,7 +515,6 @@ class PlaneDomainTest(BaseTestCase):
             self.infinite_plane.tangential_space(coords)
 
 
-# TODO: edge case + non-edge case
 class PlanePropertiesTest(BaseTestCase):
     # pylint: disable=R0902
     def setUp(self) -> None:

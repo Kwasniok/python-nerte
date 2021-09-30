@@ -23,5 +23,4 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint
       run: |
-        # TODO: code duplication should be allowed for unittest
-        pylint src
+        pylint --disable=R0801 src

@@ -349,7 +349,7 @@ class SwirlCylindricRungeKuttaGeometryGeodesicEquationTest(BaseTestCase):
             ray: TangentialVectorDelta,
         ) -> TangentialVectorDelta:
             # pylint: disable=C0103
-            # TODO: revert when mypy bug was fixed
+            # MYPY-BUG: revert when mypy bug was fixed
             #       see https://github.com/python/mypy/issues/2220
             # r, _, z = ray.point_delta
             # v_r, v_phi, v_z = ray.vector_delta
