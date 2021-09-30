@@ -38,12 +38,12 @@ class ChangeDirecory:
 
 # src must exist
 if not os.path.isdir("src"):
-    print("Code base invalid. No directory 'src' found.")
+    print("ERROR: Code base invalid. No directory 'src' found.")
     sys.exit(1)
 
 # src must be readable
 if not os.access("src", os.R_OK):
-    print("Code base invalid. Cannot read directory 'src'.")
+    print("ERROR: Code base invalid. Cannot read directory 'src'.")
     sys.exit(1)
 
 
@@ -59,27 +59,53 @@ def run_mypy() -> None:
             stderr=sys.stderr,
         )
         if res.returncode != 0:
-            print("Code base invalid. Mypy failed.")
+            print("ERROR: Code base invalid. Mypy failed.")
             sys.exit(1)
 
 
-def run_pylint(disable: Optional[list[str]] = None) -> None:
+def _pylint_disable_str(disable: list[str]) -> str:
+    if disable is None:
+        return ""
+    dis = ",".join(disable)
+    return f" --disable={dis}"
+
+
+def _pylint_ignnore_patterns_str(exclude_unittests: bool) -> str:
+    if exclude_unittests:
+        return ' --ignore-patterns=".*_unittest.py"'
+    return ""
+
+
+def run_pylint(
+    disable: Optional[list[str]] = None,
+    exclude_unittests: bool = False,
+) -> None:
     """Runs pylint on src."""
+
+    if disable is None:
+        disable = []
+    disable_str = _pylint_disable_str(disable)
+    ignore_patterns_str = _pylint_ignnore_patterns_str(exclude_unittests)
+
     print("running pylint ...")
     with ChangeDirecory("."):
-        if disable is None:
-            dis = ""
-        else:
-            dis = ",".join(disable)
         res = subprocess.run(
-            f"pylint --disable={dis} src",
+            f"pylint{disable_str}{ignore_patterns_str} src",
             shell=True,
             check=False,
             stdout=sys.stdout,
             stderr=sys.stderr,
         )
+        if exclude_unittests:
+            print("INFO: Unit tests were excluded.")
+        if len(disable) > 0:
+            print(
+                "INFO: The following codes were disabled: "
+                + ", ".join(disable)
+                + "."
+            )
         if res.returncode != 0:
-            print("Code base invalid. Pylint failed.")
+            print("ERROR: Code base invalid. Pylint failed.")
             sys.exit(1)
 
 
@@ -95,14 +121,14 @@ def run_tests() -> None:
             stderr=sys.stderr,
         )
         if res.returncode != 0:
-            print("Code base invalid. Tests failed.")
+            print("ERROR: Code base invalid. Tests failed.")
             sys.exit(1)
 
 
 def run_all() -> None:
     """Full run of checks."""
     run_mypy()
-    run_pylint()
+    run_pylint(disable=["R0801"])
     run_tests()
     print("Code base is valid!")
     sys.exit(0)  # must be 0
@@ -116,10 +142,7 @@ def run_light() -> None:
     # do pylint last as it often fails in pre-checks
     # fix me: W0511
     # code duplication: R0801
-    disable = ["R0801"]
-    run_pylint(disable=disable)
-    disable_str = ", ".join(disable)
-    print(f"pylint disabled codes were : {disable_str}")
+    run_pylint(disable=["R0801"])
     print(
         "WARNING: Results were obtained in light mode."
         " Therefore the code base may not be valid!"
