@@ -114,7 +114,12 @@ def run_light() -> None:
     run_mypy()
     run_tests()
     # do pylint last as it often fails in pre-checks
-    run_pylint(disable=["R0801", "W0511"])
+    # fix me: W0511
+    # code duplication: R0801
+    disable = ["R0801"]
+    run_pylint(disable=disable)
+    disable_str = ", ".join(disable)
+    print(f"pylint disabled codes were : {disable_str}")
     print(
         "WARNING: Results were obtained in light mode."
         " Therefore the code base may not be valid!"
