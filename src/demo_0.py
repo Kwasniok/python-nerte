@@ -13,7 +13,7 @@ from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
 from nerte.geometry.geometry import Geometry
-from nerte.geometry.carthesian_geometry import CarthesianGeometry
+from nerte.geometry.cartesian_geometry import CartesianGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_color_renderer import ImageColorRenderer
 from nerte.util.random_color_generator import RandomColorGenerator
@@ -174,7 +174,7 @@ def main() -> None:
     # NOTE: Increase the canvas dimension to improve the image quality.
     #       This will also increase rendering time!
     scene = make_scene(canvas_dimension=100)
-    geo = CarthesianGeometry()
+    geo = CartesianGeometry()
 
     render(
         scene=scene,

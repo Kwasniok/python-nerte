@@ -21,7 +21,7 @@ from nerte.geometry.geometry import Geometry, intersection_ray_depth
 class SegmentedRayGeometry(Geometry):
     """
     Crude represenation of a non-euclidean geometry where rays are bend in a
-    Carthesian space.
+    Cartesian space.
 
     Note: This geometry exists as an intermdeiate level towards more
           sophisticated models of non-euclidean geometries.

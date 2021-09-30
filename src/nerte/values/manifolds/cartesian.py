@@ -19,9 +19,9 @@ from nerte.values.tangential_vector_delta import TangentialVectorDelta
 from nerte.values.manifold import Manifold1D, Manifold2D, Manifold3D
 
 
-def carthesian_metric(coords: Coordinates3D) -> Metric:
+def cartesian_metric(coords: Coordinates3D) -> Metric:
     # pylint: disable=w0613
-    """Returns the local metric in carthesian coordinates."""
+    """Returns the local metric in cartesian coordinates."""
     return Metric(
         AbstractMatrix(
             AbstractVector((1, 0, 0)),
@@ -31,12 +31,12 @@ def carthesian_metric(coords: Coordinates3D) -> Metric:
     )
 
 
-def carthesian_geodesic_equation(
+def cartesian_geodesic_equation(
     tangent: TangentialVector,
 ) -> TangentialVectorDelta:
     """
     Returns a tangential vector delta which encodes the geodesic equation of
-    carthesian coordinates.
+    cartesian coordinates.
 
     Let x(𝜆) be a geodesic.
     For tangent (x, dx/d𝜆) it returns (dx/d𝜆, d^2x/d𝜆^2).

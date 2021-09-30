@@ -23,40 +23,40 @@ from nerte.values.tangential_vector_delta import (
 )
 from nerte.values.face import Face
 from nerte.geometry.cartesian_swirl_geometry import (
-    SwirlCarthesianRungeKuttaGeometry,
+    SwirlCartesianRungeKuttaGeometry,
 )
 
 
-class SwirlCarthesianRungeKuttaGeometryConstructorTest(BaseTestCase):
+class SwirlCartesianRungeKuttaGeometryConstructorTest(BaseTestCase):
     def test_constructor(self) -> None:
         """Tests constructor."""
-        SwirlCarthesianRungeKuttaGeometry(
+        SwirlCartesianRungeKuttaGeometry(
             max_ray_depth=1.0, step_size=1.0, max_steps=1, swirl=1.0
         )
         # invalid max_ray_depth
         with self.assertRaises(ValueError):
-            SwirlCarthesianRungeKuttaGeometry(
+            SwirlCartesianRungeKuttaGeometry(
                 max_ray_depth=0.0,
                 step_size=1.0,
                 max_steps=1,
                 swirl=1.0,
             )
         with self.assertRaises(ValueError):
-            SwirlCarthesianRungeKuttaGeometry(
+            SwirlCartesianRungeKuttaGeometry(
                 max_ray_depth=-1.0,
                 step_size=1.0,
                 max_steps=1,
                 swirl=1.0,
             )
         with self.assertRaises(ValueError):
-            SwirlCarthesianRungeKuttaGeometry(
+            SwirlCartesianRungeKuttaGeometry(
                 max_ray_depth=-math.inf,
                 step_size=1.0,
                 max_steps=1,
                 swirl=1.0,
             )
         with self.assertRaises(ValueError):
-            SwirlCarthesianRungeKuttaGeometry(
+            SwirlCartesianRungeKuttaGeometry(
                 max_ray_depth=-math.nan,
                 step_size=1.0,
                 max_steps=1,
@@ -64,28 +64,28 @@ class SwirlCarthesianRungeKuttaGeometryConstructorTest(BaseTestCase):
             )
         # invalid step_size
         with self.assertRaises(ValueError):
-            SwirlCarthesianRungeKuttaGeometry(
+            SwirlCartesianRungeKuttaGeometry(
                 max_ray_depth=1.0,
                 step_size=0.0,
                 max_steps=1,
                 swirl=1.0,
             )
         with self.assertRaises(ValueError):
-            SwirlCarthesianRungeKuttaGeometry(
+            SwirlCartesianRungeKuttaGeometry(
                 max_ray_depth=1.0,
                 step_size=-1.0,
                 max_steps=1,
                 swirl=1.0,
             )
         with self.assertRaises(ValueError):
-            SwirlCarthesianRungeKuttaGeometry(
+            SwirlCartesianRungeKuttaGeometry(
                 max_ray_depth=1.0,
                 step_size=math.inf,
                 max_steps=1,
                 swirl=1.0,
             )
         with self.assertRaises(ValueError):
-            SwirlCarthesianRungeKuttaGeometry(
+            SwirlCartesianRungeKuttaGeometry(
                 max_ray_depth=1.0,
                 step_size=math.nan,
                 max_steps=1,
@@ -93,14 +93,14 @@ class SwirlCarthesianRungeKuttaGeometryConstructorTest(BaseTestCase):
             )
         # invalid max_steps
         with self.assertRaises(ValueError):
-            SwirlCarthesianRungeKuttaGeometry(
+            SwirlCartesianRungeKuttaGeometry(
                 max_ray_depth=1.0,
                 step_size=1,
                 max_steps=0,
                 swirl=1.0,
             )
         with self.assertRaises(ValueError):
-            SwirlCarthesianRungeKuttaGeometry(
+            SwirlCartesianRungeKuttaGeometry(
                 max_ray_depth=1.0,
                 step_size=1,
                 max_steps=-1,
@@ -108,21 +108,21 @@ class SwirlCarthesianRungeKuttaGeometryConstructorTest(BaseTestCase):
             )
         # invalid swirl
         with self.assertRaises(ValueError):
-            SwirlCarthesianRungeKuttaGeometry(
+            SwirlCartesianRungeKuttaGeometry(
                 max_ray_depth=1.0,
                 step_size=1.0,
                 max_steps=1,
                 swirl=math.inf,
             )
         with self.assertRaises(ValueError):
-            SwirlCarthesianRungeKuttaGeometry(
+            SwirlCartesianRungeKuttaGeometry(
                 max_ray_depth=1.0,
                 step_size=1.0,
                 max_steps=1,
                 swirl=-math.inf,
             )
         with self.assertRaises(ValueError):
-            SwirlCarthesianRungeKuttaGeometry(
+            SwirlCartesianRungeKuttaGeometry(
                 max_ray_depth=1.0,
                 step_size=1.0,
                 max_steps=1,
@@ -130,13 +130,13 @@ class SwirlCarthesianRungeKuttaGeometryConstructorTest(BaseTestCase):
             )
 
 
-class SwirlCarthesianRungeKuttaGeometryPropertiesTest(BaseTestCase):
+class SwirlCartesianRungeKuttaGeometryPropertiesTest(BaseTestCase):
     def setUp(self) -> None:
         self.max_steps = 1
         self.max_ray_depth = 1.0
         self.step_size = 1.0
         self.swirl = 0.1234
-        self.geo = SwirlCarthesianRungeKuttaGeometry(
+        self.geo = SwirlCartesianRungeKuttaGeometry(
             max_ray_depth=self.max_ray_depth,
             step_size=self.step_size,
             max_steps=self.max_steps,
@@ -151,9 +151,9 @@ class SwirlCarthesianRungeKuttaGeometryPropertiesTest(BaseTestCase):
         self.assertAlmostEqual(self.geo.swirl(), self.swirl)
 
 
-class SwirlCarthesianRungeKuttaGeometryIsValidCoordinateTest(BaseTestCase):
+class SwirlCartesianRungeKuttaGeometryIsValidCoordinateTest(BaseTestCase):
     def setUp(self) -> None:
-        self.geo = SwirlCarthesianRungeKuttaGeometry(
+        self.geo = SwirlCartesianRungeKuttaGeometry(
             max_ray_depth=1.0, step_size=1.0, max_steps=1, swirl=1.0
         )
         self.valid_coords = (
@@ -187,10 +187,10 @@ class SwirlCarthesianRungeKuttaGeometryIsValidCoordinateTest(BaseTestCase):
             self.assertFalse(self.geo.is_valid_coordinate(coords))
 
 
-class SwirlCarthesianRungeKuttaGeometryRayTest(BaseTestCase):
+class SwirlCartesianRungeKuttaGeometryRayTest(BaseTestCase):
     def setUp(self) -> None:
         swirl = 1 / 17
-        self.geo = SwirlCarthesianRungeKuttaGeometry(
+        self.geo = SwirlCartesianRungeKuttaGeometry(
             max_ray_depth=1.0, step_size=1.0, max_steps=1, swirl=swirl
         )
         self.points = (
@@ -318,7 +318,7 @@ class SwirlCarthesianRungeKuttaGeometryRayTest(BaseTestCase):
                 self.geo.ray_from_tangent(tangent)
 
 
-class SwirlCarthesianRungeKuttaGeometryVectorLengthTest(BaseTestCase):
+class SwirlCartesianRungeKuttaGeometryVectorLengthTest(BaseTestCase):
     def setUp(self) -> None:
         swirl = 1 / 17
         # coordinates: u, v, z
@@ -346,8 +346,8 @@ class SwirlCarthesianRungeKuttaGeometryVectorLengthTest(BaseTestCase):
             TangentialVector(point=c, vector=v)
             for c, v in zip(self.coords, self.ns)
         )
-        # geometry (carthesian & euclidean)
-        self.geo = SwirlCarthesianRungeKuttaGeometry(
+        # geometry (cartesian & euclidean)
+        self.geo = SwirlCartesianRungeKuttaGeometry(
             max_ray_depth=math.inf,
             step_size=1.0,
             max_steps=10,
@@ -390,7 +390,7 @@ class SwirlCarthesianRungeKuttaGeometryVectorLengthTest(BaseTestCase):
                 self.geo.normalized(tangent)
 
 
-class SwirlCarthesianRungeKuttaGeometryGeodesicEquationFixedValuesTest(
+class SwirlCartesianRungeKuttaGeometryGeodesicEquationFixedValuesTest(
     BaseTestCase
 ):
     def setUp(self) -> None:
@@ -418,12 +418,12 @@ class SwirlCarthesianRungeKuttaGeometryGeodesicEquationFixedValuesTest(
         # self.tangent_deltas_expected numerically
         #   {0.142857, 0.0909091, 0.0769231, 0.00137829, -0.00210457, 0.0}
         self.places = (10,)
-        self.geo = SwirlCarthesianRungeKuttaGeometry(
+        self.geo = SwirlCartesianRungeKuttaGeometry(
             max_ray_depth=math.inf, step_size=1.0, max_steps=10, swirl=swirl
         )
 
     def test_fixed_values(self) -> None:
-        """Test the carthesian swirl geodesic equation for fixed values."""
+        """Test the cartesian swirl geodesic equation for fixed values."""
         for tan_delta_init, tan_expect, places in zip(
             self.tangent_deltas, self.tangent_expected, self.places
         ):
@@ -436,7 +436,7 @@ class SwirlCarthesianRungeKuttaGeometryGeodesicEquationFixedValuesTest(
             )
 
 
-class SwirlCarthesianRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
+class SwirlCartesianRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
     BaseTestCase
 ):
     def setUp(self) -> None:
@@ -450,8 +450,8 @@ class SwirlCarthesianRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
             Face(pnt2, pnt3, pnt1),
             Face(pnt2, pnt1, pnt3),
         )  # only some permutations to save time
-        # geometry (carthesian & euclidean)
-        geo = SwirlCarthesianRungeKuttaGeometry(
+        # geometry (cartesian & euclidean)
+        geo = SwirlCartesianRungeKuttaGeometry(
             max_ray_depth=math.inf,
             step_size=0.1,
             max_steps=15,
@@ -517,7 +517,7 @@ class SwirlCarthesianRungeKuttaGeometryEuclideanEdgeCaseIntersectsTest(
                 self.assertTrue(info.misses())
 
 
-class SwirlCarthesianRungeKuttaGeometryIntersectsTest(BaseTestCase):
+class SwirlCartesianRungeKuttaGeometryIntersectsTest(BaseTestCase):
     def setUp(self) -> None:
         swirl = 1.0  # non-euclidean / strong(!) swirl
         # face
@@ -529,8 +529,8 @@ class SwirlCarthesianRungeKuttaGeometryIntersectsTest(BaseTestCase):
             Face(pnt2, pnt3, pnt1),
             Face(pnt2, pnt1, pnt3),
         )  # only some permutations to save time
-        # geometry (carthesian & non-euclidean)
-        geo = SwirlCarthesianRungeKuttaGeometry(
+        # geometry (cartesian & non-euclidean)
+        geo = SwirlCartesianRungeKuttaGeometry(
             max_ray_depth=math.inf,
             step_size=0.01,  # low resolution but good enough
             max_steps=200,  # expected ray length should exceed 1.0

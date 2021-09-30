@@ -11,7 +11,7 @@ from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.face import Face
 from nerte.values.manifolds.cylindrical_swirl import (
-    Plane as CarthesianPlaneInCylindricSwirl,
+    Plane as CartesianPlaneInCylindricSwirl,
 )
 from nerte.world.object import Object
 from nerte.world.camera import Camera
@@ -38,7 +38,7 @@ def make_camera(swirl: float, canvas_dimension: int) -> Camera:
     """Creates a camera with preset values."""
 
     location = Coordinates3D((0.5, 0.0, 0.5))
-    manifold = CarthesianPlaneInCylindricSwirl(
+    manifold = CartesianPlaneInCylindricSwirl(
         swirl=swirl,
         b0=AbstractVector((0.0, -1.0, 0.0)),
         b1=AbstractVector((-0.4, 0.0, 0.4)),

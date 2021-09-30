@@ -17,7 +17,7 @@ from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
 from nerte.geometry.geometry import Geometry
-from nerte.geometry.carthesian_geometry import CarthesianGeometry
+from nerte.geometry.cartesian_geometry import CartesianGeometry
 from nerte.render.renderer import Renderer
 
 
@@ -50,7 +50,7 @@ class RendererTest(BaseTestCase):
         self.scene = Scene(camera=cam)
         self.scene.add_object(obj)
         # geometry
-        self.geometry = CarthesianGeometry()
+        self.geometry = CartesianGeometry()
 
     def test_render_implementation(self) -> None:
         """Tests Render implementation."""

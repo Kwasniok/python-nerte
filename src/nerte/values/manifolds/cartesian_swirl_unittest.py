@@ -45,14 +45,14 @@ from nerte.values.manifolds.cartesian_swirl import (
     _metric_inverted,
     _christoffel_1,
     _christoffel_2,
-    carthesian_swirl_metric,
-    carthesian_swirl_geodesic_equation,
-    carthesian_to_carthesian_swirl_coords,
-    carthesian_swirl_to_carthesian_coords,
-    carthesian_to_carthesian_swirl_vector,
-    carthesian_swirl_to_carthesian_vector,
-    carthesian_to_carthesian_swirl_tangential_vector,
-    carthesian_swirl_to_carthesian_tangential_vector,
+    cartesian_swirl_metric,
+    cartesian_swirl_geodesic_equation,
+    cartesian_to_cartesian_swirl_coords,
+    cartesian_swirl_to_cartesian_coords,
+    cartesian_to_cartesian_swirl_vector,
+    cartesian_swirl_to_cartesian_vector,
+    cartesian_to_cartesian_swirl_tangential_vector,
+    cartesian_swirl_to_cartesian_tangential_vector,
     Plane,
 )
 
@@ -316,7 +316,7 @@ class InternalChristoffel2Test(BaseTestCase):
         )
 
 
-class CarthesianSwirlMetricTest(BaseTestCase):
+class CartesianSwirlMetricTest(BaseTestCase):
     def setUp(self) -> None:
         self.swirl = 1 / 17
         a = self.swirl
@@ -381,12 +381,12 @@ class CarthesianSwirlMetricTest(BaseTestCase):
         for coords, metric in zip(self.coords, self.metrics):
             self.assertPredicate2(
                 metric_equiv,
-                carthesian_swirl_metric(self.swirl, coords),
+                cartesian_swirl_metric(self.swirl, coords),
                 metric,
             )
 
 
-class CarthesianSwirlGeodesicEquationFixedValuesTest(BaseTestCase):
+class CartesianSwirlGeodesicEquationFixedValuesTest(BaseTestCase):
     def setUp(self) -> None:
         self.swirls = (1 / 17,)
         self.tangents = (
@@ -414,11 +414,11 @@ class CarthesianSwirlGeodesicEquationFixedValuesTest(BaseTestCase):
         self.places = (10,)
 
     def test_fixed_values(self) -> None:
-        """Test the carthesian swirl geodesic equation for fixed values."""
+        """Test the cartesian swirl geodesic equation for fixed values."""
         for swirl, tan, tan_expect, places in zip(
             self.swirls, self.tangents, self.tangent_expected, self.places
         ):
-            tan_del = carthesian_swirl_geodesic_equation(swirl, tan)
+            tan_del = cartesian_swirl_geodesic_equation(swirl, tan)
             self.assertPredicate2(
                 tan_vec_almost_equal(places),
                 delta_as_tangent(tan_del),
@@ -426,7 +426,7 @@ class CarthesianSwirlGeodesicEquationFixedValuesTest(BaseTestCase):
             )
 
 
-class CarthesianSwirlGeodesicEquationPropagationTest(BaseTestCase):
+class CartesianSwirlGeodesicEquationPropagationTest(BaseTestCase):
     def setUp(self) -> None:
         self.swirls = (0.0, 1)
         self.carth_initial_tangent = TangentialVector(
@@ -438,7 +438,7 @@ class CarthesianSwirlGeodesicEquationPropagationTest(BaseTestCase):
             vector=AbstractVector((0.4, 0.5, 0.6)),
         )
         self.swirl_initial_tangents = tuple(
-            carthesian_to_carthesian_swirl_tangential_vector(
+            cartesian_to_cartesian_swirl_tangential_vector(
                 a, self.carth_initial_tangent
             )
             for a in self.swirls
@@ -447,7 +447,7 @@ class CarthesianSwirlGeodesicEquationPropagationTest(BaseTestCase):
         self.steps = math.floor(1 / self.step_size)
         self.places = (10, 8)
 
-    def _propagate_in_carthesian_swirl(
+    def _propagate_in_cartesian_swirl(
         self, swirl: float, carth_swirl_tangent_delta: TangentialVectorDelta
     ) -> TangentialVectorDelta:
 
@@ -455,7 +455,7 @@ class CarthesianSwirlGeodesicEquationPropagationTest(BaseTestCase):
         def carth_swirl_geo_eq(
             x: TangentialVectorDelta,
         ) -> TangentialVectorDelta:
-            return carthesian_swirl_geodesic_equation(
+            return cartesian_swirl_geodesic_equation(
                 swirl, delta_as_tangent(x)
             )
 
@@ -467,7 +467,7 @@ class CarthesianSwirlGeodesicEquationPropagationTest(BaseTestCase):
                 carth_swirl_geo_eq, x, self.step_size
             )
 
-        # propagate in carthesian swirl coordinates
+        # propagate in cartesian swirl coordinates
         for _ in range(self.steps):
             carth_swirl_tangent_delta = carth_swirl_next(
                 carth_swirl_tangent_delta
@@ -476,7 +476,7 @@ class CarthesianSwirlGeodesicEquationPropagationTest(BaseTestCase):
         return carth_swirl_tangent_delta
 
     def test_geodesic_equation(self) -> None:
-        """Tests the carthesian swirl geodesic equation."""
+        """Tests the cartesian swirl geodesic equation."""
 
         for swirl, swirl_initial_tan, places in zip(
             self.swirls, self.swirl_initial_tangents, self.places
@@ -484,13 +484,13 @@ class CarthesianSwirlGeodesicEquationPropagationTest(BaseTestCase):
             # initial swirl tangent as delta
             carth_swirl_tangent_delta = tangent_as_delta(swirl_initial_tan)
             # propagate the ray using the geodesic equation
-            carth_swirl_tangent_delta = self._propagate_in_carthesian_swirl(
+            carth_swirl_tangent_delta = self._propagate_in_cartesian_swirl(
                 swirl,
                 carth_swirl_tangent_delta,
             )
-            # final tangent to carthesian coordinates
+            # final tangent to cartesian coordinates
             carth_final_tangent = (
-                carthesian_swirl_to_carthesian_tangential_vector(
+                cartesian_swirl_to_cartesian_tangential_vector(
                     swirl, delta_as_tangent(carth_swirl_tangent_delta)
                 )
             )
@@ -502,7 +502,7 @@ class CarthesianSwirlGeodesicEquationPropagationTest(BaseTestCase):
             )
 
 
-class CarthesianSwirlCoordinatesTransfomrationTest(BaseTestCase):
+class CartesianSwirlCoordinatesTransfomrationTest(BaseTestCase):
     def setUp(self) -> None:
         self.swirls = (7.0, -11.0)
         # x, y, z
@@ -541,30 +541,30 @@ class CarthesianSwirlCoordinatesTransfomrationTest(BaseTestCase):
             Coordinates3D((0.0, 0.0, math.inf)),
         )
 
-    def test_carthesian_to_carthesian_swirl_invalid_values(self) -> None:
+    def test_cartesian_to_cartesian_swirl_invalid_values(self) -> None:
         """
-        Tests cathesian to carthesian swirl coordinates conversion invalid
+        Tests cathesian to cartesian swirl coordinates conversion invalid
         values.
         """
         for swirl in self.swirls:
             for coords in self.invalid_coords:
                 with self.assertRaises(ValueError):
-                    carthesian_to_carthesian_swirl_coords(swirl, coords)
+                    cartesian_to_cartesian_swirl_coords(swirl, coords)
 
-    def test_carthesian_to_carthesian_swirl_identity_case(self) -> None:
+    def test_cartesian_to_cartesian_swirl_identity_case(self) -> None:
         """
-        Tests cathesian to carthesian swirl coordinates conversion identity
+        Tests cathesian to cartesian swirl coordinates conversion identity
         special case.
         """
         for coords in self.carth_coords:
             self.assertPredicate2(
                 coordinates_3d_equiv,
-                carthesian_to_carthesian_swirl_coords(swirl=0.0, coords=coords),
+                cartesian_to_cartesian_swirl_coords(swirl=0.0, coords=coords),
                 coords,
             )
 
-    def test_carthesian_to_carthesian_swirl_fixed_values(self) -> None:
-        """Tests cathesian to carthesian swirl coordinates conversion."""
+    def test_cartesian_to_cartesian_swirl_fixed_values(self) -> None:
+        """Tests cathesian to cartesian swirl coordinates conversion."""
         for (
             swirl,
             carth_coords,
@@ -572,33 +572,33 @@ class CarthesianSwirlCoordinatesTransfomrationTest(BaseTestCase):
         ) in zip(self.swirls, self.carth_coords, self.swirl_coords):
             self.assertPredicate2(
                 coordinates_3d_equiv,
-                carthesian_to_carthesian_swirl_coords(swirl, carth_coords),
+                cartesian_to_cartesian_swirl_coords(swirl, carth_coords),
                 swirl_coords,
             )
 
-    def test_carthesian_swirl_to_carthesian_invalid_values(self) -> None:
+    def test_cartesian_swirl_to_cartesian_invalid_values(self) -> None:
         """
-        Tests cathesian swirl to carthesian coordinates conversion invalid values.
+        Tests cathesian swirl to cartesian coordinates conversion invalid values.
         """
         for swirl in self.swirls:
             for coords in self.invalid_coords:
                 with self.assertRaises(ValueError):
-                    carthesian_swirl_to_carthesian_coords(swirl, coords)
+                    cartesian_swirl_to_cartesian_coords(swirl, coords)
 
-    def test_carthesian_swirl_to_carthesian_identity_case(self) -> None:
+    def test_cartesian_swirl_to_cartesian_identity_case(self) -> None:
         """
-        Tests cathesian swirl to carthesian coordinates conversion identity special
+        Tests cathesian swirl to cartesian coordinates conversion identity special
         case.
         """
         for coords in self.carth_coords:
             self.assertPredicate2(
                 coordinates_3d_equiv,
-                carthesian_swirl_to_carthesian_coords(swirl=0.0, coords=coords),
+                cartesian_swirl_to_cartesian_coords(swirl=0.0, coords=coords),
                 coords,
             )
 
-    def test_carthesian_swirl_to_carthesian_fixed_values(self) -> None:
-        """Tests cathesian swirl to carthesian coordinates conversion."""
+    def test_cartesian_swirl_to_cartesian_fixed_values(self) -> None:
+        """Tests cathesian swirl to cartesian coordinates conversion."""
         for (
             swirl,
             swirl_coords,
@@ -606,12 +606,12 @@ class CarthesianSwirlCoordinatesTransfomrationTest(BaseTestCase):
         ) in zip(self.swirls, self.swirl_coords, self.carth_coords):
             self.assertPredicate2(
                 coordinates_3d_equiv,
-                carthesian_swirl_to_carthesian_coords(swirl, swirl_coords),
+                cartesian_swirl_to_cartesian_coords(swirl, swirl_coords),
                 carth_coords,
             )
 
 
-class CarthesianSwirlVectorTransfomrationTest(BaseTestCase):
+class CartesianSwirlVectorTransfomrationTest(BaseTestCase):
     def setUp(self) -> None:
         self.swirls = (7.0, -11.0)
         # x, y, z
@@ -680,33 +680,33 @@ class CarthesianSwirlVectorTransfomrationTest(BaseTestCase):
         )
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
 
-    def test_carthesian_to_carthesian_swirl_invalid_values(self) -> None:
+    def test_cartesian_to_cartesian_swirl_invalid_values(self) -> None:
         """
-        Tests cathesian to carthesian swirl vector conversion invalid values.
+        Tests cathesian to cartesian swirl vector conversion invalid values.
         """
         for swirl in self.swirls:
             for coords in self.invalid_coords:
                 with self.assertRaises(ValueError):
-                    carthesian_to_carthesian_swirl_vector(
+                    cartesian_to_cartesian_swirl_vector(
                         swirl, coords, self.v0
                     )
 
-    def test_carthesian_to_carthesian_swirl_identity_case(self) -> None:
+    def test_cartesian_to_cartesian_swirl_identity_case(self) -> None:
         """
-        Tests cathesian to carthesian swirl vector conversion identity special
+        Tests cathesian to cartesian swirl vector conversion identity special
         case.
         """
         for coords, vec in zip(self.carth_coords, self.carth_vecs):
             self.assertPredicate2(
                 vec_equiv,
-                carthesian_to_carthesian_swirl_vector(
+                cartesian_to_cartesian_swirl_vector(
                     swirl=0.0, coords=coords, vec=vec
                 ),
                 vec,
             )
 
-    def test_carthesian_to_carthesian_swirl_fixed_values(self) -> None:
-        """Tests cathesian to carthesian swirl vector conversion."""
+    def test_cartesian_to_cartesian_swirl_fixed_values(self) -> None:
+        """Tests cathesian to cartesian swirl vector conversion."""
         for (swirl, carth_coords, carth_vec, swirl_vec) in zip(
             self.swirls,
             self.carth_coords,
@@ -715,53 +715,53 @@ class CarthesianSwirlVectorTransfomrationTest(BaseTestCase):
         ):
             self.assertPredicate2(
                 vec_equiv,
-                carthesian_to_carthesian_swirl_vector(
+                cartesian_to_cartesian_swirl_vector(
                     swirl, carth_coords, carth_vec
                 ),
                 swirl_vec,
             )
 
-    def test_carthesian_swirl_to_carthesian_invalid_values(self) -> None:
+    def test_cartesian_swirl_to_cartesian_invalid_values(self) -> None:
         """
-        Tests cathesian swirl to carthesian vector conversion invalid
+        Tests cathesian swirl to cartesian vector conversion invalid
         values.
         """
         for swirl in self.swirls:
             for coords in self.invalid_coords:
                 with self.assertRaises(ValueError):
-                    carthesian_swirl_to_carthesian_vector(
+                    cartesian_swirl_to_cartesian_vector(
                         swirl, coords, self.v0
                     )
 
-    def test_carthesian_swirl_to_carthesian_identity_case(self) -> None:
+    def test_cartesian_swirl_to_cartesian_identity_case(self) -> None:
         """
-        Tests cathesian swirl to carthesian vector conversion
+        Tests cathesian swirl to cartesian vector conversion
         identity special case.
         """
         for carth_coords, carth_vec in zip(self.carth_coords, self.carth_vecs):
             self.assertPredicate2(
                 vec_equiv,
-                carthesian_swirl_to_carthesian_vector(
+                cartesian_swirl_to_cartesian_vector(
                     swirl=0.0, coords=carth_coords, vec=carth_vec
                 ),
                 carth_vec,
             )
 
-    def test_carthesian_swirl_to_carthesian_fixed_values(self) -> None:
-        """Tests cathesian swirl to carthesian vector conversion."""
+    def test_cartesian_swirl_to_cartesian_fixed_values(self) -> None:
+        """Tests cathesian swirl to cartesian vector conversion."""
         for (swirl, swirl_coords, swirl_vec, carth_vec) in zip(
             self.swirls, self.swirl_coords, self.swirl_vecs, self.carth_vecs
         ):
             self.assertPredicate2(
                 vec_equiv,
-                carthesian_swirl_to_carthesian_vector(
+                cartesian_swirl_to_cartesian_vector(
                     swirl, swirl_coords, swirl_vec
                 ),
                 carth_vec,
             )
 
 
-class CarthesianSwirlTangentialVectorTransfomrationTest(BaseTestCase):
+class CartesianSwirlTangentialVectorTransfomrationTest(BaseTestCase):
     def setUp(self) -> None:
         self.swirls = (7.0, -11.0)
         # x, y, z
@@ -842,32 +842,32 @@ class CarthesianSwirlTangentialVectorTransfomrationTest(BaseTestCase):
             TangentialVector(c, v0) for c in invalid_coords
         )
 
-    def test_carthesian_to_carthesian_swirl_invalid_values(self) -> None:
+    def test_cartesian_to_cartesian_swirl_invalid_values(self) -> None:
         """
-        Tests cathesian to carthesian swirl tangential vector conversion invalid
+        Tests cathesian to cartesian swirl tangential vector conversion invalid
         values.
         """
         for swirl in self.swirls:
             for tan in self.invalid_tans:
                 with self.assertRaises(ValueError):
-                    carthesian_to_carthesian_swirl_tangential_vector(swirl, tan)
+                    cartesian_to_cartesian_swirl_tangential_vector(swirl, tan)
 
-    def test_carthesian_to_carthesian_swirl_identity_case(self) -> None:
+    def test_cartesian_to_cartesian_swirl_identity_case(self) -> None:
         """
-        Tests cathesian to carthesian swirl tangential vector conversion
+        Tests cathesian to cartesian swirl tangential vector conversion
         identity special case.
         """
         for tan in self.carth_tans:
             self.assertPredicate2(
                 tan_vec_equiv,
-                carthesian_to_carthesian_swirl_tangential_vector(
+                cartesian_to_cartesian_swirl_tangential_vector(
                     swirl=0.0, tangential_vector=tan
                 ),
                 tan,
             )
 
-    def test_carthesian_to_carthesian_swirl_fixed_values(self) -> None:
-        """Tests cathesian to carthesian swirl tangential vector conversion."""
+    def test_cartesian_to_cartesian_swirl_fixed_values(self) -> None:
+        """Tests cathesian to cartesian swirl tangential vector conversion."""
         for (
             swirl,
             carth_tan,
@@ -875,38 +875,38 @@ class CarthesianSwirlTangentialVectorTransfomrationTest(BaseTestCase):
         ) in zip(self.swirls, self.carth_tans, self.swirl_tans):
             self.assertPredicate2(
                 tan_vec_equiv,
-                carthesian_to_carthesian_swirl_tangential_vector(
+                cartesian_to_cartesian_swirl_tangential_vector(
                     swirl, carth_tan
                 ),
                 swirl_tan,
             )
 
-    def test_carthesian_swirl_to_carthesian_invalid_values(self) -> None:
+    def test_cartesian_swirl_to_cartesian_invalid_values(self) -> None:
         """
-        Tests cathesian swirl to carthesian tangential vector conversion invalid
+        Tests cathesian swirl to cartesian tangential vector conversion invalid
         values.
         """
         for swirl in self.swirls:
             for tan in self.invalid_tans:
                 with self.assertRaises(ValueError):
-                    carthesian_swirl_to_carthesian_tangential_vector(swirl, tan)
+                    cartesian_swirl_to_cartesian_tangential_vector(swirl, tan)
 
-    def test_carthesian_swirl_to_carthesian_identity_case(self) -> None:
+    def test_cartesian_swirl_to_cartesian_identity_case(self) -> None:
         """
-        Tests cathesian swirl to carthesian tangential vector conversion
+        Tests cathesian swirl to cartesian tangential vector conversion
         identity special case.
         """
         for tan in self.carth_tans:
             self.assertPredicate2(
                 tan_vec_equiv,
-                carthesian_swirl_to_carthesian_tangential_vector(
+                cartesian_swirl_to_cartesian_tangential_vector(
                     swirl=0.0, tangential_vector=tan
                 ),
                 tan,
             )
 
-    def test_carthesian_swirl_to_carthesian_fixed_values(self) -> None:
-        """Tests cathesian swirl to carthesian tangential vector conversion."""
+    def test_cartesian_swirl_to_cartesian_fixed_values(self) -> None:
+        """Tests cathesian swirl to cartesian tangential vector conversion."""
         for (
             swirl,
             swirl_tans,
@@ -914,7 +914,7 @@ class CarthesianSwirlTangentialVectorTransfomrationTest(BaseTestCase):
         ) in zip(self.swirls, self.swirl_tans, self.carth_tans):
             self.assertPredicate2(
                 tan_vec_equiv,
-                carthesian_swirl_to_carthesian_tangential_vector(
+                cartesian_swirl_to_cartesian_tangential_vector(
                     swirl, swirl_tans
                 ),
                 carth_tans,
@@ -1019,7 +1019,7 @@ class PlanePropertiesTest(BaseTestCase):
             Coordinates3D((2.0 + 2.0, 3.0 - 3.0, 5.0)),
         )
         self.coords_3d = tuple(
-            carthesian_to_carthesian_swirl_coords(self.swirl, c3d)
+            cartesian_to_cartesian_swirl_coords(self.swirl, c3d)
             for c3d in carth_coords_3d
         )
         # self.coords_3d numerically:
@@ -1029,7 +1029,7 @@ class PlanePropertiesTest(BaseTestCase):
         #   {1.53674, -3.69302, 5.0}
         self.n_cartesian = AbstractVector((0.0, 0.0, 1.0))
         self.ns = tuple(
-            carthesian_to_carthesian_swirl_vector(
+            cartesian_to_cartesian_swirl_vector(
                 self.swirl, c3d, self.n_cartesian
             )
             for c3d in carth_coords_3d
@@ -1042,7 +1042,7 @@ class PlanePropertiesTest(BaseTestCase):
         carth_tangential_space = (self.v1, self.v2)
         self.tangential_spaces = tuple(
             tuple(
-                carthesian_to_carthesian_swirl_vector(self.swirl, c3d, v)
+                cartesian_to_cartesian_swirl_vector(self.swirl, c3d, v)
                 for v in carth_tangential_space
             )
             for c3d in carth_coords_3d

@@ -19,17 +19,17 @@ from nerte.values.linalg import (
     length,
 )
 from nerte.values.manifolds.cartesian_swirl import (
-    carthesian_swirl_metric,
-    carthesian_swirl_geodesic_equation,
-    carthesian_swirl_to_carthesian_coords,
-    carthesian_to_carthesian_swirl_vector,
+    cartesian_swirl_metric,
+    cartesian_swirl_geodesic_equation,
+    cartesian_swirl_to_cartesian_coords,
+    cartesian_to_cartesian_swirl_vector,
 )
 from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 
 
-class SwirlCarthesianRungeKuttaGeometry(RungeKuttaGeometry):
+class SwirlCartesianRungeKuttaGeometry(RungeKuttaGeometry):
     """
-    Represenation of a geometry in carthesian swirl coordinates. Geodesics are
+    Represenation of a geometry in cartesian swirl coordinates. Geodesics are
     'swirled' around the z axis. In cylindric coordinates this amounts to the
     transformation:
         (r, 𝜑, z) = (r, 𝛼 + swirl * r * z, z)
@@ -58,7 +58,7 @@ class SwirlCarthesianRungeKuttaGeometry(RungeKuttaGeometry):
 
         if not -math.inf < swirl < math.inf:
             raise ValueError(
-                f"Cannot construct carthesian swirl Runge-Kutta geometry."
+                f"Cannot construct cartesian swirl Runge-Kutta geometry."
                 f" The parameter swirl={swirl} must be finite."
             )
 
@@ -67,7 +67,7 @@ class SwirlCarthesianRungeKuttaGeometry(RungeKuttaGeometry):
         def _geodesic_equation(
             tan: TangentialVectorDelta,
         ) -> TangentialVectorDelta:
-            return carthesian_swirl_geodesic_equation(
+            return cartesian_swirl_geodesic_equation(
                 self._swirl, delta_as_tangent(tan)
             )
 
@@ -96,12 +96,12 @@ class SwirlCarthesianRungeKuttaGeometry(RungeKuttaGeometry):
         # Note: This strategy is possible since the underlying geometry is
         #       curvature-free (Ricci scalar is 0) and the chart is covering
         #       the entire manifold.
-        start_flat = carthesian_swirl_to_carthesian_coords(self._swirl, start)
-        target_flat = carthesian_swirl_to_carthesian_coords(self._swirl, target)
+        start_flat = cartesian_swirl_to_cartesian_coords(self._swirl, start)
+        target_flat = cartesian_swirl_to_cartesian_coords(self._swirl, target)
         start_flat_vec = coordinates_as_vector(start_flat)
         target_flat_vec = coordinates_as_vector(target_flat)
         delta_flat = target_flat_vec - start_flat_vec
-        direction = carthesian_to_carthesian_swirl_vector(
+        direction = cartesian_to_cartesian_swirl_vector(
             self._swirl, start_flat, delta_flat
         )
         tangent = TangentialVector(point=start, vector=direction)
@@ -113,7 +113,7 @@ class SwirlCarthesianRungeKuttaGeometry(RungeKuttaGeometry):
                 f"Cannot calculate length of tangential vector {tangent}."
                 f" Coordinates are outside of the manifold."
             )
-        metric = carthesian_swirl_metric(self._swirl, tangent.point)
+        metric = cartesian_swirl_metric(self._swirl, tangent.point)
         return length(tangent.vector, metric=metric)
 
     def geodesic_equation(

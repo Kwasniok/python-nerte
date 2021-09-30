@@ -1,6 +1,6 @@
 """
 Module for representations of domains (e.g. for manifolds).
-Domains are Carthesian and must be convertible to an open interval.
+Domains are Cartesian and must be convertible to an open interval.
 """
 
 import math

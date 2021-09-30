@@ -16,26 +16,26 @@ from nerte.values.tangential_vector import TangentialVector
 from nerte.values.face import Face
 from nerte.values.ray_segment import RaySegment
 from nerte.values.ray_segment_unittest import ray_segment_equiv
-from nerte.geometry.carthesian_geometry import CarthesianGeometry
+from nerte.geometry.cartesian_geometry import CartesianGeometry
 
 
-def carthesian_ray_equiv(
-    x: CarthesianGeometry.Ray, y: CarthesianGeometry.Ray
+def cartesian_ray_equiv(
+    x: CartesianGeometry.Ray, y: CartesianGeometry.Ray
 ) -> bool:
-    """Returns true iff both carthesian rays are considered equivalent."""
+    """Returns true iff both cartesian rays are considered equivalent."""
     return ray_segment_equiv(x.as_segment(), y.as_segment())
 
 
-class CarthesianGeometryConstructorTest(BaseTestCase):
+class CartesianGeometryConstructorTest(BaseTestCase):
     def test_constructor(self) -> None:
         # pylint: disable=R0201
         """Test the constructor."""
-        CarthesianGeometry()
+        CartesianGeometry()
 
 
-class CarthesianGeometryIsValidCoordinateTest(BaseTestCase):
+class CartesianGeometryIsValidCoordinateTest(BaseTestCase):
     def setUp(self) -> None:
-        self.geo = CarthesianGeometry()
+        self.geo = CartesianGeometry()
         self.valid_coords = (Coordinates3D((0.0, 0.0, 0.0)),)
 
     def test_is_valid_coordinate(self) -> None:
@@ -44,9 +44,9 @@ class CarthesianGeometryIsValidCoordinateTest(BaseTestCase):
             self.assertTrue(self.geo.is_valid_coordinate(coords))
 
 
-class CarthesianGeometryRayFromTest(BaseTestCase):
+class CartesianGeometryRayFromTest(BaseTestCase):
     def setUp(self) -> None:
-        self.geo = CarthesianGeometry()
+        self.geo = CartesianGeometry()
         self.coords1 = Coordinates3D((0.0, 0.0, 0.0))
         self.coords2 = Coordinates3D((0.0, 1.0, 2.0))
         self.vector = AbstractVector((0.0, 1.0, 2.0))  # equiv to cords2
@@ -70,7 +70,7 @@ class CarthesianGeometryRayFromTest(BaseTestCase):
         self.assertPredicate2(ray_segment_equiv, init_seg, self.init_seg)
 
 
-class CarthesianGeometryIntersectsTest1(BaseTestCase):
+class CartesianGeometryIntersectsTest1(BaseTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -79,7 +79,7 @@ class CarthesianGeometryIntersectsTest1(BaseTestCase):
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry
-        geo = CarthesianGeometry()
+        geo = CartesianGeometry()
         # rays pointing 'forwards' towards faces and parallel to face normal
         s0 = Coordinates3D((0.0, 0.0, 0.0))
         s1 = Coordinates3D((0.3, 0.0, 0.0))  # one third of p1
@@ -104,7 +104,7 @@ class CarthesianGeometryIntersectsTest1(BaseTestCase):
                 self.assertTrue(info.hits())
 
 
-class CarthesianGeometryIntersectsTest2(BaseTestCase):
+class CartesianGeometryIntersectsTest2(BaseTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -113,7 +113,7 @@ class CarthesianGeometryIntersectsTest2(BaseTestCase):
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry
-        geo = CarthesianGeometry()
+        geo = CartesianGeometry()
         # rays pointing 'backwards' and are parallel to face's normal
         s0 = Coordinates3D((0.0, 0.0, 0.0))
         s1 = Coordinates3D((0.3, 0.0, 0.0))  # one third of p1
@@ -138,7 +138,7 @@ class CarthesianGeometryIntersectsTest2(BaseTestCase):
                 self.assertTrue(info.misses())
 
 
-class CarthesianGeometryIntersectsTest3(BaseTestCase):
+class CartesianGeometryIntersectsTest3(BaseTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -147,7 +147,7 @@ class CarthesianGeometryIntersectsTest3(BaseTestCase):
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry
-        geo = CarthesianGeometry()
+        geo = CartesianGeometry()
         # rays miss the face and are parallel to face's normal
         s1 = Coordinates3D((0.0, 0.6, 0.6))  # 'complement' of p1
         s2 = Coordinates3D((0.6, 0.0, 0.6))  # 'complement' of p2
@@ -170,7 +170,7 @@ class CarthesianGeometryIntersectsTest3(BaseTestCase):
                 self.assertTrue(info.misses())
 
 
-class CarthesianGeometryIntersectsTest4(BaseTestCase):
+class CartesianGeometryIntersectsTest4(BaseTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -179,7 +179,7 @@ class CarthesianGeometryIntersectsTest4(BaseTestCase):
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry
-        geo = CarthesianGeometry()
+        geo = CartesianGeometry()
         # rays completely miss the face by pointing away from it
         # and are parallel to face's normal
         s1 = Coordinates3D((0.0, 0.6, 0.6))  # 'complement' of p1

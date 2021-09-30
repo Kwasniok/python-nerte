@@ -1,5 +1,5 @@
 """
-Demonstartes the image filter renderer with an example scene in carthesian
+Demonstartes the image filter renderer with an example scene in cartesian
 swirl coordinates and various filters.
 """
 
@@ -12,14 +12,14 @@ from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.face import Face
 from nerte.values.manifolds.cartesian_swirl import (
-    Plane as CarthesianPlaneInCarthesianSwirl,
+    Plane as CartesianPlaneInCartesianSwirl,
 )
 from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
 from nerte.geometry.geometry import Geometry
 from nerte.geometry.cartesian_swirl_geometry import (
-    SwirlCarthesianRungeKuttaGeometry,
+    SwirlCartesianRungeKuttaGeometry,
 )
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_filter_renderer import (
@@ -62,7 +62,7 @@ def make_camera(swirl: float, canvas_dimension: int) -> Camera:
 
     location = Coordinates3D((0.0, 2.5, 2.5))
     alpha = 0 * math.pi / 4
-    manifold = CarthesianPlaneInCarthesianSwirl(
+    manifold = CartesianPlaneInCartesianSwirl(
         swirl=swirl,
         b0=AbstractVector((1.0, 0.0, 0.0)),
         b1=AbstractVector((0.0, math.cos(alpha), math.sin(alpha))),
@@ -174,7 +174,7 @@ def main() -> None:
     swirl = 0.05
     scene = make_scene(swirl=swirl, canvas_dimension=100)
     max_steps = 50
-    geo = SwirlCarthesianRungeKuttaGeometry(
+    geo = SwirlCartesianRungeKuttaGeometry(
         max_ray_depth=8.0,
         step_size=0.25,
         max_steps=max_steps,

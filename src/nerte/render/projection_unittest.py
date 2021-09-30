@@ -19,8 +19,8 @@ from nerte.values.tangential_vector import TangentialVector
 from nerte.values.manifolds.cartesian import Plane as PlaneCartesian
 from nerte.values.manifolds.cylindrical import Plane as PlaneCylindric
 from nerte.world.camera import Camera
-from nerte.geometry.carthesian_geometry import CarthesianGeometry
-from nerte.geometry.carthesian_geometry_unittest import carthesian_ray_equiv
+from nerte.geometry.cartesian_geometry import CartesianGeometry
+from nerte.geometry.cartesian_geometry_unittest import cartesian_ray_equiv
 from nerte.render.projection import (
     detector_manifold_coords,
     orthographic_ray_for_pixel,
@@ -117,7 +117,7 @@ class OrthographicProjectionTest(BaseTestCase):
             canvas_dimensions=(dim, dim),
         )
         # geometry
-        self.geometry = CarthesianGeometry()
+        self.geometry = CartesianGeometry()
         # pixels and rays
         self.pixel_locations = (
             (0, 0),
@@ -134,7 +134,7 @@ class OrthographicProjectionTest(BaseTestCase):
             (dim + 1, 1),
         )
         # orthographic ray from detecor manifold coordinates
-        def make_ray(coords2d: Coordinates2D) -> CarthesianGeometry.Ray:
+        def make_ray(coords2d: Coordinates2D) -> CartesianGeometry.Ray:
             return self.geometry.ray_from_tangent(
                 TangentialVector(
                     point=manifold.embed(coords2d),
@@ -160,9 +160,9 @@ class OrthographicProjectionTest(BaseTestCase):
                 geometry=self.geometry,
                 pixel_location=pix_loc,
             )
-            self.assertIsInstance(ray, CarthesianGeometry.Ray)
-            cart_ray = cast(CarthesianGeometry.Ray, ray)
-            self.assertPredicate2(carthesian_ray_equiv, cart_ray, pix_ray)
+            self.assertIsInstance(ray, CartesianGeometry.Ray)
+            cart_ray = cast(CartesianGeometry.Ray, ray)
+            self.assertPredicate2(cartesian_ray_equiv, cart_ray, pix_ray)
 
     def test_orthographic_ray_for_pixel_invalid_values(self) -> None:
         """Tests orthographic projection for pixel's invalid values."""
@@ -198,7 +198,7 @@ class PerspectiveProjectionTest(BaseTestCase):
             canvas_dimensions=(dim, dim),
         )
         # geometry
-        self.geometry = CarthesianGeometry()
+        self.geometry = CartesianGeometry()
         # pixels and rays
         self.pixel_locations = (
             (0, 0),
@@ -217,7 +217,7 @@ class PerspectiveProjectionTest(BaseTestCase):
         # perspective ray from detecor manifold coordinates
         def make_ray(
             coords2d: Coordinates2D,
-        ) -> CarthesianGeometry.Ray:
+        ) -> CartesianGeometry.Ray:
             return self.geometry.ray_from_coords(
                 start=self.camera.location,
                 target=self.camera.detector_manifold.embed(coords2d),
@@ -241,9 +241,9 @@ class PerspectiveProjectionTest(BaseTestCase):
                 geometry=self.geometry,
                 pixel_location=pix_loc,
             )
-            self.assertIsInstance(ray, CarthesianGeometry.Ray)
-            cart_ray = cast(CarthesianGeometry.Ray, ray)
-            self.assertPredicate2(carthesian_ray_equiv, cart_ray, pix_ray)
+            self.assertIsInstance(ray, CartesianGeometry.Ray)
+            cart_ray = cast(CartesianGeometry.Ray, ray)
+            self.assertPredicate2(cartesian_ray_equiv, cart_ray, pix_ray)
 
     def test_perspective_ray_for_pixel_invalid_values(self) -> None:
         """Tests perspective projection for pixel's invalid values."""
@@ -279,7 +279,7 @@ class ObscuraProjectionTest(BaseTestCase):
             canvas_dimensions=(dim, dim),
         )
         # geometry
-        self.geometry = CarthesianGeometry()
+        self.geometry = CartesianGeometry()
         # pixels and rays
         self.pixel_locations = (
             (0, 0),
@@ -298,7 +298,7 @@ class ObscuraProjectionTest(BaseTestCase):
         # perspective ray from detecor manifold coordinates
         def make_ray(
             coords2d: Coordinates2D,
-        ) -> CarthesianGeometry.Ray:
+        ) -> CartesianGeometry.Ray:
             return self.geometry.ray_from_coords(
                 start=self.camera.detector_manifold.embed(coords2d),
                 target=self.camera.location,
@@ -322,9 +322,9 @@ class ObscuraProjectionTest(BaseTestCase):
                 geometry=self.geometry,
                 pixel_location=pix_loc,
             )
-            self.assertIsInstance(ray, CarthesianGeometry.Ray)
-            cart_ray = cast(CarthesianGeometry.Ray, ray)
-            self.assertPredicate2(carthesian_ray_equiv, cart_ray, pix_ray)
+            self.assertIsInstance(ray, CartesianGeometry.Ray)
+            cart_ray = cast(CartesianGeometry.Ray, ray)
+            self.assertPredicate2(cartesian_ray_equiv, cart_ray, pix_ray)
 
     def test_perspective_ray_for_pixel_invalid_values(self) -> None:
         """Tests perspective projection for pixel's invalid values."""

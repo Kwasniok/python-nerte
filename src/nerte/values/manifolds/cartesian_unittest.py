@@ -25,8 +25,8 @@ from nerte.values.linalg import AbstractVector, AbstractMatrix, Metric, cross
 from nerte.values.linalg_unittest import vec_equiv, metric_equiv
 from nerte.values.manifold import OutOfDomainError
 from nerte.values.manifolds.cartesian import (
-    carthesian_metric,
-    carthesian_geodesic_equation,
+    cartesian_metric,
+    cartesian_geodesic_equation,
     Line,
     Plane,
     Parallelepiped,
@@ -37,7 +37,7 @@ from nerte.values.util.convert import (
 )
 
 
-class CarthesianMetricTest(BaseTestCase):
+class CartesianMetricTest(BaseTestCase):
     def setUp(self) -> None:
         self.coords = (
             Coordinates3D((0.0, 0.0, 0.0)),
@@ -55,11 +55,11 @@ class CarthesianMetricTest(BaseTestCase):
         """Tests the metric."""
         for coords in self.coords:
             self.assertPredicate2(
-                metric_equiv, carthesian_metric(coords), self.metric
+                metric_equiv, cartesian_metric(coords), self.metric
             )
 
 
-class CarthesianGeodesicEquationTest(BaseTestCase):
+class CartesianGeodesicEquationTest(BaseTestCase):
     def setUp(self) -> None:
         self.carth_initial_tangent = TangentialVector(
             point=Coordinates3D((1.0, 2.0, 3.0)),
@@ -81,7 +81,7 @@ class CarthesianGeodesicEquationTest(BaseTestCase):
 
         # propagate in cylindric coordinates
         def carth_geo_eq(x: TangentialVectorDelta) -> TangentialVectorDelta:
-            return carthesian_geodesic_equation(delta_as_tangent(x))
+            return cartesian_geodesic_equation(delta_as_tangent(x))
 
         def carth_next(x: TangentialVectorDelta) -> TangentialVectorDelta:
             return x + runge_kutta_4_delta(carth_geo_eq, x, self.step_size)
@@ -89,7 +89,7 @@ class CarthesianGeodesicEquationTest(BaseTestCase):
         for _ in range(self.steps):
             carth_tangent_delta = carth_next(carth_tangent_delta)
 
-        # final to carthesian coordinates
+        # final to cartesian coordinates
         carth_final_tangent = delta_as_tangent(carth_tangent_delta)
 
         # compare with expectations

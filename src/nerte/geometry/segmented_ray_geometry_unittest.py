@@ -302,7 +302,7 @@ class SegmentedRayGeometryRayIntersectsMetaDataTest(BaseTestCase):
         p2 = Coordinates3D((0.0, 1.0, 0.0))
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.face = Face(p1, p2, p3)
-        # geometry (carthesian & euclidean)
+        # geometry (cartesian & euclidean)
         DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
         geos = (
             DummySegmentedRayGeometry(

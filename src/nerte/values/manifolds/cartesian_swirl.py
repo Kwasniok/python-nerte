@@ -1,4 +1,4 @@
-"""Module for representing manifolds in carthesian swirl coordinates."""
+"""Module for representing manifolds in cartesian swirl coordinates."""
 
 from typing import Optional
 
@@ -43,7 +43,7 @@ def _assert_valid(coords: Coordinates3D) -> None:
     """
     if not _valid(*coords):
         raise ValueError(
-            f"Coordinates {coords} lie outside of the carthesian swirl manifold"
+            f"Coordinates {coords} lie outside of the cartesian swirl manifold"
             f" or its chart."
             f" The conditions are: -inf < x0, x1, z < inf"
             f" and sqrt(x0 ** 2 + x1 ** 2) > 0."
@@ -133,7 +133,7 @@ def _covariant_jacobian(
 
 def _metric(a: float, u: float, v: float, z: float) -> AbstractMatrix:
     """
-    Returns the metric for the carthesian swirl coordiantes (u, v, z)
+    Returns the metric for the cartesian swirl coordiantes (u, v, z)
     and a = swirl.
 
     Note: No checks are performed. It is trusted that:
@@ -175,7 +175,7 @@ def _metric(a: float, u: float, v: float, z: float) -> AbstractMatrix:
 
 def _metric_inverted(a: float, u: float, v: float, z: float) -> AbstractMatrix:
     """
-    Returns the inverse of the metric for the carthesian swirl coordiantes
+    Returns the inverse of the metric for the cartesian swirl coordiantes
     (u, v, z) and a = swirl.
 
     Note: No checks are performed. It is trusted that:
@@ -213,7 +213,7 @@ def _christoffel_1(
     a: float, u: float, v: float, z: float
 ) -> tuple[AbstractMatrix, AbstractMatrix, AbstractMatrix]:
     """
-    Returns the Christoffel symbols of the first kind for the carthesian swirl
+    Returns the Christoffel symbols of the first kind for the cartesian swirl
     coordiantes (u, v, z) and a = swirl.
 
     The return format is a tuple of three matrices where
@@ -319,7 +319,7 @@ def _christoffel_2(
     a: float, u: float, v: float, z: float
 ) -> tuple[AbstractMatrix, AbstractMatrix, AbstractMatrix]:
     """
-    Returns the Christoffel symbols of the second kind for the carthesian swirl
+    Returns the Christoffel symbols of the second kind for the cartesian swirl
     coordiantes (u, v, z) and a = swirl.
 
     The return format is a tuple of three matrices where
@@ -346,27 +346,27 @@ def _christoffel_2(
     )
 
 
-def carthesian_swirl_metric(swirl: float, coords: Coordinates3D) -> Metric:
+def cartesian_swirl_metric(swirl: float, coords: Coordinates3D) -> Metric:
     # pylint: disable=C0103
-    """Returns the local metric in carthesian swirl coordinates."""
+    """Returns the local metric in cartesian swirl coordinates."""
     try:
         _assert_valid(coords)
     except ValueError as ex:
         raise ValueError(
-            f"Cannot generate metric for carthesian swirl={swirl}"
+            f"Cannot generate metric for cartesian swirl={swirl}"
             f" coordinates={coords}."
         ) from ex
     return Metric(_metric(swirl, *coords))
 
 
-def carthesian_swirl_geodesic_equation(
+def cartesian_swirl_geodesic_equation(
     swirl: float,
     tangent: TangentialVector,
 ) -> TangentialVectorDelta:
     # pylint: disable=C0103,R0914
     """
     Returns a tangential vector delta which encodes the geodesic equation of
-    carthesian swirl coordinates.
+    cartesian swirl coordinates.
 
     Let x(𝜆) be a geodesic.
     For tangent (x, dx/d𝜆) it returns (dx/d𝜆, d**2x/d𝜆**2)
@@ -376,7 +376,7 @@ def carthesian_swirl_geodesic_equation(
         _assert_valid(tangent.point)
     except ValueError as ex:
         raise ValueError(
-            f"Cannot generate generate geodesic equation for carthesian"
+            f"Cannot generate generate geodesic equation for cartesian"
             f" swirl={swirl} tangetial vector={tangent}."
         ) from ex
 
@@ -399,65 +399,65 @@ def carthesian_swirl_geodesic_equation(
     )
 
 
-def carthesian_to_carthesian_swirl_coords(
+def cartesian_to_cartesian_swirl_coords(
     swirl: float,
     coords: Coordinates3D,
 ) -> Coordinates3D:
     """
-    Returns carthesian swirl coordinates obtained from carthesian coordinates.
+    Returns cartesian swirl coordinates obtained from cartesian coordinates.
 
-    :param coords: carthesian coordinates (x, y, z)
+    :param coords: cartesian coordinates (x, y, z)
         where -inf < x, y, z < inf and 0 < r = sqrt(x**2 + y**2)
-    :returns: carthesian swirl coordinates (u, v, z)
+    :returns: cartesian swirl coordinates (u, v, z)
     """
     try:
         _assert_valid(coords)
     except ValueError as ex:
         raise ValueError(
             f"Cannot transform coordinates={coords}"
-            f" from carthesian coordinates to carthesian swirl={swirl}"
+            f" from cartesian coordinates to cartesian swirl={swirl}"
             f" coordinates."
         ) from ex
     return Coordinates3D(_trafo(-swirl, *coords))
 
 
-def carthesian_swirl_to_carthesian_coords(
+def cartesian_swirl_to_cartesian_coords(
     swirl: float,
     coords: Coordinates3D,
 ) -> Coordinates3D:
     """
-    Returns carthesian coordinates obtained from carthesian swirl coordinates.
+    Returns cartesian coordinates obtained from cartesian swirl coordinates.
 
-    :param coords: carthesian swirl coordinates (u, v, z)
+    :param coords: cartesian swirl coordinates (u, v, z)
         where -inf < u, v, z < inf and 0 < r = sqrt(u**2 + v**2)
-    :returns: carthesian coordinates (x, y, z)
+    :returns: cartesian coordinates (x, y, z)
     """
     try:
         _assert_valid(coords)
     except ValueError as ex:
         raise ValueError(
             f"Cannot transform coordinates={coords}"
-            f" from carthesian swirl={swirl} to carthesian coordinates"
+            f" from cartesian swirl={swirl} to cartesian coordinates"
             f" coordinates."
         ) from ex
     return Coordinates3D(_trafo(+swirl, *coords))
 
 
-def carthesian_to_carthesian_swirl_vector(
+def cartesian_to_cartesian_swirl_vector(
     swirl: float,
     coords: Coordinates3D,
     vec: AbstractVector,
 ) -> AbstractVector:
     """
-    Returns vector transformed from carthesian to carthesian swirl coordinates.
+    Returns vector transformed from cartesian to cartesian swirl coordinates.
 
-    :param coords: carthesian coordinates (x, y, z)
+    :param coords: cartesian coordinates (x, y, z)
         where -inf < x, y, z < inf and 0 < r = sqrt(x**2 + y**2)
     :param vec: coefficient vector (v_x, v_y, v_z)
-        at carthesian coordinates (x, y, z)
+        at cartesian coordinates (x, y, z)
         where v = e_x * v_x + e_y * v_y + e_z * v_z
     :returns: coefficient vector (v_u, v_v, v_z)
-        at carthesian swirl coordinates (u, v, z)
+        at cartesian swirl coordinates (u, v, z)
         where v = e_u * v_u + e_v * v_v + e_z * v_z
     """
     try:
@@ -465,28 +465,28 @@ def carthesian_to_carthesian_swirl_vector(
     except ValueError as ex:
         raise ValueError(
             f"Cannot transform vector={vec}"
-            f" for carthesian coordinates={coords} to carthesian swirl={swirl}"
+            f" for cartesian coordinates={coords} to cartesian swirl={swirl}"
             f" coordinates."
         ) from ex
     jacobian = _jacobian(-swirl, *coords)
     return mat_vec_mult(jacobian, vec)
 
 
-def carthesian_swirl_to_carthesian_vector(
+def cartesian_swirl_to_cartesian_vector(
     swirl: float,
     coords: Coordinates3D,
     vec: AbstractVector,
 ) -> AbstractVector:
     """
-    Returns vector transformed from carthesian swirl to carthesian coordinates.
+    Returns vector transformed from cartesian swirl to cartesian coordinates.
 
-    :param coords: carthesian swirl coordinates (u, v, z)
+    :param coords: cartesian swirl coordinates (u, v, z)
         where -inf < u, v, z < inf and 0 < r = sqrt(u**2 + v**2)
     :param vec: coefficient vector (v_u, v_v, v_z)
-        at carthesian swirl coordinates (u, v, z)
+        at cartesian swirl coordinates (u, v, z)
         where v = e_x * v_x + e_y * v_y + e_z * v_z
     :returns: coefficient vector (v_x, v_y, v_z)
-        at carthesian coordinates (x, y, z)
+        at cartesian coordinates (x, y, z)
         where v = e_u * v_u + e_v * v_v + e_z * v_z
     """
     try:
@@ -494,28 +494,28 @@ def carthesian_swirl_to_carthesian_vector(
     except ValueError as ex:
         raise ValueError(
             f"Cannot transform vector={vec}"
-            f" for carthesian swirl={swirl} coordinates={coords} to carthesian"
+            f" for cartesian swirl={swirl} coordinates={coords} to cartesian"
             f" coordinates."
         ) from ex
     jacobian = _jacobian(+swirl, *coords)
     return mat_vec_mult(jacobian, vec)
 
 
-def carthesian_to_carthesian_swirl_tangential_vector(
+def cartesian_to_cartesian_swirl_tangential_vector(
     swirl: float,
     tangential_vector: TangentialVector,
 ) -> TangentialVector:
     """
-    Returns tangential vector transformed from carthesian to carthesian swirl
+    Returns tangential vector transformed from cartesian to cartesian swirl
     coordinates.
 
     :param tangential_vector: (contravariant) tangential vector
-        at carthesian coordinates (x, y, z)
+        at cartesian coordinates (x, y, z)
         with vector coefficients (v_x, v_y, v_z)
         describing the vector v = e_x * v_x + e_y * v_y + e_z * v_z
         where -inf < x, y, z < inf and 0 < r = sqrt(x ** 2 + y ** 2)
     :returns: transformed (contravariant) tangential vector
-        at carthesian swirl coordinates (u, v, z)
+        at cartesian swirl coordinates (u, v, z)
         with vector coefficients (v_u, v_v, v_z)
         describing the vector v = e_u * v_u + e_v * v_v + e_z * v_z
     """
@@ -524,7 +524,7 @@ def carthesian_to_carthesian_swirl_tangential_vector(
     except ValueError as ex:
         raise ValueError(
             f"Cannot transform  tangential vector={tangential_vector}"
-            f" for carthesian coordinates to carthesian swirl={swirl}"
+            f" for cartesian coordinates to cartesian swirl={swirl}"
             f" coordinates."
         ) from ex
     jacobian = _jacobian(-swirl, *tangential_vector.point)
@@ -533,21 +533,21 @@ def carthesian_to_carthesian_swirl_tangential_vector(
     return TangentialVector(point=point, vector=vector)
 
 
-def carthesian_swirl_to_carthesian_tangential_vector(
+def cartesian_swirl_to_cartesian_tangential_vector(
     swirl: float,
     tangential_vector: TangentialVector,
 ) -> TangentialVector:
     """
-    Returns tangential vector transformed from carthesian swirl to carthesian
+    Returns tangential vector transformed from cartesian swirl to cartesian
     coordinates.
 
     :param tangential_vector: (contravariant) tangential vector
-        at carthesian swirl coordinates (u, v, z)
+        at cartesian swirl coordinates (u, v, z)
         with vector coefficients (v_u, v_v, v_z)
         describing the vector v = e_u * v_u + e_v * v_v + e_z * v_z
         where -inf < u, v, z < inf and 0 < r = sqrt(u ** 2 + v ** 2)
     :returns: transformed (contravariant) tangential vector
-        at carthesian coordinates (x, y, z)
+        at cartesian coordinates (x, y, z)
         with vector coefficients (v_x, v_y, v_z)
         describing the vector v = e_x * v_x + e_y * v_y + e_z * v_z
     """
@@ -556,7 +556,7 @@ def carthesian_swirl_to_carthesian_tangential_vector(
     except ValueError as ex:
         raise ValueError(
             f"Cannot transform  tangential vector={tangential_vector}"
-            f" for carthesian coordinates to carthesian swirl={swirl}"
+            f" for cartesian coordinates to cartesian swirl={swirl}"
             f" coordinates."
         ) from ex
     jacobian = _jacobian(+swirl, *tangential_vector.point)
@@ -567,7 +567,7 @@ def carthesian_swirl_to_carthesian_tangential_vector(
 
 class Plane(Manifold2D):
     """
-    Representation of a two-dimensional plane embedded in carthesian swirl
+    Representation of a two-dimensional plane embedded in cartesian swirl
     coordinates.
     """
 
@@ -602,14 +602,14 @@ class Plane(Manifold2D):
         self._b0 = b0
         self._b1 = b1
         self._n = cross(b0, b1)
-        self._carthesian_basis_vectors = (self._b0, self._b1)
+        self._cartesian_basis_vectors = (self._b0, self._b1)
 
         if offset is None:
             self._offset = AbstractVector((0.0, 0.0, 0.0))
         else:
             self._offset = offset
 
-    def _embed_in_carthesian_coordinates(
+    def _embed_in_cartesian_coordinates(
         self, coords: Coordinates2D
     ) -> Coordinates3D:
         self.in_domain_assertion(coords)
@@ -617,24 +617,24 @@ class Plane(Manifold2D):
         return vector_as_coordinates(point)
 
     def embed(self, coords: Coordinates2D) -> Coordinates3D:
-        coords3d = self._embed_in_carthesian_coordinates(coords)
-        return carthesian_to_carthesian_swirl_coords(self._swirl, coords3d)
+        coords3d = self._embed_in_cartesian_coordinates(coords)
+        return cartesian_to_cartesian_swirl_coords(self._swirl, coords3d)
 
     def surface_normal(self, coords: Coordinates2D) -> AbstractVector:
-        coords3d = self._embed_in_carthesian_coordinates(coords)
-        return carthesian_to_carthesian_swirl_tangential_vector(
+        coords3d = self._embed_in_cartesian_coordinates(coords)
+        return cartesian_to_cartesian_swirl_tangential_vector(
             self._swirl, TangentialVector(coords3d, self._n)
         ).vector
 
     def tangential_space(
         self, coords: Coordinates2D
     ) -> tuple[AbstractVector, AbstractVector]:
-        coords3d = self._embed_in_carthesian_coordinates(coords)
+        coords3d = self._embed_in_cartesian_coordinates(coords)
         return (
-            carthesian_to_carthesian_swirl_tangential_vector(
+            cartesian_to_cartesian_swirl_tangential_vector(
                 self._swirl, TangentialVector(coords3d, self._b0)
             ).vector,
-            carthesian_to_carthesian_swirl_tangential_vector(
+            cartesian_to_cartesian_swirl_tangential_vector(
                 self._swirl, TangentialVector(coords3d, self._b1)
             ).vector,
         )

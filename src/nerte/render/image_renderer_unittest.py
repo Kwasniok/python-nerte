@@ -14,7 +14,7 @@ from nerte.values.linalg import AbstractVector
 from nerte.values.manifolds.cartesian import Plane
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
-from nerte.geometry.carthesian_geometry import CarthesianGeometry
+from nerte.geometry.cartesian_geometry import CartesianGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_renderer import ImageRenderer
 
@@ -55,7 +55,7 @@ class ImageRendererTest(BaseTestCase):
         # scene
         self.scene = Scene(camera=cam)
         # geometry
-        self.geometry = CarthesianGeometry()
+        self.geometry = CartesianGeometry()
 
     def test_image_renderer_render(self) -> None:
         """Tests render."""

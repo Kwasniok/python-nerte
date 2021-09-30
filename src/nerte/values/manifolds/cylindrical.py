@@ -80,11 +80,11 @@ def cylindirc_geodesic_equation(
     )
 
 
-def carthesian_to_cylindric_coords(coords: Coordinates3D) -> Coordinates3D:
+def cartesian_to_cylindric_coords(coords: Coordinates3D) -> Coordinates3D:
     """
-    Returns cylindrical coordinates obtained from carthesian coordinates.
+    Returns cylindrical coordinates obtained from cartesian coordinates.
 
-    :param coords: carthesian coordinates (x, y, z)
+    :param coords: cartesian coordinates (x, y, z)
                    where -inf < x < inf and -inf < y < inf and -inf < z < inf
                    and 0 < r = sqrt(x^2 + y^2)
     """
@@ -96,14 +96,14 @@ def carthesian_to_cylindric_coords(coords: Coordinates3D) -> Coordinates3D:
         or not -math.inf < z < math.inf
     ):
         raise ValueError(
-            f"Cannot convert carthesian coordinates={coords} to cylindric"
+            f"Cannot convert cartesian coordinates={coords} to cylindric"
             f" coordinates. All values must be finte."
         )
     r = math.sqrt(x ** 2 + y ** 2)
     phi = math.atan2(y, x)
     if r == 0.0:
         raise ValueError(
-            f"Cannot convert carthesian coordinates={coords} to cylindric"
+            f"Cannot convert cartesian coordinates={coords} to cylindric"
             f" coordinates. All values must be finte."
             f" and all cylindrical coordinates are restricted by"
             f" 0 < r but r={r}."
@@ -111,9 +111,9 @@ def carthesian_to_cylindric_coords(coords: Coordinates3D) -> Coordinates3D:
     return Coordinates3D((r, phi, z))
 
 
-def cylindric_to_carthesian_coords(coords: Coordinates3D) -> Coordinates3D:
+def cylindric_to_cartesian_coords(coords: Coordinates3D) -> Coordinates3D:
     """
-    Returns carthesian coordinates obtained from cylindrical coordinates.
+    Returns cartesian coordinates obtained from cylindrical coordinates.
 
     :param coords: cylindrical coordinates (r, phi, z)
                    where 0 < r < inf and -pi < phi < pi and -inf < z < inf
@@ -127,7 +127,7 @@ def cylindric_to_carthesian_coords(coords: Coordinates3D) -> Coordinates3D:
     ):
         raise ValueError(
             f"Cannot convert cylindric coordinates at (r, phi, z)={coords} to"
-            f" carthesian coordinates. Coordinate values must be restricted to "
+            f" cartesian coordinates. Coordinate values must be restricted to "
             f" 0 < r < inf, -pi < phi < pi, -inf < z inf."
         )
     x = r * math.cos(phi)
@@ -135,16 +135,16 @@ def cylindric_to_carthesian_coords(coords: Coordinates3D) -> Coordinates3D:
     return Coordinates3D((x, y, z))
 
 
-def carthesian_to_cylindric_vector(
+def cartesian_to_cylindric_vector(
     coords: Coordinates3D, vec: AbstractVector
 ) -> AbstractVector:
     """
     Returns vector in tangential vector space of cylindircal coordinates from
-    a vector in tangential vector space in carthesian coordinates.
+    a vector in tangential vector space in cartesian coordinates.
 
-    :param coords: carthesian coordinates (x, y, z)
+    :param coords: cartesian coordinates (x, y, z)
                    where -inf < x < inf and -inf < y < inf and -inf < z < inf
-    :param vec: vector in tangential vector space of the carthesian coordinates
+    :param vec: vector in tangential vector space of the cartesian coordinates
                 (x, y, z) such that vec = e_x * x + e_y * y + e_z * z
     """
     # pylint:disable=C0103
@@ -155,15 +155,15 @@ def carthesian_to_cylindric_vector(
         or not -math.inf < z < math.inf
     ):
         raise ValueError(
-            f"Cannot convert carthesian vector={vec} @ coordinates"
+            f"Cannot convert cartesian vector={vec} @ coordinates"
             f" (x,y,z)={coords} to cylindric vector."
-            f" All carthesian coordinate values must be finte."
+            f" All cartesian coordinate values must be finte."
         )
     r = math.sqrt(x ** 2 + y ** 2)
     phi = math.atan2(y, x)
     if r == 0.0 or not -math.pi < phi < math.pi:
         raise ValueError(
-            f"Cannot convert carthesian vector={vec} @ coordinates"
+            f"Cannot convert cartesian vector={vec} @ coordinates"
             f" (x,y,z)={coords} to cylindric vector."
             f" All cylindrical coordinates are restricted by"
             f" 0 < r, -pi < phi < pi."
@@ -177,11 +177,11 @@ def carthesian_to_cylindric_vector(
     return mat_vec_mult(jacobian, vec)
 
 
-def cylindric_to_carthesian_vector(
+def cylindric_to_cartesian_vector(
     coords: Coordinates3D, vec: AbstractVector
 ) -> AbstractVector:
     """
-    Returns vector in tangential vector space of carthesian coordinates from
+    Returns vector in tangential vector space of cartesian coordinates from
     a vector in tangential vector space in cylindircal coordinates.
 
     :param coords: cylindrical coordinates (r, phi, z)
@@ -198,7 +198,7 @@ def cylindric_to_carthesian_vector(
     ):
         raise ValueError(
             f"Cannot convert cylindric vector={vec} @ coordinates"
-            f" (r, phi, z)={coords} to carthesian vector."
+            f" (r, phi, z)={coords} to cartesian vector."
             f" Coordinate values must be restricted to "
             f" 0 < r < inf, -pi < phi < pi, -inf < z inf."
         )
@@ -210,11 +210,11 @@ def cylindric_to_carthesian_vector(
     return mat_vec_mult(jacobian, vec)
 
 
-def carthesian_to_cylindric_tangential_vector(
+def cartesian_to_cylindric_tangential_vector(
     tangential_vector: TangentialVector,
 ) -> TangentialVector:
     """
-    Returns tangential vector transformed from carthesian to cylindircal
+    Returns tangential vector transformed from cartesian to cylindircal
     coordinates.
     """
     # pylint:disable=C0103
@@ -225,15 +225,15 @@ def carthesian_to_cylindric_tangential_vector(
         or not -math.inf < z < math.inf
     ):
         raise ValueError(
-            f"Cannot convert carthesian tangential vector={tangential_vector}"
+            f"Cannot convert cartesian tangential vector={tangential_vector}"
             f" to cylindric tangential vector."
-            f" All carthesian coordinate values must be finte."
+            f" All cartesian coordinate values must be finte."
         )
     r = math.sqrt(x ** 2 + y ** 2)
     phi = math.atan2(y, x)
     if r == 0.0 or not -math.pi < phi < math.pi:
         raise ValueError(
-            f"Cannot convert carthesian tangential vector={tangential_vector}"
+            f"Cannot convert cartesian tangential vector={tangential_vector}"
             f" to cylindric tangential vector."
             f" All cylindrical coordinates are restricted by"
             f" 0 < r, -pi < phi < pi."
@@ -250,11 +250,11 @@ def carthesian_to_cylindric_tangential_vector(
     )
 
 
-def cylindric_to_carthesian_tangential_vector(
+def cylindric_to_cartesian_tangential_vector(
     tangential_vector: TangentialVector,
 ) -> TangentialVector:
     """
-    Returns tangential vector transformed from cylindirc to carthesian
+    Returns tangential vector transformed from cylindirc to cartesian
     coordinates.
     """
     # pylint:disable=C0103
@@ -266,7 +266,7 @@ def cylindric_to_carthesian_tangential_vector(
     ):
         raise ValueError(
             f"Cannot convert cylindric tangential vector={tangential_vector}"
-            f" to carthesian tangential vector."
+            f" to cartesian tangential vector."
             f" Coordinate values must be restricted to "
             f" 0 < r < inf, -pi < phi < pi, -inf < z inf."
         )
@@ -328,18 +328,18 @@ class Plane(Manifold2D):
 
     def embed(self, coords: Coordinates2D) -> Coordinates3D:
         coords3d = self._embed_in_cartesian_coordinates(coords)
-        return carthesian_to_cylindric_coords(coords3d)
+        return cartesian_to_cylindric_coords(coords3d)
 
     def surface_normal(self, coords: Coordinates2D) -> AbstractVector:
         coords3d = self._embed_in_cartesian_coordinates(coords)
-        return carthesian_to_cylindric_vector(coords3d, self._n)
+        return cartesian_to_cylindric_vector(coords3d, self._n)
 
     def tangential_space(
         self, coords: Coordinates2D
     ) -> tuple[AbstractVector, AbstractVector]:
         coords3d = self._embed_in_cartesian_coordinates(coords)
-        return carthesian_to_cylindric_vector(
+        return cartesian_to_cylindric_vector(
             coords3d, self._cartesian_basis_vectors[0]
-        ), carthesian_to_cylindric_vector(
+        ), cartesian_to_cylindric_vector(
             coords3d, self._cartesian_basis_vectors[1]
         )

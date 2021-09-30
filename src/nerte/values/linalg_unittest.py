@@ -393,7 +393,7 @@ class NormalizedTest(BaseTestCase):
 
 class DotTest(BaseTestCase):
     def setUp(self) -> None:
-        # standart Carthesian basis
+        # standart Cartesian basis
         self.orth_norm_basis = (
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
@@ -458,7 +458,7 @@ class DotTest(BaseTestCase):
 
 class CrossTest(BaseTestCase):
     def setUp(self) -> None:
-        # standart Carthesian basis
+        # standart Cartesian basis
         v0 = AbstractVector((0.0, 0.0, 0.0))
         self.orth_norm_basis = (
             AbstractVector((1.0, 0.0, 0.0)),

@@ -1,4 +1,4 @@
-"""Module for representing an euclidean geometry in carthesian coordinates."""
+"""Module for representing an euclidean geometry in cartesian coordinates."""
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import normalized, is_zero_vector
@@ -10,16 +10,16 @@ from nerte.values.util.convert import coordinates_as_vector
 from nerte.geometry.geometry import Geometry, intersection_ray_depth
 
 
-class CarthesianGeometry(Geometry):
-    """Represenation of the euclidean geometry in Carthesian coordinates."""
+class CartesianGeometry(Geometry):
+    """Represenation of the euclidean geometry in Cartesian coordinates."""
 
     class Ray(Geometry.Ray):
-        """Represenation of a ray in euclidean geometry in Carthesian coordinates."""
+        """Represenation of a ray in euclidean geometry in Cartesian coordinates."""
 
         def __init__(self, tangential_vector: TangentialVector):
             if is_zero_vector(tangential_vector.vector):
                 raise ValueError(
-                    f"Cannot construct carthesian ray with zero vector"
+                    f"Cannot construct cartesian ray with zero vector"
                     f" {tangential_vector}."
                 )
             vector = normalized(tangential_vector.vector)
@@ -32,7 +32,7 @@ class CarthesianGeometry(Geometry):
 
         def __repr__(self) -> str:
             return (
-                f"CarthesianGeometry.Ray("
+                f"CartesianGeometry.Ray("
                 f"start={self._segment.start()}"
                 f", direction={self._segment.direction()})"
             )
@@ -58,7 +58,7 @@ class CarthesianGeometry(Geometry):
         vec_s = coordinates_as_vector(start)
         vec_t = coordinates_as_vector(target)
         tangent = TangentialVector(point=start, vector=(vec_t - vec_s))
-        return CarthesianGeometry.Ray(tangential_vector=tangent)
+        return CartesianGeometry.Ray(tangential_vector=tangent)
 
     def ray_from_tangent(self, tangential_vector: TangentialVector) -> Ray:
-        return CarthesianGeometry.Ray(tangential_vector=tangential_vector)
+        return CartesianGeometry.Ray(tangential_vector=tangential_vector)

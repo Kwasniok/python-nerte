@@ -20,8 +20,8 @@ from nerte.values.linalg import (
 from nerte.values.manifolds.cylindrical_swirl import (
     cylindirc_swirl_metric,
     cylindirc_swirl_geodesic_equation,
-    cylindric_swirl_to_carthesian_coords,
-    carthesian_to_cylindric_swirl_vector,
+    cylindric_swirl_to_cartesian_coords,
+    cartesian_to_cylindric_swirl_vector,
 )
 from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 
@@ -82,12 +82,12 @@ class SwirlCylindricRungeKuttaGeometry(RungeKuttaGeometry):
         # convert the direction then back to the original coordinates
         # Note: This strategy is possible since the underlying geometry is
         #       curvature-free (Ricci scalar is 0).
-        start_flat = cylindric_swirl_to_carthesian_coords(self._swirl, start)
-        target_flat = cylindric_swirl_to_carthesian_coords(self._swirl, target)
+        start_flat = cylindric_swirl_to_cartesian_coords(self._swirl, start)
+        target_flat = cylindric_swirl_to_cartesian_coords(self._swirl, target)
         start_flat_vec = coordinates_as_vector(start_flat)
         target_flat_vec = coordinates_as_vector(target_flat)
         delta_flat = target_flat_vec - start_flat_vec
-        direction = carthesian_to_cylindric_swirl_vector(
+        direction = cartesian_to_cylindric_swirl_vector(
             self._swirl, start_flat, delta_flat
         )
         tangent = TangentialVector(point=start, vector=direction)

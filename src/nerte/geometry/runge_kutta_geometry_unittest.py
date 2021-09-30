@@ -28,7 +28,7 @@ from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 def _make_dummy_runge_kutta_geometry() -> Type[RungeKuttaGeometry]:
     class DummyRungeKuttaGeometry(RungeKuttaGeometry):
         """
-        Propagates in carthesian coordinates on straight lines (euclidean).
+        Propagates in cartesian coordinates on straight lines (euclidean).
         """
 
         def __init__(
@@ -41,7 +41,7 @@ def _make_dummy_runge_kutta_geometry() -> Type[RungeKuttaGeometry]:
                 self, max_ray_depth, step_size, max_steps
             )
 
-            # carthesian & euclidean geometry
+            # cartesian & euclidean geometry
             def geodesic_equation(
                 ray: TangentialVectorDelta,
             ) -> TangentialVectorDelta:
@@ -243,7 +243,7 @@ class RungeKuttaGeometryRayIntersectsTest(BaseTestCase):
         p2 = Coordinates3D((0.0, 1.0, 0.0))
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
-        # geometry (carthesian & euclidean)
+        # geometry (cartesian & euclidean)
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.geo = DummyRungeKuttaGeometryGeo(
             max_ray_depth=1.0,
@@ -320,7 +320,7 @@ class RungeKuttaGeometryRayIntersectsRayLeftManifoldEventuallyTest(
         p2 = Coordinates3D((2.0, 1.0, 0.0))
         p3 = Coordinates3D((2.0, 1.0, 1.0))
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
-        # geometry (carthesian & euclidean)
+        # geometry (cartesian & euclidean)
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.geo = DummyRungeKuttaGeometryGeo(
             max_ray_depth=10.0,
@@ -358,7 +358,7 @@ class RungeKuttaGeometryRayIntersectsRayLeftManifoldImmediatelyTest(
         p2 = Coordinates3D((2.0, 1.0, 0.0))
         p3 = Coordinates3D((2.0, 1.0, 1.0))
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
-        # geometry (carthesian & euclidean)
+        # geometry (cartesian & euclidean)
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         self.geo = DummyRungeKuttaGeometryGeo(
             max_ray_depth=10.0,
@@ -394,7 +394,7 @@ class RungeKuttaGeometryRayIntersectsMetaDataTest(BaseTestCase):
         p2 = Coordinates3D((0.0, 1.0, 0.0))
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.face = Face(p1, p2, p3)
-        # geometry (carthesian & euclidean)
+        # geometry (cartesian & euclidean)
         DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
         geos = (
             DummyRungeKuttaGeometryGeo(

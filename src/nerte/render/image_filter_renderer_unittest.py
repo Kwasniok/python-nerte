@@ -22,7 +22,7 @@ from nerte.values.color import Color, Colors
 from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
-from nerte.geometry.carthesian_geometry import CarthesianGeometry
+from nerte.geometry.cartesian_geometry import CartesianGeometry
 from nerte.geometry.cylindircal_geometry import CylindricRungeKuttaGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_filter_renderer import (
@@ -268,7 +268,7 @@ class ImageFilterRendererAutoApplyFilterTest(BaseTestCase):
         # scene
         self.scene = Scene(camera=cam)
         # geometry
-        self.geometry = CarthesianGeometry()
+        self.geometry = CartesianGeometry()
         # filters
         self.filter1 = HitFilter()
         self.filter2 = HitFilter()
@@ -344,7 +344,7 @@ class ImageFilterRendererRenderTest(BaseTestCase):
         self.scene = Scene(camera=cam)
         self.scene.add_object(obj)
         # geometry
-        self.geometry = CarthesianGeometry()
+        self.geometry = CartesianGeometry()
         # filter
         self.filter = HitFilter()
         # renderer
@@ -394,7 +394,7 @@ class ImageFilterProjectionTest(BaseTestCase):
         self.scene = Scene(camera=cam)
         self.scene.add_object(obj)
         # geometry
-        self.geometry = CarthesianGeometry()
+        self.geometry = CartesianGeometry()
         # filter
         self.filter = HitFilter()
         # renderers

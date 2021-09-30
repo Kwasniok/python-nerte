@@ -17,7 +17,7 @@ from nerte.values.color import Colors
 from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
-from nerte.geometry.carthesian_geometry import CarthesianGeometry
+from nerte.geometry.cartesian_geometry import CartesianGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_color_renderer import ImageColorRenderer
 
@@ -57,7 +57,7 @@ class ImageColorRendererRenderTest(BaseTestCase):
         self.scene = Scene(camera=cam)
         self.scene.add_object(obj)
         # geometry
-        self.geometry = CarthesianGeometry()
+        self.geometry = CartesianGeometry()
 
         self.renderers = tuple(
             ImageColorRenderer(projection_mode=mode) for mode in ProjectionMode
@@ -100,7 +100,7 @@ class ImageColorRendererProjectionTest(BaseTestCase):
         self.scene = Scene(camera=cam)
         self.scene.add_object(obj)
         # geometry
-        self.geometry = CarthesianGeometry()
+        self.geometry = CartesianGeometry()
 
         # renderers
         self.renderer_ortho = ImageColorRenderer(

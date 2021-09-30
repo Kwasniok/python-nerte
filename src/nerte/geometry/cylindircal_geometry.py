@@ -19,8 +19,8 @@ from nerte.values.linalg import (
 from nerte.values.manifolds.cylindrical import (
     cylindirc_metric,
     cylindirc_geodesic_equation,
-    cylindric_to_carthesian_coords,
-    carthesian_to_cylindric_vector,
+    cylindric_to_cartesian_coords,
+    cartesian_to_cylindric_vector,
 )
 from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 
@@ -57,12 +57,12 @@ class CylindricRungeKuttaGeometry(RungeKuttaGeometry):
         # convert the direction then back to the original coordinates
         # Note: This strategy is possible since the underlying geometry is
         #       curvature-free (Ricci scalar is 0).
-        start_flat = cylindric_to_carthesian_coords(start)
-        target_flat = cylindric_to_carthesian_coords(target)
+        start_flat = cylindric_to_cartesian_coords(start)
+        target_flat = cylindric_to_cartesian_coords(target)
         start_flat_vec = coordinates_as_vector(start_flat)
         target_flat_vec = coordinates_as_vector(target_flat)
         delta_flat = target_flat_vec - start_flat_vec
-        direction = carthesian_to_cylindric_vector(start_flat, delta_flat)
+        direction = cartesian_to_cylindric_vector(start_flat, delta_flat)
         tangent = TangentialVector(point=start, vector=direction)
         return RungeKuttaGeometry.Ray(geometry=self, initial_tangent=tangent)
 

@@ -8,7 +8,7 @@ from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.face import Face
 from nerte.values.manifolds.cylindrical import (
-    Plane as CarthesianPlaneInCylindric,
+    Plane as CartesianPlaneInCylindric,
 )
 from nerte.world.object import Object
 from nerte.world.camera import Camera
@@ -29,7 +29,7 @@ def make_camera(canvas_dimension: int) -> Camera:
     """Creates a camera with preset values."""
 
     location = Coordinates3D((0.1, 0.0, -1.3))
-    manifold = CarthesianPlaneInCylindric(
+    manifold = CartesianPlaneInCylindric(
         b0=AbstractVector((1.0, 0.0, 0.0)),
         b1=AbstractVector((0.0, 1.0, 0.0)),
         x0_domain=Domain1D(-1.0, +1.0),
