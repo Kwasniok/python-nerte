@@ -55,10 +55,10 @@ def _trafo(
 ) -> tuple[float, float, float]:
     # pylint: disable=C0103
     """
-    Transforms
-        (x0, x1, z) = (x, y, z) to (u, v, z) for a=swirl
+    Returns
+        (u, v, z) for (x0, x1, z) = (x, y, z) and a = -swirl
     and
-        (x0, x1, z) = (u, v, z) to (x, y, z) for a=-swirl
+        (x, y, z) for (x0, x1, z) = (u, v, z) and a = +swirl
 
     Note: The symmetry of the transformation and its inverse is exploited here.
 
@@ -75,10 +75,10 @@ def _trafo(
 def _jacobian(a: float, x0: float, x1: float, z: float) -> AbstractMatrix:
     # pylint: disable=C0103
     """
-    Returns the Jacobian matrix for the transformation
-        (x0, x1, z) = (x, y, z) to (u, v, z) for a=swirl
+    Returns the Jacobian matrix for the contravariant transformation
+        (u, v, z) for (x0, x1, z) = (x, y, z) and a = -swirl
     and
-        (x0, x1, z) = (u, v, z) to (x, y, z) for a=-swirl
+        (x, y, z) for (x0, x1, z) = (u, v, z) and a = +swirl
 
     Note: The symmetry of the transformation and its inverse is exploited here.
 
@@ -111,10 +111,30 @@ def _jacobian(a: float, x0: float, x1: float, z: float) -> AbstractMatrix:
     )
 
 
+def _covariant_jacobian(
+    a: float, x0: float, x1: float, z: float
+) -> AbstractMatrix:
+    # pylint: disable=C0103
+    """
+    Returns the Jacobian matrix for the covariant transformation
+        (u, v, z) for (x0, x1, z) = (x, y, z) and a = -swirl
+    and
+        (x, y, z) for (x0, x1, z) = (u, v, z) and a = +swirl
+
+    Note: The symmetry of the transformation and its inverse is exploited here.
+
+    Note: No checks are performed. It is trusted that:
+          -inf < a, x0, x1, z < inf
+          abs(x0) + abs(x1) != 0
+    """
+    x0, x1, z = _trafo(a, x0, x1, z)
+    return _jacobian(-a, x0, x1, z)
+
+
 def _metric(a: float, u: float, v: float, z: float) -> AbstractMatrix:
     """
     Returns the metric for the carthesian swirl coordiantes (u, v, z)
-    and a=swirl.
+    and a = swirl.
 
     Note: No checks are performed. It is trusted that:
           -inf < a, u, v, z < inf
@@ -156,7 +176,7 @@ def _metric(a: float, u: float, v: float, z: float) -> AbstractMatrix:
 def _metric_inverted(a: float, u: float, v: float, z: float) -> AbstractMatrix:
     """
     Returns the inverse of the metric for the carthesian swirl coordiantes
-    (u, v, z) and a=swirl.
+    (u, v, z) and a = swirl.
 
     Note: No checks are performed. It is trusted that:
           -inf < a, u, v, z < inf
@@ -194,10 +214,10 @@ def _christoffel_1(
 ) -> tuple[AbstractMatrix, AbstractMatrix, AbstractMatrix]:
     """
     Returns the Christoffel symbols of the first kind for the carthesian swirl
-    coordiantes (u, v, z) and a=swirl.
+    coordiantes (u, v, z) and a = swirl.
 
     The return format is a tuple of three matrices where
-    _christoffel_1(a,u,v,z)[i][j][k] = Gamma_{ijk}
+    _christoffel_1(a, u, v, z)[i][j][k] = Gamma_{ijk}
     .
 
     Note: No checks are performed. It is trusted that:
@@ -300,10 +320,10 @@ def _christoffel_2(
 ) -> tuple[AbstractMatrix, AbstractMatrix, AbstractMatrix]:
     """
     Returns the Christoffel symbols of the second kind for the carthesian swirl
-    coordiantes (u, v, z) and a=swirl.
+    coordiantes (u, v, z) and a = swirl.
 
     The return format is a tuple of three matrices where
-    _christoffel_2(a,u,v,z)[i][j][k] = Gamma^{i}_{jk}
+    _christoffel_2(a, u, v, z)[i][j][k] = Gamma^{i}_{jk}
     .
 
     Note: No checks are performed. It is trusted that:
@@ -366,7 +386,7 @@ def carthesian_swirl_geodesic_equation(
     # symbol of the second kind.
 
     # NOTE: Negative swirl for back transformation to flat sace!
-    chris_2 = _christoffel_2(-swirl, *tangent.point)
+    chris_2 = _christoffel_2(swirl, *tangent.point)
     return TangentialVectorDelta(
         tangent.vector,
         AbstractVector(
@@ -388,6 +408,7 @@ def carthesian_to_carthesian_swirl_coords(
 
     :param coords: carthesian coordinates (x, y, z)
         where -inf < x, y, z < inf and 0 < r = sqrt(x**2 + y**2)
+    :returns: carthesian swirl coordinates (u, v, z)
     """
     try:
         _assert_valid(coords)
@@ -397,7 +418,7 @@ def carthesian_to_carthesian_swirl_coords(
             f" from carthesian coordinates to carthesian swirl={swirl}"
             f" coordinates."
         ) from ex
-    return Coordinates3D(_trafo(swirl, *coords))
+    return Coordinates3D(_trafo(-swirl, *coords))
 
 
 def carthesian_swirl_to_carthesian_coords(
@@ -409,6 +430,7 @@ def carthesian_swirl_to_carthesian_coords(
 
     :param coords: carthesian swirl coordinates (u, v, z)
         where -inf < u, v, z < inf and 0 < r = sqrt(u**2 + v**2)
+    :returns: carthesian coordinates (x, y, z)
     """
     try:
         _assert_valid(coords)
@@ -418,7 +440,7 @@ def carthesian_swirl_to_carthesian_coords(
             f" from carthesian swirl={swirl} to carthesian coordinates"
             f" coordinates."
         ) from ex
-    return Coordinates3D(_trafo(-swirl, *coords))
+    return Coordinates3D(_trafo(+swirl, *coords))
 
 
 def carthesian_to_carthesian_swirl_vector(
@@ -431,8 +453,12 @@ def carthesian_to_carthesian_swirl_vector(
 
     :param coords: carthesian coordinates (x, y, z)
         where -inf < x, y, z < inf and 0 < r = sqrt(x**2 + y**2)
-    :param vec: vector in carthesian coordinates at coordinates (x, y, z)
-        with vector vec = e_x * x + e_y * y + e_z * z
+    :param vec: coefficient vector (v_x, v_y, v_z)
+        at carthesian coordinates (x, y, z)
+        where v = e_x * v_x + e_y * v_y + e_z * v_z
+    :returns: coefficient vector (v_u, v_v, v_z)
+        at carthesian swirl coordinates (u, v, z)
+        where v = e_u * v_u + e_v * v_v + e_z * v_z
     """
     try:
         _assert_valid(coords)
@@ -442,7 +468,7 @@ def carthesian_to_carthesian_swirl_vector(
             f" for carthesian coordinates={coords} to carthesian swirl={swirl}"
             f" coordinates."
         ) from ex
-    jacobian = _jacobian(swirl, *coords)
+    jacobian = _jacobian(-swirl, *coords)
     return mat_vec_mult(jacobian, vec)
 
 
@@ -456,18 +482,22 @@ def carthesian_swirl_to_carthesian_vector(
 
     :param coords: carthesian swirl coordinates (u, v, z)
         where -inf < u, v, z < inf and 0 < r = sqrt(u**2 + v**2)
-    :param vec: vector in carthesian swirl coordinates at coordinates (u, v, z)
-        with vector vec = e_u * u + e_v * v + e_z * z
+    :param vec: coefficient vector (v_u, v_v, v_z)
+        at carthesian swirl coordinates (u, v, z)
+        where v = e_x * v_x + e_y * v_y + e_z * v_z
+    :returns: coefficient vector (v_x, v_y, v_z)
+        at carthesian coordinates (x, y, z)
+        where v = e_u * v_u + e_v * v_v + e_z * v_z
     """
     try:
         _assert_valid(coords)
     except ValueError as ex:
         raise ValueError(
             f"Cannot transform vector={vec}"
-            f" for carthesian swril={swirl} coordinates={coords} to carthesian"
+            f" for carthesian swirl={swirl} coordinates={coords} to carthesian"
             f" coordinates."
         ) from ex
-    jacobian = _jacobian(-swirl, *coords)
+    jacobian = _jacobian(+swirl, *coords)
     return mat_vec_mult(jacobian, vec)
 
 
@@ -479,10 +509,15 @@ def carthesian_to_carthesian_swirl_tangential_vector(
     Returns tangential vector transformed from carthesian to carthesian swirl
     coordinates.
 
-    :param tangential_vector: tangential vector in carthesian coordinates
-        at coordinates (x, y, z)
-        where -inf < x, y, z < inf and 0 < r = sqrt(x**2 + y**2)
-        with vector vec = e_x * x + e_y * y + e_z * z
+    :param tangential_vector: (contravariant) tangential vector
+        at carthesian coordinates (x, y, z)
+        with vector coefficients (v_x, v_y, v_z)
+        describing the vector v = e_x * v_x + e_y * v_y + e_z * v_z
+        where -inf < x, y, z < inf and 0 < r = sqrt(x ** 2 + y ** 2)
+    :returns: transformed (contravariant) tangential vector
+        at carthesian swirl coordinates (u, v, z)
+        with vector coefficients (v_u, v_v, v_z)
+        describing the vector v = e_u * v_u + e_v * v_v + e_z * v_z
     """
     try:
         _assert_valid(tangential_vector.point)
@@ -492,8 +527,8 @@ def carthesian_to_carthesian_swirl_tangential_vector(
             f" for carthesian coordinates to carthesian swirl={swirl}"
             f" coordinates."
         ) from ex
-    jacobian = _jacobian(swirl, *tangential_vector.point)
-    point = Coordinates3D(_trafo(swirl, *tangential_vector.point))
+    jacobian = _jacobian(-swirl, *tangential_vector.point)
+    point = Coordinates3D(_trafo(-swirl, *tangential_vector.point))
     vector = mat_vec_mult(jacobian, tangential_vector.vector)
     return TangentialVector(point=point, vector=vector)
 
@@ -506,10 +541,15 @@ def carthesian_swirl_to_carthesian_tangential_vector(
     Returns tangential vector transformed from carthesian swirl to carthesian
     coordinates.
 
-    :param tangential_vector: tangential vector in carthesian swirl coordinates
-        at coordinates (u, v, z)
-        where -inf < u, v, z < inf and 0 < r = sqrt(u**2 + v**2)
-        with vector vec = e_u * u + e_v * v + e_z * z
+    :param tangential_vector: (contravariant) tangential vector
+        at carthesian swirl coordinates (u, v, z)
+        with vector coefficients (v_u, v_v, v_z)
+        describing the vector v = e_u * v_u + e_v * v_v + e_z * v_z
+        where -inf < u, v, z < inf and 0 < r = sqrt(u ** 2 + v ** 2)
+    :returns: transformed (contravariant) tangential vector
+        at carthesian coordinates (x, y, z)
+        with vector coefficients (v_x, v_y, v_z)
+        describing the vector v = e_x * v_x + e_y * v_y + e_z * v_z
     """
     try:
         _assert_valid(tangential_vector.point)
@@ -519,8 +559,8 @@ def carthesian_swirl_to_carthesian_tangential_vector(
             f" for carthesian coordinates to carthesian swirl={swirl}"
             f" coordinates."
         ) from ex
-    jacobian = _jacobian(-swirl, *tangential_vector.point)
-    point = Coordinates3D(_trafo(-swirl, *tangential_vector.point))
+    jacobian = _jacobian(+swirl, *tangential_vector.point)
+    point = Coordinates3D(_trafo(+swirl, *tangential_vector.point))
     vector = mat_vec_mult(jacobian, tangential_vector.vector)
     return TangentialVector(point=point, vector=vector)
 

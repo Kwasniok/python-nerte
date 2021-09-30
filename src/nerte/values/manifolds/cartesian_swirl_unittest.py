@@ -32,11 +32,8 @@ from nerte.values.linalg import (
     AbstractVector,
     AbstractMatrix,
     Metric,
-    dot,
-    are_linear_dependent,
 )
 from nerte.values.linalg_unittest import (
-    scalar_equiv,
     vec_equiv,
     mat_equiv,
     mat_almost_equal,
@@ -87,6 +84,12 @@ class InternalMetricTest(BaseTestCase):
                 )
             ),
         )
+        # self.result numerically:
+        #   {
+        #       {0.993509, 0.00274219, -0.0116579},
+        #       {0.00274219, 1.00654,  0.0177576},
+        #       {-0.0116579, 0.0177576, 1.00045}
+        #   }
 
     def test_metric_fixed_values(self) -> None:
         """
@@ -118,6 +121,12 @@ class InternalMetricInvertedTest(BaseTestCase):
             ),
             AbstractVector((math.sqrt(13) / 306, -(math.sqrt(13) / 204), 1)),
         )
+        # self.result numerically:
+        #   {
+        #       {1.00668, -0.00295044, 0.0117828},
+        #       {-0.00295044, 0.993821, -0.0176743},
+        #       {0.0117828, -0.0176743, 1.}
+        #   }
 
     def test_metric_inverted_fixed_values(self) -> None:
         """
@@ -185,6 +194,22 @@ class InternalChristoffel1Test(BaseTestCase):
                 AbstractVector((13 / 10404, 13 / 15606, 0)),
             ),
         )
+        # self.result numerically:
+        #   {
+        #       {
+        #           {-0.00193876, -0.00677688, -0.0161417},
+        #           {-0.00677688, -0.0175005, -0.0461097},
+        #           {-0.0161417, -0.0461097, -0.00062476}
+        #       }, {
+        #           {0.0226357, 0.00200796, 0.0599359},
+        #           {0.00200796, 0.00682302, 0.0163916},
+        #           {0.0599359, 0.0163916, -0.000416506}
+        #       }, {
+        #           {0.000422914, 0.00011534, 0.00124952},
+        #           {0.00011534, 0.000326797, 0.000833013},
+        #           {0.00124952, 0.000833013, 0.0}
+        #       }
+        #   }
 
     def test_christoffel_1_fixed_values(self) -> None:
         """
@@ -255,6 +280,22 @@ class InternalChristoffel2Test(BaseTestCase):
                 AbstractVector((0, 0, 0)),
             ),
         )
+        # self.result numerically:
+        #   {
+        #       {
+        #            {-0.00201351, -0.00682672, -0.0164116},
+        #            {-0.00682672, -0.0176337, -0.0464562},
+        #            {-0.0164116, -0.0464562, -0.000627704}
+        #       }, {
+        #           {0.0224941, 0.00201351, 0.0595912},
+        #           {0.00201351, 0.00682672, 0.0164116},
+        #           {0.0595912, 0.0164116, -0.00041209}
+        #       }, {
+        #            {0.0, 0.0, 0.0},
+        #           {0.0, 0.0, 0.0},
+        #           {0.0, 0.0, 0.0}
+        #       }
+        #   }
         self.places = 12
 
     def test_christoffel_2_fixed_values(self) -> None:
@@ -323,6 +364,17 @@ class CarthesianSwirlMetricTest(BaseTestCase):
                 ),
             ),
         )
+        # self.metrics numerically:
+        #   {
+        #       {1.0, 0.0, 0.0},
+        #       {0.0, 1.0, 0.235294},
+        #       {0.0, 0.235294, 1.05536}
+        #   }
+        #   {
+        #       {0.367138, 0.111163, -0.186447},
+        #       {0.111163, 2.75743, 1.09892},
+        #       {-0.186447, 1.09892, 1.58478}
+        #   }
 
     def test_metric(self) -> None:
         """Tests the metric."""
@@ -348,15 +400,17 @@ class CarthesianSwirlGeodesicEquationFixedValuesTest(BaseTestCase):
                 Coordinates3D((1 / 7, 1 / 11, 1 / 13)),
                 AbstractVector(
                     (
-                        (4371354585 - 151216999357 * math.sqrt(13))
+                        (4371354585 + 151216999357 * math.sqrt(13))
                         / 398749303953000,
-                        (2019475900 + 155727653557 * math.sqrt(13))
+                        (2019475900 - 155727653557 * math.sqrt(13))
                         / 265832869302000,
                         0,
                     )
                 ),
             ),
         )
+        # self.tantegnt_expected numerically
+        #   {0.142857, 0.0909091, 0.0769231, 0.00137829, -0.00210457, 0.0}
         self.places = (10,)
 
     def test_fixed_values(self) -> None:
@@ -460,21 +514,24 @@ class CarthesianSwirlCoordinatesTransfomrationTest(BaseTestCase):
         self.swirl_coords = (
             Coordinates3D(
                 (
-                    math.sqrt(5) * math.cos(21 * math.sqrt(5) + math.atan(2)),
-                    math.sqrt(5) * math.sin(21 * math.sqrt(5) + math.atan(2)),
+                    math.sqrt(5) * math.cos(21 * math.sqrt(5) - math.atan(2)),
+                    -math.sqrt(5) * math.sin(21 * math.sqrt(5) - math.atan(2)),
                     3,
                 )
             ),
             Coordinates3D(
                 (
-                    +math.sqrt(13)
-                    * math.cos(55 * math.sqrt(13) + math.atan2(3, 2)),
-                    -math.sqrt(13)
-                    * math.sin(55 * math.sqrt(13) + math.atan2(3, 2)),
+                    math.sqrt(13)
+                    * math.cos(55 * math.sqrt(13) - math.atan2(3, 2)),
+                    math.sqrt(13)
+                    * math.sin(55 * math.sqrt(13) - math.atan2(3, 2)),
                     5,
                 )
             ),
         )
+        # self.swirl_coords numerically:
+        #   {-0.654788, -2.13805, 3.0}
+        #   {-2.98024, 2.02933, 5.0}
         self.invalid_coords = (
             Coordinates3D((0.0, 0.0, 0.0)),
             Coordinates3D((0.0, 0.0, 1.0)),
@@ -567,46 +624,52 @@ class CarthesianSwirlVectorTransfomrationTest(BaseTestCase):
             AbstractVector((-7.0, 11.0, 13.0)),
         )
         # u, v, z
-        alpha = 21 * math.sqrt(5) + math.atan(2)
-        beta = 55 * math.sqrt(13) + math.atan2(3, 2)
+        alpha = 21 * math.sqrt(5) - math.atan(2)
+        beta = 55 * math.sqrt(13) - math.atan2(3, 2)
         self.swirl_coords = (
             Coordinates3D(
                 (
-                    math.sqrt(5) * math.cos(21 * math.sqrt(5) + math.atan(2)),
-                    math.sqrt(5) * math.sin(21 * math.sqrt(5) + math.atan(2)),
+                    +math.sqrt(5) * math.cos(21 * math.sqrt(5) - math.atan(2)),
+                    -math.sqrt(5) * math.sin(21 * math.sqrt(5) - math.atan(2)),
                     3,
                 )
             ),
             Coordinates3D(
                 (
-                    +math.sqrt(13)
-                    * math.cos(55 * math.sqrt(13) + math.atan2(3, 2)),
-                    -math.sqrt(13)
-                    * math.sin(55 * math.sqrt(13) + math.atan2(3, 2)),
+                    math.sqrt(13)
+                    * math.cos(55 * math.sqrt(13) - math.atan2(3, 2)),
+                    math.sqrt(13)
+                    * math.sin(55 * math.sqrt(13) - math.atan2(3, 2)),
                     5,
                 )
             ),
         )
+        # self.swirl_coords numerically:
+        #   {-0.654788, -2.13805, 3.0}
+        #   {-2.98024, 2.02933, 5.0}
         self.swirl_vecs = (
             AbstractVector(
                 (
                     (6 * math.cos(alpha)) / math.sqrt(5)
-                    + 1 / 5 * (420 - 13 * math.sqrt(5)) * math.sin(alpha),
-                    (-84 + 13 / math.sqrt(5)) * math.cos(alpha)
-                    + (6 * math.sin(alpha)) / math.sqrt(5),
+                    + 1 / 5 * (420 + 13 * math.sqrt(5)) * math.sin(alpha),
+                    (84 + 13 / math.sqrt(5)) * math.cos(alpha)
+                    - (6 * math.sin(alpha)) / math.sqrt(5),
                     -6,
                 )
             ),
             AbstractVector(
                 (
                     -((47 * math.cos(beta)) / math.sqrt(13))
-                    + 1 / 13 * (9438 + math.sqrt(13)) * math.sin(beta),
-                    (726 + 1 / math.sqrt(13)) * math.cos(beta)
-                    + (47 * math.sin(beta)) / math.sqrt(13),
+                    - 1 / 13 * (-9438 + math.sqrt(13)) * math.sin(beta),
+                    (-726 + 1 / math.sqrt(13)) * math.cos(beta)
+                    - (47 * math.sin(beta)) / math.sqrt(13),
                     13,
                 )
             ),
         )
+        # self.swirl_vecs numerically:
+        #   {85.091, -28.8658, -6.0}
+        #   {419.236, 592.524, 13.0}
         self.invalid_coords = (
             Coordinates3D((0.0, 0.0, 0.0)),
             Coordinates3D((0.0, 0.0, 1.0)),
@@ -713,25 +776,25 @@ class CarthesianSwirlTangentialVectorTransfomrationTest(BaseTestCase):
             ),
         )
         # u, v, z
-        alpha = 21 * math.sqrt(5) + math.atan(2)
-        beta = 55 * math.sqrt(13) + math.atan2(3, 2)
+        alpha = 21 * math.sqrt(5) - math.atan(2)
+        beta = 55 * math.sqrt(13) - math.atan2(3, 2)
         self.swirl_tans = (
             TangentialVector(
                 Coordinates3D(
                     (
-                        math.sqrt(5)
-                        * math.cos(21 * math.sqrt(5) + math.atan(2)),
-                        math.sqrt(5)
-                        * math.sin(21 * math.sqrt(5) + math.atan(2)),
+                        +math.sqrt(5)
+                        * math.cos(21 * math.sqrt(5) - math.atan(2)),
+                        -math.sqrt(5)
+                        * math.sin(21 * math.sqrt(5) - math.atan(2)),
                         3,
                     )
                 ),
                 AbstractVector(
                     (
                         (6 * math.cos(alpha)) / math.sqrt(5)
-                        + 1 / 5 * (420 - 13 * math.sqrt(5)) * math.sin(alpha),
-                        (-84 + 13 / math.sqrt(5)) * math.cos(alpha)
-                        + (6 * math.sin(alpha)) / math.sqrt(5),
+                        + 1 / 5 * (420 + 13 * math.sqrt(5)) * math.sin(alpha),
+                        (84 + 13 / math.sqrt(5)) * math.cos(alpha)
+                        - (6 * math.sin(alpha)) / math.sqrt(5),
                         -6,
                     )
                 ),
@@ -739,24 +802,33 @@ class CarthesianSwirlTangentialVectorTransfomrationTest(BaseTestCase):
             TangentialVector(
                 Coordinates3D(
                     (
-                        +math.sqrt(13)
-                        * math.cos(55 * math.sqrt(13) + math.atan2(3, 2)),
-                        -math.sqrt(13)
-                        * math.sin(55 * math.sqrt(13) + math.atan2(3, 2)),
+                        math.sqrt(13)
+                        * math.cos(55 * math.sqrt(13) - math.atan2(3, 2)),
+                        math.sqrt(13)
+                        * math.sin(55 * math.sqrt(13) - math.atan2(3, 2)),
                         5,
                     )
                 ),
                 AbstractVector(
                     (
                         -((47 * math.cos(beta)) / math.sqrt(13))
-                        + 1 / 13 * (9438 + math.sqrt(13)) * math.sin(beta),
-                        (726 + 1 / math.sqrt(13)) * math.cos(beta)
-                        + (47 * math.sin(beta)) / math.sqrt(13),
+                        - 1 / 13 * (-9438 + math.sqrt(13)) * math.sin(beta),
+                        (-726 + 1 / math.sqrt(13)) * math.cos(beta)
+                        - (47 * math.sin(beta)) / math.sqrt(13),
                         13,
                     )
                 ),
             ),
         )
+        # self.swirl_tans numerically:
+        #   {
+        #       {-0.654788, -2.13805, 3.0}
+        #       {85.091, -28.8658, -6.0}
+        #   }
+        #   {
+        #       {-2.98024, 2.02933, 5.0}
+        #       {419.236, 592.524, 13.0}
+        #   }
         invalid_coords = (
             Coordinates3D((0.0, 0.0, 0.0)),
             Coordinates3D((0.0, 0.0, 1.0)),
@@ -934,56 +1006,52 @@ class PlanePropertiesTest(BaseTestCase):
         self.v2 = AbstractVector((0.0, 1.0, 0.0))
         self.offset = AbstractVector((2.0, 3.0, 5.0))
         self.plane = Plane(self.swirl, self.v1, self.v2, offset=self.offset)
-        c2d_1 = Coordinates2D((1.0, 0.0))
-        c2d_2 = Coordinates2D((0.0, 1.0))
-        c2d_3 = Coordinates2D((2.0, -3.0))
-        c3d_1 = Coordinates3D(
-            (
-                3
-                * math.sqrt(2)
-                * math.cos((15 * math.sqrt(2)) / 17 + math.pi / 4),
-                3
-                * math.sqrt(2)
-                * math.sin((15 * math.sqrt(2)) / 17 + math.pi / 4),
-                5,
-            )
+        self.coords_2d = (
+            Coordinates2D((0.0, 0.0)),
+            Coordinates2D((1.0, 0.0)),
+            Coordinates2D((0.0, 1.0)),
+            Coordinates2D((2.0, -3.0)),
         )
-        c3d_2 = Coordinates3D(
-            (
-                2
-                * math.sqrt(5)
-                * math.cos((10 * math.sqrt(5)) / 17 + math.atan(2)),
-                2
-                * math.sqrt(5)
-                * math.sin((10 * math.sqrt(5)) / 17 + math.atan(2)),
-                5,
-            )
+        carth_coords_3d = (
+            Coordinates3D((2.0, 3.0, 5.0)),
+            Coordinates3D((2.0 + 1.0, 3.0, 5.0)),
+            Coordinates3D((2.0, 3.0 + 1.0, 5.0)),
+            Coordinates3D((2.0 + 2.0, 3.0 - 3.0, 5.0)),
         )
-        c3d_3 = Coordinates3D((4 * math.cos(20 / 17), 4 * math.sin(20 / 17), 5))
-        self.coords_2d = (c2d_1, c2d_2, c2d_3)
-        self.coords_3d = (c3d_1, c3d_2, c3d_3)
-        self.ns = (
-            AbstractVector(
-                (
-                    -(18 / 17)
-                    * math.sin((15 * math.sqrt(2)) / 17 + math.pi / 4),
-                    18 / 17 * math.cos((15 * math.sqrt(2)) / 17 + math.pi / 4),
-                    1,
-                )
-            ),
-            AbstractVector(
-                (
-                    -(20 / 17)
-                    * math.sin((10 * math.sqrt(5)) / 17 + math.atan(2)),
-                    20 / 17 * math.cos((10 * math.sqrt(5)) / 17 + math.atan(2)),
-                    1,
-                )
-            ),
-            AbstractVector(
-                (-(16 / 17) * math.sin(20 / 17), 16 / 17 * math.cos(20 / 17), 1)
-            ),
+        self.coords_3d = tuple(
+            carthesian_to_carthesian_swirl_coords(self.swirl, c3d)
+            for c3d in carth_coords_3d
         )
+        # self.coords_3d numerically:
+        #   {3.59468, -0.279735, 5.0}
+        #   {3.79703, -1.89277, 5.0}
+        #   {4.37557, -0.924323, 5.0}
+        #   {1.53674, -3.69302, 5.0}
         self.n_cartesian = AbstractVector((0.0, 0.0, 1.0))
+        self.ns = tuple(
+            carthesian_to_carthesian_swirl_vector(
+                self.swirl, c3d, self.n_cartesian
+            )
+            for c3d in carth_coords_3d
+        )
+        # self.n_cartesian numerically:
+        #   {-0.0593293, -0.762401, 1.0}
+        #   {-0.472374, -0.947613, 1.0}
+        #   {-0.243159, -1.15107, 1.}
+        #   {-0.868947, -0.361587, 1.}
+        carth_tangential_space = (self.v1, self.v2)
+        self.tangential_spaces = tuple(
+            tuple(
+                carthesian_to_carthesian_swirl_vector(self.swirl, c3d, v)
+                for v in carth_tangential_space
+            )
+            for c3d in carth_coords_3d
+        )
+        #   self.tangenial_spaces numerically:
+        #   {{0.442836, -1.45904, 0.0}, {0.804122, -0.391219, 0.0}}
+        #   {{3.79703, -1.89277, 5.0}, {-0.0762691, -1.73798, 0.0}}
+        #   {{0.131113, -1.54308, 0.0}, {0.724388, -0.898375, 0.0}}
+        #   {{-0.701998, -1.37524, 0.0}, {0.923256, 0.384186, 0.0}}
 
     def test_plane_embed(self) -> None:
         """Tests plane coordinates."""
@@ -1005,26 +1073,17 @@ class PlanePropertiesTest(BaseTestCase):
 
     def test_plane_tangential_space(self) -> None:
         """Tests plane's tangential space."""
-        for c2d, c3d in zip(self.coords_2d, self.coords_3d):
+        for c2d, (v0, v1) in zip(self.coords_2d, self.tangential_spaces):
             b0, b1 = self.plane.tangential_space(c2d)
-            # must be two linear independent vectors
-            self.assertFalse(are_linear_dependent((b0, b1)))
-            # which are orthogonal to the normal vector
-            v0 = carthesian_swirl_to_carthesian_tangential_vector(
-                self.swirl, TangentialVector(point=c3d, vector=b0)
-            ).vector
-            v1 = carthesian_swirl_to_carthesian_tangential_vector(
-                self.swirl, TangentialVector(point=c3d, vector=b1)
-            ).vector
             self.assertPredicate2(
-                scalar_equiv,
-                dot(self.n_cartesian, v0),
-                0.0,
+                vec_equiv,
+                b0,
+                v0,
             )
             self.assertPredicate2(
-                scalar_equiv,
-                dot(self.n_cartesian, v1),
-                0.0,
+                vec_equiv,
+                b1,
+                v1,
             )
 
 
