@@ -6,15 +6,27 @@
 
 import unittest
 
+import math
+
 from nerte.base_test_case import BaseTestCase
 
+from nerte.algorithm.runge_kutta import runge_kutta_4_delta
 from nerte.values.coordinates import Coordinates1D, Coordinates2D, Coordinates3D
 from nerte.values.coordinates_unittest import coordinates_3d_equiv
+from nerte.values.tangential_vector import TangentialVector
+from nerte.values.tangential_vector_unittest import tan_vec_almost_equal
+from nerte.values.tangential_vector_delta import (
+    TangentialVectorDelta,
+    tangent_as_delta,
+    delta_as_tangent,
+)
 from nerte.values.domain import Domain1D
-from nerte.values.linalg import AbstractVector, cross
-from nerte.values.linalg_unittest import vec_equiv
+from nerte.values.linalg import AbstractVector, AbstractMatrix, Metric, cross
+from nerte.values.linalg_unittest import vec_equiv, metric_equiv
 from nerte.values.manifold import OutOfDomainError
 from nerte.values.manifolds.cartesian import (
+    carthesian_metric,
+    carthesian_geodesic_equation,
     Line,
     Plane,
     Parallelepiped,
@@ -23,6 +35,69 @@ from nerte.values.util.convert import (
     coordinates_as_vector,
     vector_as_coordinates,
 )
+
+
+class CarthesianMetricTest(BaseTestCase):
+    def setUp(self) -> None:
+        self.coords = (
+            Coordinates3D((0.0, 0.0, 0.0)),
+            Coordinates3D((2.0, 3.0, 5.0)),
+        )
+        self.metric = Metric(
+            AbstractMatrix(
+                AbstractVector((1.0, 0.0, 0.0)),
+                AbstractVector((0.0, 1.0, 0.0)),
+                AbstractVector((0.0, 0.0, 1.0)),
+            )
+        )
+
+    def test_metric(self) -> None:
+        """Tests the metric."""
+        for coords in self.coords:
+            self.assertPredicate2(
+                metric_equiv, carthesian_metric(coords), self.metric
+            )
+
+
+class CarthesianGeodesicEquationTest(BaseTestCase):
+    def setUp(self) -> None:
+        self.carth_initial_tangent = TangentialVector(
+            point=Coordinates3D((1.0, 2.0, 3.0)),
+            vector=AbstractVector((4.0, 5.0, 6.0)),
+        )
+        self.carth_final_tangent = TangentialVector(
+            point=Coordinates3D((5.0, 7.0, 9.0)),
+            vector=AbstractVector((4.0, 5.0, 6.0)),
+        )
+        self.step_size = 0.1
+        self.steps = math.floor(1 / self.step_size)
+        self.places = 3
+
+    def test_geodesic_equation(self) -> None:
+        """Tests the cylindric geodesic equation."""
+
+        # initial in cylindric coordinates
+        carth_tangent_delta = tangent_as_delta(self.carth_initial_tangent)
+
+        # propagate in cylindric coordinates
+        def carth_geo_eq(x: TangentialVectorDelta) -> TangentialVectorDelta:
+            return carthesian_geodesic_equation(delta_as_tangent(x))
+
+        def carth_next(x: TangentialVectorDelta) -> TangentialVectorDelta:
+            return x + runge_kutta_4_delta(carth_geo_eq, x, self.step_size)
+
+        for _ in range(self.steps):
+            carth_tangent_delta = carth_next(carth_tangent_delta)
+
+        # final to carthesian coordinates
+        carth_final_tangent = delta_as_tangent(carth_tangent_delta)
+
+        # compare with expectations
+        self.assertPredicate2(
+            tan_vec_almost_equal(places=self.places),
+            carth_final_tangent,
+            self.carth_final_tangent,
+        )
 
 
 class LineConstructorTest(BaseTestCase):

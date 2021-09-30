@@ -6,16 +6,19 @@
 
 import unittest
 
+from typing import Callable, Optional
+
 from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector
-from nerte.values.linalg_unittest import vec_equiv
+from nerte.values.linalg_unittest import vec_equiv, vec_almost_equal
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_unittest import tan_vec_equiv
 from nerte.values.tangential_vector_delta import (
     TangentialVectorDelta,
     tangent_as_delta,
+    delta_as_tangent,
     add_tangential_vector_delta,
 )
 
@@ -29,6 +32,26 @@ def tangential_vector_delta_equiv(
     return vec_equiv(x.point_delta, x.point_delta) and vec_equiv(
         x.vector_delta, y.vector_delta
     )
+
+
+def tangential_vector_delta_almost_equal(
+    places: Optional[int] = None, delta: Optional[float] = None
+) -> Callable[[TangentialVectorDelta, TangentialVectorDelta], bool]:
+    """
+    Returns a function which true iff both tangential vector deltas are
+    considered almost equal.
+    """
+
+    # pylint: disable=W0621
+    def tangential_vector_delta_almost_equal(
+        x: TangentialVectorDelta, y: TangentialVectorDelta
+    ) -> bool:
+        pred = vec_almost_equal(places=places, delta=delta)
+        return pred(x.point_delta, y.point_delta) and pred(
+            x.vector_delta, y.vector_delta
+        )
+
+    return tangential_vector_delta_almost_equal
 
 
 class TangentialVectorDeltaTest(BaseTestCase):
@@ -108,7 +131,7 @@ class TangentialVectorDeltaMathTest(BaseTestCase):
         )
 
 
-class RaySegmentToTangentialVectorDeltaConversionTest(BaseTestCase):
+class TangentAsDeltaTest(BaseTestCase):
     def setUp(self) -> None:
         v = AbstractVector((5.5, 7.7, 1.1))
         self.tangent = TangentialVector(
@@ -120,12 +143,33 @@ class RaySegmentToTangentialVectorDeltaConversionTest(BaseTestCase):
             vector_delta=v,
         )
 
-    def test_tangent_as_tangent_delta(self) -> None:
+    def test_tangent_as_delta(self) -> None:
         """Tests tangent to tangent delta conversion."""
         self.assertPredicate2(
             tangential_vector_delta_equiv,
             tangent_as_delta(self.tangent),
             self.tangent_delta,
+        )
+
+
+class DeltaAsTangentTest(BaseTestCase):
+    def setUp(self) -> None:
+        v = AbstractVector((5.5, 7.7, 1.1))
+        self.tangent = TangentialVector(
+            point=Coordinates3D((1.1, 2.2, 3.3)),
+            vector=v,
+        )
+        self.tangent_delta = TangentialVectorDelta(
+            point_delta=AbstractVector((1.1, 2.2, 3.3)),
+            vector_delta=v,
+        )
+
+    def test_delta_as_tangent(self) -> None:
+        """Tests tangent to tangent delta conversion."""
+        self.assertPredicate2(
+            tan_vec_equiv,
+            delta_as_tangent(self.tangent_delta),
+            self.tangent,
         )
 
 

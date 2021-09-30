@@ -6,11 +6,16 @@
 
 import unittest
 
+from typing import Callable, Optional
+
 import math
 
-from nerte.base_test_case import BaseTestCase
+from nerte.base_test_case import BaseTestCase, float_almost_equal
 
 from nerte.values.coordinates import Coordinates3D, Coordinates2D, Coordinates1D
+
+
+scalar_almost_equal = float_almost_equal
 
 
 def coordinates_3d_equiv(x: Coordinates3D, y: Coordinates3D) -> bool:
@@ -20,6 +25,21 @@ def coordinates_3d_equiv(x: Coordinates3D, y: Coordinates3D) -> bool:
         and math.isclose(x[1], y[1])
         and math.isclose(x[2], y[2])
     )
+
+
+def coordinates_3d_almost_equal(
+    places: Optional[int] = None, delta: Optional[float] = None
+) -> Callable[[Coordinates3D, Coordinates3D], bool]:
+    """
+    Returns a function which true iff both vectors are considered almost equal.
+    """
+
+    # pylint: disable=W0621
+    def vec_almost_equal(x: Coordinates3D, y: Coordinates3D) -> bool:
+        pred = scalar_almost_equal(places=places, delta=delta)
+        return pred(x[0], y[0]) and pred(x[1], y[1]) and pred(x[2], y[2])
+
+    return vec_almost_equal
 
 
 def coordinates_2d_equiv(x: Coordinates2D, y: Coordinates2D) -> bool:

@@ -12,8 +12,7 @@ import math
 from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.linalg import AbstractVector, AbstractMatrix, Metric
-from nerte.values.linalg_unittest import metric_equiv
+from nerte.values.linalg import AbstractVector
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_unittest import tan_vec_equiv
 from nerte.values.tangential_vector_delta import TangentialVectorDelta
@@ -289,43 +288,6 @@ class CylindricRungeKuttaGeometryGeodesicEquationTest(BaseTestCase):
                 tangential_vector_delta_equiv,
                 geodesic_equation(x),
                 self.geodesic_equation(x),
-            )
-
-
-class CylindricRungeKuttaGeometryMetricTest(BaseTestCase):
-    def setUp(self) -> None:
-        self.geo = CylindricRungeKuttaGeometry(
-            max_ray_depth=1.0, step_size=1.0, max_steps=1
-        )
-        self.coords = (
-            Coordinates3D((1.0, 0.0, 0.0)),
-            Coordinates3D((1.0, 0.0, -1.0)),
-            Coordinates3D((1.0, -math.pi + 0.001, -1e8)),
-            Coordinates3D((1.0, +math.pi - 0.001, +1e8)),
-            Coordinates3D((2.0, 0.0, 0.0)),
-            Coordinates3D((2.0, 0.0, -1.0)),
-            Coordinates3D((2.0, -math.pi + 0.001, -1e8)),
-            Coordinates3D((2.0, +math.pi - 0.001, +1e8)),
-        )
-
-        def metric(coords: Coordinates3D) -> Metric:
-            return Metric(
-                AbstractMatrix(
-                    AbstractVector((1.0, 0.0, 0.0)),
-                    AbstractVector((0.0, coords[0] ** 2, 0.0)),
-                    AbstractVector((0.0, 0.0, 1.0)),
-                )
-            )
-
-        self.metrics = tuple(metric(coords) for coords in self.coords)
-
-    def test_metric(self) -> None:
-        """Tests (local) metric."""
-        for coords, metric in zip(self.coords, self.metrics):
-            self.assertPredicate2(
-                metric_equiv,
-                self.geo.metric(coords),
-                metric,
             )
 
 

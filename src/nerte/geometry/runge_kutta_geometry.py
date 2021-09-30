@@ -132,11 +132,16 @@ class RungeKuttaGeometry(Geometry):
             # Note: The step size behaves like Δt where t is the
             #       parameter of the curve on which the light travels.
             # Note: The smaller the step size, the better the approximation.
-            tangent_delta = runge_kutta_4_delta(
-                geometry.geodesic_equation(),
-                tangent_as_delta(tangent),
-                geometry.step_size(),
-            )
+            try:
+                tangent_delta = runge_kutta_4_delta(
+                    geometry.geodesic_equation(),
+                    tangent_as_delta(tangent),
+                    geometry.step_size(),
+                )
+            except ValueError:
+                # could not generate next tangent becaue the ray left the manifold
+                self._segments_cached += 1
+                return
             segment = RaySegment(
                 tangential_vector=TangentialVector(
                     point=tangent.point,
