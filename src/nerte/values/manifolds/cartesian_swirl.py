@@ -234,7 +234,7 @@ def _christoffel_1(
     sin_2alpha = math.sin(2 * alpha)
     cos_3alpha = math.cos(3 * alpha)
     sin_3alpha = math.sin(3 * alpha)
-    # TODO: potential speed-up: symmetric matrices
+    # POSSIBLE-OPTIMIZATION: symmetric matrices
     return (
         AbstractMatrix(
             AbstractVector(
