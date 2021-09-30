@@ -15,7 +15,7 @@ class OutOfDomainError(ValueError):
     pass
 
 
-# TODO: Implement when type families are supported in python.
+# FUTURE: Implement when type families are supported in python.
 
 # class ManifoldTypeFamily[N:int]():
 #     # pylint: disable=W0107
