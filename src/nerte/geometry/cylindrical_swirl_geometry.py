@@ -1,6 +1,7 @@
 """
 Module for representing a geometry where geodesics are swirled parallel to the
-z-axis.
+z-axis.The internal representation of the geometry are 'swirled' cylindrical
+coordinates.
 """
 
 from collections.abc import Callable
@@ -20,8 +21,12 @@ from nerte.values.linalg import (
 from nerte.values.manifolds.cylindrical_swirl import (
     cylindrical_swirl_metric,
     cylindrical_swirl_geodesic_equation,
-    cylindrical_swirl_to_cartesian_coords,
-    cartesian_to_cylindrical_swirl_vector,
+    cylindrical_swirl_to_cylindrical_coords,
+    cylindrical_to_cylindrical_swirl_tangential_vector,
+)
+from nerte.values.manifolds.cylindrical import (
+    cylindrical_to_cartesian_coords,
+    cartesian_to_cylindrical_tangential_vector,
 )
 from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 
@@ -29,8 +34,13 @@ from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 class SwirlCylindricalRungeKuttaGeometry(RungeKuttaGeometry):
     """
     Represenation of a geometry in cylindrical coordinates. Geodesics are
-    'swirled' around the z-axis according to the function:
-    f(r, 𝜑, z) = (r, 𝜑 + swirl * r * z, z)
+    'swirled' around the z-axis. The transformation is:
+        (r, 𝜑, z) = (r, 𝛼 + swirl * r * z, z)
+        (r, 𝛼, z) = (r, 𝜑 - swirl * r * z, z)
+
+    Note: The entire representation of the geometry is parameterized via swirl.
+        Distinct values for swirl result in distinct representations of the
+        geometry. Therefore swirl cannot be changed after construction.
     """
 
     def __init__(
@@ -67,7 +77,7 @@ class SwirlCylindricalRungeKuttaGeometry(RungeKuttaGeometry):
         # pylint: disable=C0103
         a = self._swirl
         r, alpha, z = coordinates
-        phi = alpha + a * r * z  # swirl
+        phi = alpha + a * r * z
         return (
             0 < r < math.inf
             and -math.pi < phi < math.pi
@@ -82,15 +92,21 @@ class SwirlCylindricalRungeKuttaGeometry(RungeKuttaGeometry):
         # convert the direction then back to the original coordinates
         # Note: This strategy is possible since the underlying geometry is
         #       curvature-free (Ricci scalar is 0).
-        start_flat = cylindrical_swirl_to_cartesian_coords(self._swirl, start)
-        target_flat = cylindrical_swirl_to_cartesian_coords(self._swirl, target)
+        start_flat = cylindrical_to_cartesian_coords(
+            cylindrical_swirl_to_cylindrical_coords(self._swirl, start)
+        )
+        target_flat = cylindrical_to_cartesian_coords(
+            cylindrical_swirl_to_cylindrical_coords(self._swirl, target)
+        )
         start_flat_vec = coordinates_as_vector(start_flat)
         target_flat_vec = coordinates_as_vector(target_flat)
         delta_flat = target_flat_vec - start_flat_vec
-        direction = cartesian_to_cylindrical_swirl_vector(
-            self._swirl, start_flat, delta_flat
+        tangent = cylindrical_to_cylindrical_swirl_tangential_vector(
+            self._swirl,
+            cartesian_to_cylindrical_tangential_vector(
+                TangentialVector(start_flat, delta_flat)
+            ),
         )
-        tangent = TangentialVector(point=start, vector=direction)
         return RungeKuttaGeometry.Ray(geometry=self, initial_tangent=tangent)
 
     def length(self, tangent: TangentialVector) -> float:

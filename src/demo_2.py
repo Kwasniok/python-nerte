@@ -7,8 +7,8 @@ from nerte.values.coordinates import Coordinates3D
 from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.face import Face
-from nerte.values.manifolds.cylindrical import (
-    Plane as CartesianPlaneInCylindrical,
+from nerte.values.manifolds.cylindrical_swirl import (
+    Plane as CartesianPlaneInCylindricalSwirl,
 )
 from nerte.world.object import Object
 from nerte.world.camera import Camera
@@ -25,11 +25,12 @@ from nerte.util.random_color_generator import RandomColorGenerator
 COLOR = RandomColorGenerator()
 
 
-def make_camera(canvas_dimension: int) -> Camera:
+def make_camera(swirl: float, canvas_dimension: int) -> Camera:
     """Creates a camera with preset values."""
 
     location = Coordinates3D((0.1, 0.0, -1.3))
-    manifold = CartesianPlaneInCylindrical(
+    manifold = CartesianPlaneInCylindricalSwirl(
+        swirl=swirl,
         b0=AbstractVector((1.0, 0.0, 0.0)),
         b1=AbstractVector((0.0, 1.0, 0.0)),
         x0_domain=Domain1D(-1.0, +1.0),
@@ -44,12 +45,12 @@ def make_camera(canvas_dimension: int) -> Camera:
     return camera
 
 
-def make_scene(canvas_dimension: int) -> Scene:
+def make_scene(swirl: float, canvas_dimension: int) -> Scene:
     """
     Creates a scene with a camera pointing towards an object.
     """
 
-    camera = make_camera(canvas_dimension)
+    camera = make_camera(swirl, canvas_dimension)
     scene = Scene(camera=camera)
 
     # add all faces of the hollow cube as separate object to enable
@@ -143,14 +144,15 @@ def render(
 def main() -> None:
     """Creates and renders the demo scene."""
 
+    swirl = 1.0
     # NOTE: Increase the canvas dimension to improve the image quality.
     #       This will also increase rendering time!
-    scene = make_scene(canvas_dimension=100)
+    scene = make_scene(swirl, canvas_dimension=100)
     geo = SwirlCylindricalRungeKuttaGeometry(
         max_ray_depth=math.inf,
         step_size=0.1,
         max_steps=50,
-        swirl=5.0,
+        swirl=swirl,
     )
 
     render(
