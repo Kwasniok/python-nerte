@@ -8,14 +8,14 @@ from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.face import Face
 from nerte.values.manifolds.cylindrical import (
-    Plane as CartesianPlaneInCylindric,
+    Plane as CartesianPlaneInCylindrical,
 )
 from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
 from nerte.geometry.geometry import Geometry
-from nerte.geometry.cylindircal_swirl_geometry import (
-    SwirlCylindricRungeKuttaGeometry,
+from nerte.geometry.cylindrical_swirl_geometry import (
+    SwirlCylindricalRungeKuttaGeometry,
 )
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_color_renderer import ImageColorRenderer
@@ -29,7 +29,7 @@ def make_camera(canvas_dimension: int) -> Camera:
     """Creates a camera with preset values."""
 
     location = Coordinates3D((0.1, 0.0, -1.3))
-    manifold = CartesianPlaneInCylindric(
+    manifold = CartesianPlaneInCylindrical(
         b0=AbstractVector((1.0, 0.0, 0.0)),
         b1=AbstractVector((0.0, 1.0, 0.0)),
         x0_domain=Domain1D(-1.0, +1.0),
@@ -146,7 +146,7 @@ def main() -> None:
     # NOTE: Increase the canvas dimension to improve the image quality.
     #       This will also increase rendering time!
     scene = make_scene(canvas_dimension=100)
-    geo = SwirlCylindricRungeKuttaGeometry(
+    geo = SwirlCylindricalRungeKuttaGeometry(
         max_ray_depth=math.inf,
         step_size=0.1,
         max_steps=50,

@@ -30,7 +30,7 @@ from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 class SwirlCartesianRungeKuttaGeometry(RungeKuttaGeometry):
     """
     Represenation of a geometry in cartesian swirl coordinates. Geodesics are
-    'swirled' around the z axis. In cylindric coordinates this amounts to the
+    'swirled' around the z axis. In cylindrical coordinates this amounts to the
     transformation:
         (r, 𝜑, z) = (r, 𝛼 + swirl * r * z, z)
         (r, 𝛼, z) = (r, 𝜑 - swirl * r * z, z)

@@ -20,83 +20,83 @@ from nerte.values.tangential_vector_delta_unittest import (
     tangential_vector_delta_equiv,
 )
 from nerte.values.face import Face
-from nerte.geometry.cylindircal_geometry import CylindricRungeKuttaGeometry
+from nerte.geometry.cylindrical_geometry import CylindricalRungeKuttaGeometry
 
 
-class CylindricRungeKuttaGeometryConstructorTest(BaseTestCase):
+class CylindricalRungeKuttaGeometryConstructorTest(BaseTestCase):
     def test_constructor(self) -> None:
         """Tests constructor."""
-        CylindricRungeKuttaGeometry(
+        CylindricalRungeKuttaGeometry(
             max_ray_depth=1.0, step_size=1.0, max_steps=1
         )
         # invalid max_ray_depth
         with self.assertRaises(ValueError):
-            CylindricRungeKuttaGeometry(
+            CylindricalRungeKuttaGeometry(
                 max_ray_depth=0.0,
                 step_size=1.0,
                 max_steps=1,
             )
         with self.assertRaises(ValueError):
-            CylindricRungeKuttaGeometry(
+            CylindricalRungeKuttaGeometry(
                 max_ray_depth=-1.0,
                 step_size=1.0,
                 max_steps=1,
             )
         with self.assertRaises(ValueError):
-            CylindricRungeKuttaGeometry(
+            CylindricalRungeKuttaGeometry(
                 max_ray_depth=-math.inf,
                 step_size=1.0,
                 max_steps=1,
             )
         with self.assertRaises(ValueError):
-            CylindricRungeKuttaGeometry(
+            CylindricalRungeKuttaGeometry(
                 max_ray_depth=-math.nan,
                 step_size=1.0,
                 max_steps=1,
             )
         # invalid step_size
         with self.assertRaises(ValueError):
-            CylindricRungeKuttaGeometry(
+            CylindricalRungeKuttaGeometry(
                 max_ray_depth=1.0,
                 step_size=0.0,
                 max_steps=1,
             )
         with self.assertRaises(ValueError):
-            CylindricRungeKuttaGeometry(
+            CylindricalRungeKuttaGeometry(
                 max_ray_depth=1.0,
                 step_size=-1.0,
                 max_steps=1,
             )
         with self.assertRaises(ValueError):
-            CylindricRungeKuttaGeometry(
+            CylindricalRungeKuttaGeometry(
                 max_ray_depth=1.0,
                 step_size=math.inf,
                 max_steps=1,
             )
         with self.assertRaises(ValueError):
-            CylindricRungeKuttaGeometry(
+            CylindricalRungeKuttaGeometry(
                 max_ray_depth=1.0,
                 step_size=math.nan,
                 max_steps=1,
             )
         # invalid max_steps
         with self.assertRaises(ValueError):
-            CylindricRungeKuttaGeometry(
+            CylindricalRungeKuttaGeometry(
                 max_ray_depth=1.0,
                 step_size=1,
                 max_steps=0,
             )
         with self.assertRaises(ValueError):
-            CylindricRungeKuttaGeometry(
+            CylindricalRungeKuttaGeometry(
                 max_ray_depth=1.0,
                 step_size=1,
                 max_steps=-1,
             )
 
 
-class CylindricRungeKuttaGeometryIsValidCoordinateTest(BaseTestCase):
+class CylindricalRungeKuttaGeometryIsValidCoordinateTest(BaseTestCase):
     def setUp(self) -> None:
-        self.geo = CylindricRungeKuttaGeometry(
+        self.geo = CylindricalRungeKuttaGeometry(
             max_ray_depth=1.0, step_size=1.0, max_steps=1
         )
         self.valid_coords = (
@@ -126,9 +126,9 @@ class CylindricRungeKuttaGeometryIsValidCoordinateTest(BaseTestCase):
             self.assertFalse(self.geo.is_valid_coordinate(coords))
 
 
-class CylindricRungeKuttaGeometryRayFromTest(BaseTestCase):
+class CylindricalRungeKuttaGeometryRayFromTest(BaseTestCase):
     def setUp(self) -> None:
-        self.geo = CylindricRungeKuttaGeometry(
+        self.geo = CylindricalRungeKuttaGeometry(
             max_ray_depth=1.0, step_size=0.1, max_steps=10
         )
         self.coords1 = Coordinates3D((1.0, 0.0, 0.0))
@@ -173,7 +173,7 @@ class CylindricRungeKuttaGeometryRayFromTest(BaseTestCase):
                 self.geo.ray_from_tangent(invalid_tangent)
 
 
-class CylindricRungeKuttaGeometryVectorTest(BaseTestCase):
+class CylindricalRungeKuttaGeometryVectorTest(BaseTestCase):
     def setUp(self) -> None:
         # coordinates: r, 𝜑, z
         # metric: g = diag(1, r**2, z)
@@ -196,8 +196,8 @@ class CylindricRungeKuttaGeometryVectorTest(BaseTestCase):
             26.0 ** 0.5,
         )
         self.ns = tuple(v / length for length in self.lengths)
-        # geometry (cylindirc & euclidean)
-        self.geo = CylindricRungeKuttaGeometry(
+        # geometry (cylindrical & euclidean)
+        self.geo = CylindricalRungeKuttaGeometry(
             max_ray_depth=math.inf,
             step_size=1.0,
             max_steps=10,
@@ -242,9 +242,9 @@ class CylindricRungeKuttaGeometryVectorTest(BaseTestCase):
                 self.geo.normalized(tangent)
 
 
-class CylindricRungeKuttaGeometryGeodesicEquationTest(BaseTestCase):
+class CylindricalRungeKuttaGeometryGeodesicEquationTest(BaseTestCase):
     def setUp(self) -> None:
-        self.geo = CylindricRungeKuttaGeometry(
+        self.geo = CylindricalRungeKuttaGeometry(
             max_ray_depth=1.0, step_size=1.0, max_steps=1
         )
 
@@ -291,7 +291,7 @@ class CylindricRungeKuttaGeometryGeodesicEquationTest(BaseTestCase):
             )
 
 
-class CylindricRungeKuttaGeometryIntersectsTest(BaseTestCase):
+class CylindricalRungeKuttaGeometryIntersectsTest(BaseTestCase):
     def setUp(self) -> None:
         # coordinates: r, 𝜑, z
 
@@ -302,8 +302,8 @@ class CylindricRungeKuttaGeometryIntersectsTest(BaseTestCase):
         pnt2 = Coordinates3D((0.0, +math.pi, +1.0))
         pnt3 = Coordinates3D((1.0, +math.pi, +1.0))
         self.faces = list(Face(*ps) for ps in permutations((pnt1, pnt2, pnt3)))
-        # geometry (cylindirc & euclidean)
-        geo = CylindricRungeKuttaGeometry(
+        # geometry (cylindrical & euclidean)
+        geo = CylindricalRungeKuttaGeometry(
             max_ray_depth=math.inf,
             step_size=0.1,
             max_steps=25,

@@ -17,7 +17,7 @@ from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.manifolds.cartesian import Plane as PlaneCartesian
-from nerte.values.manifolds.cylindrical import Plane as PlaneCylindric
+from nerte.values.manifolds.cylindrical import Plane as PlaneCylindrical
 from nerte.world.camera import Camera
 from nerte.geometry.cartesian_geometry import CartesianGeometry
 from nerte.geometry.cartesian_geometry_unittest import cartesian_ray_equiv
@@ -103,7 +103,7 @@ class OrthographicProjectionTest(BaseTestCase):
         # camera
         loc = Coordinates3D((0.0, 0.0, 0.0))
         domain = Domain1D(-1.0, 1.0)
-        manifold = PlaneCylindric(
+        manifold = PlaneCylindrical(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
             x0_domain=domain,

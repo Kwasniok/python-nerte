@@ -74,12 +74,12 @@ class CartesianGeodesicEquationTest(BaseTestCase):
         self.places = 3
 
     def test_geodesic_equation(self) -> None:
-        """Tests the cylindric geodesic equation."""
+        """Tests the cylindrical geodesic equation."""
 
-        # initial in cylindric coordinates
+        # initial in cylindrical coordinates
         carth_tangent_delta = tangent_as_delta(self.carth_initial_tangent)
 
-        # propagate in cylindric coordinates
+        # propagate in cylindrical coordinates
         def carth_geo_eq(x: TangentialVectorDelta) -> TangentialVectorDelta:
             return cartesian_geodesic_equation(delta_as_tangent(x))
 

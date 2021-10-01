@@ -1,5 +1,5 @@
 """
-Module for representing a geometry in cylindirc coordinates.
+Module for representing a geometry in cylindrical coordinates.
 """
 
 from collections.abc import Callable
@@ -17,17 +17,17 @@ from nerte.values.linalg import (
     length,
 )
 from nerte.values.manifolds.cylindrical import (
-    cylindirc_metric,
-    cylindirc_geodesic_equation,
-    cylindric_to_cartesian_coords,
-    cartesian_to_cylindric_vector,
+    cylindrical_metric,
+    cylindrical_geodesic_equation,
+    cylindrical_to_cartesian_coords,
+    cartesian_to_cylindrical_vector,
 )
 from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 
 
-class CylindricRungeKuttaGeometry(RungeKuttaGeometry):
+class CylindricalRungeKuttaGeometry(RungeKuttaGeometry):
     """
-    Represenation of an euclidean geometry in cylindircal coordinates.
+    Represenation of an euclidean geometry in cylindrical coordinates.
     """
 
     def __init__(self, max_ray_depth: float, step_size: float, max_steps: int):
@@ -36,7 +36,7 @@ class CylindricRungeKuttaGeometry(RungeKuttaGeometry):
         def _geodesic_equation(
             tan: TangentialVectorDelta,
         ) -> TangentialVectorDelta:
-            return cylindirc_geodesic_equation(delta_as_tangent(tan))
+            return cylindrical_geodesic_equation(delta_as_tangent(tan))
 
         self._geodesic_equation = _geodesic_equation
 
@@ -57,17 +57,17 @@ class CylindricRungeKuttaGeometry(RungeKuttaGeometry):
         # convert the direction then back to the original coordinates
         # Note: This strategy is possible since the underlying geometry is
         #       curvature-free (Ricci scalar is 0).
-        start_flat = cylindric_to_cartesian_coords(start)
-        target_flat = cylindric_to_cartesian_coords(target)
+        start_flat = cylindrical_to_cartesian_coords(start)
+        target_flat = cylindrical_to_cartesian_coords(target)
         start_flat_vec = coordinates_as_vector(start_flat)
         target_flat_vec = coordinates_as_vector(target_flat)
         delta_flat = target_flat_vec - start_flat_vec
-        direction = cartesian_to_cylindric_vector(start_flat, delta_flat)
+        direction = cartesian_to_cylindrical_vector(start_flat, delta_flat)
         tangent = TangentialVector(point=start, vector=direction)
         return RungeKuttaGeometry.Ray(geometry=self, initial_tangent=tangent)
 
     def length(self, tangent: TangentialVector) -> float:
-        metric = cylindirc_metric(tangent.point)
+        metric = cylindrical_metric(tangent.point)
         return length(tangent.vector, metric=metric)
 
     def geodesic_equation(

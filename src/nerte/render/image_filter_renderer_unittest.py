@@ -23,7 +23,7 @@ from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
 from nerte.geometry.cartesian_geometry import CartesianGeometry
-from nerte.geometry.cylindircal_geometry import CylindricRungeKuttaGeometry
+from nerte.geometry.cylindrical_geometry import CylindricalRungeKuttaGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_filter_renderer import (
     Filter,
@@ -501,7 +501,7 @@ class ImageFilterRendererProjectionFailureTest1(BaseTestCase):
         # scene
         self.scene = Scene(camera=cam)
         # geometry
-        self.geometry = CylindricRungeKuttaGeometry(
+        self.geometry = CylindricalRungeKuttaGeometry(
             max_ray_depth=math.inf,
             step_size=0.1,
             max_steps=2,
@@ -558,7 +558,7 @@ class ImageFilterRendererProjectionFailureTest2(BaseTestCase):
         # scene
         self.scene = Scene(camera=cam)
         # geometry
-        self.geometry = CylindricRungeKuttaGeometry(
+        self.geometry = CylindricalRungeKuttaGeometry(
             max_ray_depth=math.inf,
             step_size=0.1,
             max_steps=2,

@@ -20,7 +20,7 @@ from nerte.values.manifold import Manifold2D
 from nerte.values.util.convert import vector_as_coordinates
 
 
-def cylindirc_swirl_metric(swirl: float, coords: Coordinates3D) -> Metric:
+def cylindrical_swirl_metric(swirl: float, coords: Coordinates3D) -> Metric:
     """Returns the local metric for the given coordinates."""
     # pylint: disable=C0103
     a = swirl
@@ -33,7 +33,7 @@ def cylindirc_swirl_metric(swirl: float, coords: Coordinates3D) -> Metric:
         or not -math.inf < z < math.inf
     ):
         raise ValueError(
-            f"Cannot generate matric for cylindric swirl={swirl} coordinates"
+            f"Cannot generate matric for cylindrical swirl={swirl} coordinates"
             f" at (r, alpha, z)={coords}."
             f" Coordinate values must be restricted to "
             f" 0 < r < inf, -pi < alpha + swirl * r * z < pi, -inf < z inf."
@@ -51,13 +51,13 @@ def cylindirc_swirl_metric(swirl: float, coords: Coordinates3D) -> Metric:
     )
 
 
-def cylindirc_swirl_geodesic_equation(
+def cylindrical_swirl_geodesic_equation(
     swirl: float,
     tangent: TangentialVector,
 ) -> TangentialVectorDelta:
     """
     Returns a tangential vector delta which encodes the geodesic equation of
-    cylindric swirl coordinates.
+    cylindrical swirl coordinates.
 
     Let x(𝜆) be a geodesic.
     For tangent (x, dx/d𝜆) it returns (dx/d𝜆, d^2x/d𝜆^2).
@@ -73,7 +73,7 @@ def cylindirc_swirl_geodesic_equation(
         or not -math.inf < z < math.inf
     ):
         raise ValueError(
-            f"Cannot generate geodesic equation for cylindric swirl={swirl}"
+            f"Cannot generate geodesic equation for cylindrical swirl={swirl}"
             f" coordinates at (r, alpha, z)={tangent.point}."
             f" Coordinate values must be restricted to "
             f" 0 < r < inf, -pi < alpha + swirl * r * z < pi, -inf < z inf."
@@ -101,12 +101,12 @@ def cylindirc_swirl_geodesic_equation(
     )
 
 
-def cartesian_to_cylindric_swirl_coords(
+def cartesian_to_cylindrical_swirl_coords(
     swirl: float,
     coords: Coordinates3D,
 ) -> Coordinates3D:
     """
-    Returns cylindric swirl coordinates obtained from cartesian coordinates.
+    Returns cylindrical swirl coordinates obtained from cartesian coordinates.
 
     :param coords: cartesian coordinates (x, y, z)
                    where -inf < x < inf and -inf < y < inf and -inf < z < inf
@@ -121,7 +121,7 @@ def cartesian_to_cylindric_swirl_coords(
         or not -math.inf < z < math.inf
     ):
         raise ValueError(
-            f"Cannot convert cartesian coordinates={coords} to cylindric swirl"
+            f"Cannot convert cartesian coordinates={coords} to cylindrical swirl"
             f" coordinates. All values must be finte."
         )
     # from cathesian
@@ -129,7 +129,7 @@ def cartesian_to_cylindric_swirl_coords(
     phi = math.atan2(y, x)
     if r == 0.0:
         raise ValueError(
-            f"Cannot convert cartesian coordinates={coords} to cylindric swirl"
+            f"Cannot convert cartesian coordinates={coords} to cylindrical swirl"
             f" coordinates. All cylindrical coordinates are restricted by"
             f" 0 < r but r={r}."
         )
@@ -138,14 +138,14 @@ def cartesian_to_cylindric_swirl_coords(
     return Coordinates3D((r, alpha, z))
 
 
-def cylindric_swirl_to_cartesian_coords(
+def cylindrical_swirl_to_cartesian_coords(
     swirl: float,
     coords: Coordinates3D,
 ) -> Coordinates3D:
     """
-    Returns cartesian coordinates obtained from cylindric swirl coordinates.
+    Returns cartesian coordinates obtained from cylindrical swirl coordinates.
 
-    :param coords: cylindric swirl coordinates (r, phi, z)
+    :param coords: cylindrical swirl coordinates (r, phi, z)
                    where 0 < r < inf and -pi < alpha + swirl * r * z < pi and -inf < z < inf
     """
     # pylint:disable=C0103
@@ -159,7 +159,7 @@ def cylindric_swirl_to_cartesian_coords(
         or not -math.inf < z < math.inf
     ):
         raise ValueError(
-            f"Cannot convert cylindric swirl={swirl} coordinates"
+            f"Cannot convert cylindrical swirl={swirl} coordinates"
             f" at (r, alpha, z)={coords} to cartesian coordinates."
             f" Coordinate values must be restricted to "
             f" 0 < r < inf, -pi < alpha + swirl * r * z < pi, -inf < z inf."
@@ -170,11 +170,11 @@ def cylindric_swirl_to_cartesian_coords(
     return Coordinates3D((x, y, z))
 
 
-def cartesian_to_cylindric_swirl_vector(
+def cartesian_to_cylindrical_swirl_vector(
     swirl: float, coords: Coordinates3D, vec: AbstractVector
 ) -> AbstractVector:
     """
-    Returns vector in tangential vector space of cylindirc swirl coordinate
+    Returns vector in tangential vector space of cylindrical swirl coordinate
     from a vector in tangential vector space in cartesian coordinates.
 
     :param coords: cartesian coordinates (x, y, z)
@@ -193,7 +193,7 @@ def cartesian_to_cylindric_swirl_vector(
     ):
         raise ValueError(
             f"Cannot convert cartesian vector={vec} @ coordinates"
-            f" (x,y,z)={coords} to cylindric swirl vector."
+            f" (x,y,z)={coords} to cylindrical swirl vector."
             f" All cartesian coordinate values must be finte."
         )
     r = math.sqrt(x ** 2 + y ** 2)
@@ -201,7 +201,7 @@ def cartesian_to_cylindric_swirl_vector(
     if r == 0.0 or not -math.pi < phi < math.pi:
         raise ValueError(
             f"Cannot convert cartesian vector={vec} @ coordinates"
-            f" (x,y,z)={coords} to cylindric swirl vector."
+            f" (x,y,z)={coords} to cylindrical swirl vector."
             f" All cylindrical coordinates are restricted by"
             f" 0 < r, -pi < phi < pi."
             f" Here r={r} and phi={phi}."
@@ -226,17 +226,17 @@ def cartesian_to_cylindric_swirl_vector(
     return mat_vec_mult(jacobian, vec)
 
 
-def cylindric_swirl_to_cartesian_vector(
+def cylindrical_swirl_to_cartesian_vector(
     swirl: float, coords: Coordinates3D, vec: AbstractVector
 ) -> AbstractVector:
     """
     Returns vector in tangential vector space of cartesian coordinates from
-    a vector in tangential vector space in cylindirc swirl  coordinates.
+    a vector in tangential vector space in cylindrical swirl  coordinates.
 
     :param coords: cylindrical coordinates (r, alpha, z)
                    where 0 < r < inf and -pi < alpha + swirl * r * z < pi
                    and -inf < z < inf
-    :param vec: vector in tangential vector space of the cylindircal coordinates
+    :param vec: vector in tangential vector space of the cylindrical coordinates
                 (r, phi, z) such that vec = e_r * r + e_phi * phi + e_z * z
     """
     # pylint:disable=C0103
@@ -250,7 +250,7 @@ def cylindric_swirl_to_cartesian_vector(
         or not -math.inf < z < math.inf
     ):
         raise ValueError(
-            f"Cannot convert cylindric swirl={swirl} vector={vec} @ coordinates"
+            f"Cannot convert cylindrical swirl={swirl} vector={vec} @ coordinates"
             f" (r, alpha, z)={coords} to cartesian vector."
             f" Coordinate values must be restricted to "
             f" 0 < r < inf, -pi < alpha + swirl * r * z < pi, -inf < z < inf."
@@ -279,12 +279,12 @@ def cylindric_swirl_to_cartesian_vector(
     return mat_vec_mult(jacobian, vec)
 
 
-def cartesian_to_cylindric_swirl_tangential_vector(
+def cartesian_to_cylindrical_swirl_tangential_vector(
     swirl: float,
     tangential_vector: TangentialVector,
 ) -> TangentialVector:
     """
-    Returns tangential vector transformed from cartesian to cylindircal
+    Returns tangential vector transformed from cartesian to cylindrical
     coordinates.
     """
     # pylint:disable=C0103
@@ -297,7 +297,7 @@ def cartesian_to_cylindric_swirl_tangential_vector(
     ):
         raise ValueError(
             f"Cannot convert cartesian tangential vector={tangential_vector}"
-            f" to cylindric swirl tangential vector."
+            f" to cylindrical swirl tangential vector."
             f" All cartesian coordinate values must be finte."
         )
     r = math.sqrt(x ** 2 + y ** 2)
@@ -305,7 +305,7 @@ def cartesian_to_cylindric_swirl_tangential_vector(
     if r == 0.0 or not -math.pi < phi < math.pi:
         raise ValueError(
             f"Cannot convert cartesian tangential vector={tangential_vector}"
-            f" to cylindric tangential vector."
+            f" to cylindrical tangential vector."
             f" All cylindrical coordinates are restricted by"
             f" 0 < r, -pi < phi < pi."
             f" Here r={r} and phi={phi}."
@@ -333,12 +333,12 @@ def cartesian_to_cylindric_swirl_tangential_vector(
     )
 
 
-def cylindric_swirl_to_cartesian_tangential_vector(
+def cylindrical_swirl_to_cartesian_tangential_vector(
     swirl: float,
     tangential_vector: TangentialVector,
 ) -> TangentialVector:
     """
-    Returns tangential vector transformed from cylindirc to cartesian
+    Returns tangential vector transformed from cylindrical to cartesian
     coordinates.
     """
     # pylint:disable=C0103
@@ -352,7 +352,7 @@ def cylindric_swirl_to_cartesian_tangential_vector(
         or not -math.inf < z < math.inf
     ):
         raise ValueError(
-            f"Cannot convert cylindric swirl={swirl} tangential vector"
+            f"Cannot convert cylindrical swirl={swirl} tangential vector"
             f"={tangential_vector} to cartesian tangential vector."
             f" Coordinate values must be restricted to "
             f" 0 < r < inf, -pi < alpha + swirl * r * z < pi, -inf < z inf."
@@ -438,11 +438,11 @@ class Plane(Manifold2D):
 
     def embed(self, coords: Coordinates2D) -> Coordinates3D:
         coords3d = self._embed_in_cartesian_coordinates(coords)
-        return cartesian_to_cylindric_swirl_coords(self._swirl, coords3d)
+        return cartesian_to_cylindrical_swirl_coords(self._swirl, coords3d)
 
     def surface_normal(self, coords: Coordinates2D) -> AbstractVector:
         coords3d = self._embed_in_cartesian_coordinates(coords)
-        return cartesian_to_cylindric_swirl_vector(
+        return cartesian_to_cylindrical_swirl_vector(
             self._swirl, coords3d, self._n
         )
 
@@ -451,10 +451,10 @@ class Plane(Manifold2D):
     ) -> tuple[AbstractVector, AbstractVector]:
         coords3d = self._embed_in_cartesian_coordinates(coords)
         return (
-            cartesian_to_cylindric_swirl_vector(
+            cartesian_to_cylindrical_swirl_vector(
                 self._swirl, coords3d, self._b0
             ),
-            cartesian_to_cylindric_swirl_vector(
+            cartesian_to_cylindrical_swirl_vector(
                 self._swirl, coords3d, self._b1
             ),
         )

@@ -11,14 +11,14 @@ from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.face import Face
 from nerte.values.manifolds.cylindrical_swirl import (
-    Plane as CartesianPlaneInCylindricSwirl,
+    Plane as CartesianPlaneInCylindricalSwirl,
 )
 from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
 from nerte.geometry.geometry import Geometry
-from nerte.geometry.cylindircal_swirl_geometry import (
-    SwirlCylindricRungeKuttaGeometry,
+from nerte.geometry.cylindrical_swirl_geometry import (
+    SwirlCylindricalRungeKuttaGeometry,
 )
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_filter_renderer import (
@@ -38,7 +38,7 @@ def make_camera(swirl: float, canvas_dimension: int) -> Camera:
     """Creates a camera with preset values."""
 
     location = Coordinates3D((0.5, 0.0, 0.5))
-    manifold = CartesianPlaneInCylindricSwirl(
+    manifold = CartesianPlaneInCylindricalSwirl(
         swirl=swirl,
         b0=AbstractVector((0.0, -1.0, 0.0)),
         b1=AbstractVector((-0.4, 0.0, 0.4)),
@@ -163,7 +163,7 @@ def main() -> None:
     swirl = 0.1
     scene = make_scene(swirl=swirl, canvas_dimension=100)
     max_steps = 25
-    geo = SwirlCylindricRungeKuttaGeometry(
+    geo = SwirlCylindricalRungeKuttaGeometry(
         max_ray_depth=math.inf,
         step_size=0.125,
         max_steps=max_steps,

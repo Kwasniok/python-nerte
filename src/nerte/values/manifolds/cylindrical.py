@@ -20,7 +20,7 @@ from nerte.values.manifold import Manifold2D
 from nerte.values.util.convert import vector_as_coordinates
 
 
-def cylindirc_metric(coords: Coordinates3D) -> Metric:
+def cylindrical_metric(coords: Coordinates3D) -> Metric:
     """Returns the local metric for the given coordinates."""
     # pylint: disable=C0103
     r, phi, z = coords
@@ -30,7 +30,7 @@ def cylindirc_metric(coords: Coordinates3D) -> Metric:
         or not -math.inf < z < math.inf
     ):
         raise ValueError(
-            f"Cannot generate matric for cylindric coordinates"
+            f"Cannot generate matric for cylindrical coordinates"
             f" at (r, phi, z)={coords}."
             f" Coordinate values must be restricted to "
             f" 0 < r < inf, -pi < phi < pi, -inf < z inf."
@@ -44,12 +44,12 @@ def cylindirc_metric(coords: Coordinates3D) -> Metric:
     )
 
 
-def cylindirc_geodesic_equation(
+def cylindrical_geodesic_equation(
     tangent: TangentialVector,
 ) -> TangentialVectorDelta:
     """
     Returns a tangential vector delta which encodes the geodesic equation of
-    cylindric coordinates.
+    cylindrical coordinates.
 
     Let x(𝜆) be a geodesic.
     For tangent (x, dx/d𝜆) it returns (dx/d𝜆, d^2x/d𝜆^2).
@@ -62,7 +62,7 @@ def cylindirc_geodesic_equation(
         or not -math.inf < z < math.inf
     ):
         raise ValueError(
-            f"Cannot generate geodesic equation for cylindric"
+            f"Cannot generate geodesic equation for cylindrical"
             f" coordinates at (r, alpha, z)={tangent.point}."
             f" Coordinate values must be restricted to "
             f" 0 < r < inf, -pi < phi < pi, -inf < z inf."
@@ -80,7 +80,7 @@ def cylindirc_geodesic_equation(
     )
 
 
-def cartesian_to_cylindric_coords(coords: Coordinates3D) -> Coordinates3D:
+def cartesian_to_cylindrical_coords(coords: Coordinates3D) -> Coordinates3D:
     """
     Returns cylindrical coordinates obtained from cartesian coordinates.
 
@@ -96,14 +96,14 @@ def cartesian_to_cylindric_coords(coords: Coordinates3D) -> Coordinates3D:
         or not -math.inf < z < math.inf
     ):
         raise ValueError(
-            f"Cannot convert cartesian coordinates={coords} to cylindric"
+            f"Cannot convert cartesian coordinates={coords} to cylindrical"
             f" coordinates. All values must be finte."
         )
     r = math.sqrt(x ** 2 + y ** 2)
     phi = math.atan2(y, x)
     if r == 0.0:
         raise ValueError(
-            f"Cannot convert cartesian coordinates={coords} to cylindric"
+            f"Cannot convert cartesian coordinates={coords} to cylindrical"
             f" coordinates. All values must be finte."
             f" and all cylindrical coordinates are restricted by"
             f" 0 < r but r={r}."
@@ -111,7 +111,7 @@ def cartesian_to_cylindric_coords(coords: Coordinates3D) -> Coordinates3D:
     return Coordinates3D((r, phi, z))
 
 
-def cylindric_to_cartesian_coords(coords: Coordinates3D) -> Coordinates3D:
+def cylindrical_to_cartesian_coords(coords: Coordinates3D) -> Coordinates3D:
     """
     Returns cartesian coordinates obtained from cylindrical coordinates.
 
@@ -126,7 +126,7 @@ def cylindric_to_cartesian_coords(coords: Coordinates3D) -> Coordinates3D:
         or not -math.inf < z < math.inf
     ):
         raise ValueError(
-            f"Cannot convert cylindric coordinates at (r, phi, z)={coords} to"
+            f"Cannot convert cylindrical coordinates at (r, phi, z)={coords} to"
             f" cartesian coordinates. Coordinate values must be restricted to "
             f" 0 < r < inf, -pi < phi < pi, -inf < z inf."
         )
@@ -135,11 +135,11 @@ def cylindric_to_cartesian_coords(coords: Coordinates3D) -> Coordinates3D:
     return Coordinates3D((x, y, z))
 
 
-def cartesian_to_cylindric_vector(
+def cartesian_to_cylindrical_vector(
     coords: Coordinates3D, vec: AbstractVector
 ) -> AbstractVector:
     """
-    Returns vector in tangential vector space of cylindircal coordinates from
+    Returns vector in tangential vector space of cylindrical coordinates from
     a vector in tangential vector space in cartesian coordinates.
 
     :param coords: cartesian coordinates (x, y, z)
@@ -156,7 +156,7 @@ def cartesian_to_cylindric_vector(
     ):
         raise ValueError(
             f"Cannot convert cartesian vector={vec} @ coordinates"
-            f" (x,y,z)={coords} to cylindric vector."
+            f" (x,y,z)={coords} to cylindrical vector."
             f" All cartesian coordinate values must be finte."
         )
     r = math.sqrt(x ** 2 + y ** 2)
@@ -164,7 +164,7 @@ def cartesian_to_cylindric_vector(
     if r == 0.0 or not -math.pi < phi < math.pi:
         raise ValueError(
             f"Cannot convert cartesian vector={vec} @ coordinates"
-            f" (x,y,z)={coords} to cylindric vector."
+            f" (x,y,z)={coords} to cylindrical vector."
             f" All cylindrical coordinates are restricted by"
             f" 0 < r, -pi < phi < pi."
             f" Here r={r} and phi={phi}."
@@ -177,16 +177,16 @@ def cartesian_to_cylindric_vector(
     return mat_vec_mult(jacobian, vec)
 
 
-def cylindric_to_cartesian_vector(
+def cylindrical_to_cartesian_vector(
     coords: Coordinates3D, vec: AbstractVector
 ) -> AbstractVector:
     """
     Returns vector in tangential vector space of cartesian coordinates from
-    a vector in tangential vector space in cylindircal coordinates.
+    a vector in tangential vector space in cylindrical coordinates.
 
     :param coords: cylindrical coordinates (r, phi, z)
                    where 0 < r < inf and -pi < phi < pi and -inf < z < inf
-    :param vec: vector in tangential vector space of the cylindircal coordinates
+    :param vec: vector in tangential vector space of the cylindrical coordinates
                 (r, phi, z) such that vec = e_r * r + e_phi * phi + e_z * z
     """
     # pylint:disable=C0103
@@ -197,7 +197,7 @@ def cylindric_to_cartesian_vector(
         or not -math.inf < z < math.inf
     ):
         raise ValueError(
-            f"Cannot convert cylindric vector={vec} @ coordinates"
+            f"Cannot convert cylindrical vector={vec} @ coordinates"
             f" (r, phi, z)={coords} to cartesian vector."
             f" Coordinate values must be restricted to "
             f" 0 < r < inf, -pi < phi < pi, -inf < z inf."
@@ -210,11 +210,11 @@ def cylindric_to_cartesian_vector(
     return mat_vec_mult(jacobian, vec)
 
 
-def cartesian_to_cylindric_tangential_vector(
+def cartesian_to_cylindrical_tangential_vector(
     tangential_vector: TangentialVector,
 ) -> TangentialVector:
     """
-    Returns tangential vector transformed from cartesian to cylindircal
+    Returns tangential vector transformed from cartesian to cylindrical
     coordinates.
     """
     # pylint:disable=C0103
@@ -226,7 +226,7 @@ def cartesian_to_cylindric_tangential_vector(
     ):
         raise ValueError(
             f"Cannot convert cartesian tangential vector={tangential_vector}"
-            f" to cylindric tangential vector."
+            f" to cylindrical tangential vector."
             f" All cartesian coordinate values must be finte."
         )
     r = math.sqrt(x ** 2 + y ** 2)
@@ -234,7 +234,7 @@ def cartesian_to_cylindric_tangential_vector(
     if r == 0.0 or not -math.pi < phi < math.pi:
         raise ValueError(
             f"Cannot convert cartesian tangential vector={tangential_vector}"
-            f" to cylindric tangential vector."
+            f" to cylindrical tangential vector."
             f" All cylindrical coordinates are restricted by"
             f" 0 < r, -pi < phi < pi."
             f" Here r={r} and phi={phi}."
@@ -250,11 +250,11 @@ def cartesian_to_cylindric_tangential_vector(
     )
 
 
-def cylindric_to_cartesian_tangential_vector(
+def cylindrical_to_cartesian_tangential_vector(
     tangential_vector: TangentialVector,
 ) -> TangentialVector:
     """
-    Returns tangential vector transformed from cylindirc to cartesian
+    Returns tangential vector transformed from cylindrical to cartesian
     coordinates.
     """
     # pylint:disable=C0103
@@ -265,7 +265,7 @@ def cylindric_to_cartesian_tangential_vector(
         or not -math.inf < z < math.inf
     ):
         raise ValueError(
-            f"Cannot convert cylindric tangential vector={tangential_vector}"
+            f"Cannot convert cylindrical tangential vector={tangential_vector}"
             f" to cartesian tangential vector."
             f" Coordinate values must be restricted to "
             f" 0 < r < inf, -pi < phi < pi, -inf < z inf."
@@ -328,18 +328,18 @@ class Plane(Manifold2D):
 
     def embed(self, coords: Coordinates2D) -> Coordinates3D:
         coords3d = self._embed_in_cartesian_coordinates(coords)
-        return cartesian_to_cylindric_coords(coords3d)
+        return cartesian_to_cylindrical_coords(coords3d)
 
     def surface_normal(self, coords: Coordinates2D) -> AbstractVector:
         coords3d = self._embed_in_cartesian_coordinates(coords)
-        return cartesian_to_cylindric_vector(coords3d, self._n)
+        return cartesian_to_cylindrical_vector(coords3d, self._n)
 
     def tangential_space(
         self, coords: Coordinates2D
     ) -> tuple[AbstractVector, AbstractVector]:
         coords3d = self._embed_in_cartesian_coordinates(coords)
-        return cartesian_to_cylindric_vector(
+        return cartesian_to_cylindrical_vector(
             coords3d, self._cartesian_basis_vectors[0]
-        ), cartesian_to_cylindric_vector(
+        ), cartesian_to_cylindrical_vector(
             coords3d, self._cartesian_basis_vectors[1]
         )

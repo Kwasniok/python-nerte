@@ -38,19 +38,19 @@ from nerte.values.manifolds.cartesian import (
     cartesian_metric,
 )
 from nerte.values.manifolds.cylindrical_swirl import (
-    cylindirc_swirl_metric,
-    cylindirc_swirl_geodesic_equation,
-    cartesian_to_cylindric_swirl_coords,
-    cylindric_swirl_to_cartesian_coords,
-    cartesian_to_cylindric_swirl_vector,
-    cylindric_swirl_to_cartesian_vector,
-    cartesian_to_cylindric_swirl_tangential_vector,
-    cylindric_swirl_to_cartesian_tangential_vector,
+    cylindrical_swirl_metric,
+    cylindrical_swirl_geodesic_equation,
+    cartesian_to_cylindrical_swirl_coords,
+    cylindrical_swirl_to_cartesian_coords,
+    cartesian_to_cylindrical_swirl_vector,
+    cylindrical_swirl_to_cartesian_vector,
+    cartesian_to_cylindrical_swirl_tangential_vector,
+    cylindrical_swirl_to_cartesian_tangential_vector,
     Plane,
 )
 
 
-class CylindircSwirlMetricTest(BaseTestCase):
+class CylindricSwirlMetricTest(BaseTestCase):
     def setUp(self) -> None:
         self.swirl = 1 / 17
         a = self.swirl
@@ -93,11 +93,13 @@ class CylindircSwirlMetricTest(BaseTestCase):
         """Tests the metric."""
         for coords, metric in zip(self.coords, self.metrics):
             self.assertPredicate2(
-                metric_equiv, cylindirc_swirl_metric(self.swirl, coords), metric
+                metric_equiv,
+                cylindrical_swirl_metric(self.swirl, coords),
+                metric,
             )
 
 
-class CylindircSwirlGeodesicEquationTest(BaseTestCase):
+class CylindricSwirlGeodesicEquationTest(BaseTestCase):
     def setUp(self) -> None:
         self.swirl = 0.0
         self.carth_initial_tangent = TangentialVector(
@@ -109,7 +111,7 @@ class CylindircSwirlGeodesicEquationTest(BaseTestCase):
             vector=AbstractVector((4.0, 5.0, 6.0)),
         )
         self.cylin_initial_tangent = (
-            cartesian_to_cylindric_swirl_tangential_vector(
+            cartesian_to_cylindrical_swirl_tangential_vector(
                 self.swirl, self.carth_initial_tangent
             )
         )
@@ -118,14 +120,14 @@ class CylindircSwirlGeodesicEquationTest(BaseTestCase):
         self.places = 3
 
     def test_geodesic_equation(self) -> None:
-        """Tests the cylindric swirl geodesic equation."""
+        """Tests the cylindrical swirl geodesic equation."""
 
-        # initial in cylindric coordinates
+        # initial in cylindrical coordinates
         cylin_tangent_delta = tangent_as_delta(self.cylin_initial_tangent)
 
-        # propagate in cylindric coordinates
+        # propagate in cylindrical coordinates
         def cylin_geo_eq(x: TangentialVectorDelta) -> TangentialVectorDelta:
-            return cylindirc_swirl_geodesic_equation(
+            return cylindrical_swirl_geodesic_equation(
                 self.swirl, delta_as_tangent(x)
             )
 
@@ -136,7 +138,7 @@ class CylindircSwirlGeodesicEquationTest(BaseTestCase):
             cylin_tangent_delta = cylin_next(cylin_tangent_delta)
 
         # final to cartesian coordinates
-        carth_final_tangent = cylindric_swirl_to_cartesian_tangential_vector(
+        carth_final_tangent = cylindrical_swirl_to_cartesian_tangential_vector(
             self.swirl, delta_as_tangent(cylin_tangent_delta)
         )
 
@@ -173,30 +175,34 @@ class CylindricalCoordinatesTransfomrationTest(BaseTestCase):
             Coordinates3D((0.0, 0.0, +math.inf)),
         )
 
-    def test_cartesian_to_cylindric_swirl_coords(self) -> None:
+    def test_cartesian_to_cylindrical_swirl_coords(self) -> None:
         """Tests cathesian to cylindrical coordinates conversion."""
         self.assertPredicate2(
             coordinates_3d_equiv,
-            cartesian_to_cylindric_swirl_coords(self.swirl, self.carth_coords),
+            cartesian_to_cylindrical_swirl_coords(
+                self.swirl, self.carth_coords
+            ),
             self.cylin_coords,
         )
         for coords in self.invalid_carth_coords:
             with self.assertRaises(ValueError):
-                cartesian_to_cylindric_swirl_coords(self.swirl, coords)
+                cartesian_to_cylindrical_swirl_coords(self.swirl, coords)
 
-    def test_cylindric_swirl_to_cartesian_coords(self) -> None:
-        """Tests cylindircal to cartesian coordinates conversion."""
+    def test_cylindrical_swirl_to_cartesian_coords(self) -> None:
+        """Tests cylindrical to cartesian coordinates conversion."""
         self.assertPredicate2(
             coordinates_3d_equiv,
-            cylindric_swirl_to_cartesian_coords(self.swirl, self.cylin_coords),
+            cylindrical_swirl_to_cartesian_coords(
+                self.swirl, self.cylin_coords
+            ),
             self.carth_coords,
         )
         for coords in self.invalid_cylin_coords:
             with self.assertRaises(ValueError):
-                cylindric_swirl_to_cartesian_coords(self.swirl, coords)
+                cylindrical_swirl_to_cartesian_coords(self.swirl, coords)
 
 
-class CylindricSwirlVectorTransfomrationTest(BaseTestCase):
+class CylindricalSwirlVectorTransfomrationTest(BaseTestCase):
     def setUp(self) -> None:
         self.swirl = 0.0
         # r, phi, z
@@ -241,64 +247,64 @@ class CylindricSwirlVectorTransfomrationTest(BaseTestCase):
             Coordinates3D((0.0, 0.0, +math.inf)),
         )
 
-    def test_cartesian_to_cylindric_swirl_vector(self) -> None:
-        """Tests cathesian to cylindric swirl vector conversion."""
+    def test_cartesian_to_cylindrical_swirl_vector(self) -> None:
+        """Tests cathesian to cylindrical swirl vector conversion."""
         for carth_vec, cylin_vec in zip(self.carth_vecs, self.cylin_vecs):
             self.assertPredicate2(
                 vec_equiv,
-                cartesian_to_cylindric_swirl_vector(
+                cartesian_to_cylindrical_swirl_vector(
                     self.swirl, self.carth_coords, carth_vec
                 ),
                 cylin_vec,
             )
         for coords, vec in zip(self.invalid_carth_coords, self.carth_vecs):
             with self.assertRaises(ValueError):
-                cartesian_to_cylindric_swirl_vector(self.swirl, coords, vec)
+                cartesian_to_cylindrical_swirl_vector(self.swirl, coords, vec)
 
-    def test_cylindric_swirl_to_cartesian_vector(self) -> None:
-        """Tests cylindric swirl to cathesian vector conversion."""
+    def test_cylindrical_swirl_to_cartesian_vector(self) -> None:
+        """Tests cylindrical swirl to cathesian vector conversion."""
         for cylin_vec, carth_vec in zip(self.cylin_vecs, self.carth_vecs):
             self.assertPredicate2(
                 vec_equiv,
-                cylindric_swirl_to_cartesian_vector(
+                cylindrical_swirl_to_cartesian_vector(
                     self.swirl, self.cylin_coords, cylin_vec
                 ),
                 carth_vec,
             )
         for coords, vec in zip(self.invalid_cylin_coords, self.cylin_vecs):
             with self.assertRaises(ValueError):
-                cylindric_swirl_to_cartesian_vector(self.swirl, coords, vec)
+                cylindrical_swirl_to_cartesian_vector(self.swirl, coords, vec)
 
-    def test_cartesian_to_cylindric_swirl_vector_inversion(self) -> None:
-        """Tests cartesian to cylindric swirl vector inversion."""
+    def test_cartesian_to_cylindrical_swirl_vector_inversion(self) -> None:
+        """Tests cartesian to cylindrical swirl vector inversion."""
         for carth_vec in self.carth_vecs:
             vec = carth_vec
-            vec = cartesian_to_cylindric_swirl_vector(
+            vec = cartesian_to_cylindrical_swirl_vector(
                 self.swirl, self.carth_coords, vec
             )
-            vec = cylindric_swirl_to_cartesian_vector(
+            vec = cylindrical_swirl_to_cartesian_vector(
                 self.swirl, self.cylin_coords, vec
             )
             self.assertPredicate2(vec_equiv, vec, carth_vec)
 
-    def test_cylindric_swirl_to_cartesian_vector_inversion(self) -> None:
-        """Tests cylindric swirl to cathesian vector inversion."""
+    def test_cylindrical_swirl_to_cartesian_vector_inversion(self) -> None:
+        """Tests cylindrical swirl to cathesian vector inversion."""
         for cylin_vec in self.cylin_vecs:
             vec = cylin_vec
-            vec = cylindric_swirl_to_cartesian_vector(
+            vec = cylindrical_swirl_to_cartesian_vector(
                 self.swirl, self.cylin_coords, vec
             )
-            vec = cartesian_to_cylindric_swirl_vector(
+            vec = cartesian_to_cylindrical_swirl_vector(
                 self.swirl, self.carth_coords, vec
             )
             self.assertPredicate2(vec_equiv, vec, cylin_vec)
 
     def test_vector_length_preservation(self) -> None:
-        """Tests cartesian to cylindric swirl preservation of length."""
+        """Tests cartesian to cylindrical swirl preservation of length."""
         for cylin_vec, carth_vec in zip(self.cylin_vecs, self.carth_vecs):
             cylin_len = length(
                 cylin_vec,
-                metric=cylindirc_swirl_metric(self.swirl, self.cylin_coords),
+                metric=cylindrical_swirl_metric(self.swirl, self.cylin_coords),
             )
             carth_len = length(carth_vec)
             self.assertAlmostEqual(cylin_len, carth_len)
@@ -363,62 +369,62 @@ class CylindricalTangentialVectorTransfomrationTest(BaseTestCase):
             for p in invalid_carth_coords
         )
 
-    def test_cartesian_to_cylindric_swirl_tangential_vector(self) -> None:
+    def test_cartesian_to_cylindrical_swirl_tangential_vector(self) -> None:
         """Tests cartesian to cylindrical tangential vector conversion."""
         for carth_tan, cylin_tan in zip(
             self.carth_tangents, self.cylin_tangents
         ):
             self.assertPredicate2(
                 tan_vec_equiv,
-                cartesian_to_cylindric_swirl_tangential_vector(
+                cartesian_to_cylindrical_swirl_tangential_vector(
                     self.swirl, carth_tan
                 ),
                 cylin_tan,
             )
         for carth_tan in self.invalid_carth_tangents:
             with self.assertRaises(ValueError):
-                cartesian_to_cylindric_swirl_tangential_vector(
+                cartesian_to_cylindrical_swirl_tangential_vector(
                     self.swirl, carth_tan
                 )
 
-    def test_cylindric_swirl_to_cartesian_tangential_vector(self) -> None:
+    def test_cylindrical_swirl_to_cartesian_tangential_vector(self) -> None:
         """Tests cylindrical to cartesian tangential vector conversion."""
         for cylin_tan, carth_tan in zip(
             self.cylin_tangents, self.carth_tangents
         ):
             self.assertPredicate2(
                 tan_vec_equiv,
-                cylindric_swirl_to_cartesian_tangential_vector(
+                cylindrical_swirl_to_cartesian_tangential_vector(
                     self.swirl, cylin_tan
                 ),
                 carth_tan,
             )
         for cylin_tan in self.invalid_cylin_tangents:
             with self.assertRaises(ValueError):
-                cylindric_swirl_to_cartesian_tangential_vector(
+                cylindrical_swirl_to_cartesian_tangential_vector(
                     self.swirl, cylin_tan
                 )
 
-    def test_cartesian_to_cylindric_swirl_inversion(self) -> None:
+    def test_cartesian_to_cylindrical_swirl_inversion(self) -> None:
         """Tests cartesian to cylindrical tangential vector inversion."""
         for carth_tan in self.carth_tangents:
             tan = carth_tan
-            tan = cartesian_to_cylindric_swirl_tangential_vector(
+            tan = cartesian_to_cylindrical_swirl_tangential_vector(
                 self.swirl, tan
             )
-            tan = cylindric_swirl_to_cartesian_tangential_vector(
+            tan = cylindrical_swirl_to_cartesian_tangential_vector(
                 self.swirl, tan
             )
             self.assertPredicate2(tan_vec_equiv, tan, carth_tan)
 
-    def test_cylindric_swirl_to_cartesian_inversion(self) -> None:
+    def test_cylindrical_swirl_to_cartesian_inversion(self) -> None:
         """Tests cylindrical to cartesian tangential vector inversion."""
         for cylin_tan in self.cylin_tangents:
             tan = cylin_tan
-            tan = cylindric_swirl_to_cartesian_tangential_vector(
+            tan = cylindrical_swirl_to_cartesian_tangential_vector(
                 self.swirl, tan
             )
-            tan = cartesian_to_cylindric_swirl_tangential_vector(
+            tan = cartesian_to_cylindrical_swirl_tangential_vector(
                 self.swirl, tan
             )
             self.assertPredicate2(tan_vec_equiv, tan, cylin_tan)
@@ -430,7 +436,7 @@ class CylindricalTangentialVectorTransfomrationTest(BaseTestCase):
         ):
             cylin_len = length(
                 cylin_tan.vector,
-                metric=cylindirc_swirl_metric(self.swirl, cylin_tan.point),
+                metric=cylindrical_swirl_metric(self.swirl, cylin_tan.point),
             )
             carth_len = length(
                 carth_tan.vector,
@@ -559,10 +565,10 @@ class PlanePropertiesTest(BaseTestCase):
             # must be two linear independent vectors
             self.assertFalse(are_linear_dependent((b0, b1)))
             # which are orthogonal to the normal vector
-            v0 = cylindric_swirl_to_cartesian_tangential_vector(
+            v0 = cylindrical_swirl_to_cartesian_tangential_vector(
                 self.swirl, TangentialVector(point=c3d, vector=b0)
             ).vector
-            v1 = cylindric_swirl_to_cartesian_tangential_vector(
+            v1 = cylindrical_swirl_to_cartesian_tangential_vector(
                 self.swirl, TangentialVector(point=c3d, vector=b1)
             ).vector
             self.assertPredicate2(
