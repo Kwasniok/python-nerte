@@ -18,9 +18,9 @@ from nerte.values.tangential_vector_delta import (
 from nerte.values.linalg import (
     length,
 )
-from nerte.values.manifolds.cartesian_swirl import (
-    cartesian_swirl_metric,
-    cartesian_swirl_geodesic_equation,
+from nerte.values.manifolds import OutOfDomainError
+from nerte.values.manifolds.cartesian_swirl import metric, geodesic_equation
+from nerte.values.transformations.cartesian_cartesian_swirl import (
     cartesian_swirl_to_cartesian_coords,
     cartesian_to_cartesian_swirl_vector,
 )
@@ -57,7 +57,7 @@ class SwirlCartesianRungeKuttaGeometry(RungeKuttaGeometry):
         RungeKuttaGeometry.__init__(self, max_ray_depth, step_size, max_steps)
 
         if not -math.inf < swirl < math.inf:
-            raise ValueError(
+            raise OutOfDomainError(
                 f"Cannot construct cartesian swirl Runge-Kutta geometry."
                 f" The parameter swirl={swirl} must be finite."
             )
@@ -67,9 +67,7 @@ class SwirlCartesianRungeKuttaGeometry(RungeKuttaGeometry):
         def _geodesic_equation(
             tan: TangentialVectorDelta,
         ) -> TangentialVectorDelta:
-            return cartesian_swirl_geodesic_equation(
-                self._swirl, delta_as_tangent(tan)
-            )
+            return geodesic_equation(self._swirl, delta_as_tangent(tan))
 
         self._geodesic_equation = _geodesic_equation
 
@@ -101,20 +99,18 @@ class SwirlCartesianRungeKuttaGeometry(RungeKuttaGeometry):
         start_flat_vec = coordinates_as_vector(start_flat)
         target_flat_vec = coordinates_as_vector(target_flat)
         delta_flat = target_flat_vec - start_flat_vec
-        direction = cartesian_to_cartesian_swirl_vector(
-            self._swirl, start_flat, delta_flat
+        tangent = cartesian_to_cartesian_swirl_vector(
+            self._swirl, TangentialVector(start_flat, delta_flat)
         )
-        tangent = TangentialVector(point=start, vector=direction)
         return RungeKuttaGeometry.Ray(geometry=self, initial_tangent=tangent)
 
     def length(self, tangent: TangentialVector) -> float:
         if not self.is_valid_coordinate(tangent.point):
-            raise ValueError(
+            raise OutOfDomainError(
                 f"Cannot calculate length of tangential vector {tangent}."
                 f" Coordinates are outside of the manifold."
             )
-        metric = cartesian_swirl_metric(self._swirl, tangent.point)
-        return length(tangent.vector, metric=metric)
+        return length(tangent.vector, metric=metric(self._swirl, tangent.point))
 
     def geodesic_equation(
         self,

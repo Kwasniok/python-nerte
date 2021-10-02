@@ -9,7 +9,7 @@ import unittest
 from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.domain import Domain1D
+from nerte.values.interval import Interval
 from nerte.values.linalg import AbstractVector
 from nerte.values.manifolds.cartesian import Plane
 from nerte.values.face import Face
@@ -40,7 +40,7 @@ class ImageColorRendererRenderTest(BaseTestCase):
         obj.add_face(Face(p0, p1, p2))
         # camera
         loc = Coordinates3D((0.0, 0.0, -1.0))
-        domain = Domain1D(-1.0, 1.0)
+        domain = Interval(-1.0, 1.0)
         manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
@@ -83,7 +83,7 @@ class ImageColorRendererProjectionTest(BaseTestCase):
         obj.add_face(Face(p0, p2, p3))
         # camera
         loc = Coordinates3D((0.0, 0.0, -1.0))
-        domain = Domain1D(-2.0, 2.0)
+        domain = Interval(-2.0, 2.0)
         manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),

@@ -5,7 +5,7 @@ import os
 from enum import IntEnum
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.domain import Domain1D
+from nerte.values.interval import Interval
 from nerte.values.linalg import AbstractVector
 from nerte.values.manifolds.cartesian import Plane
 from nerte.values.face import Face
@@ -49,7 +49,7 @@ def make_camera(canvas_dimension: int) -> Camera:
     """Creates a camera with preset values."""
 
     location = Coordinates3D((0.0, 0.0, -2.0))
-    manifold_param_domain = Domain1D(-1.0, 1.0)
+    manifold_param_domain = Interval(-1.0, 1.0)
     manifold = Plane(
         AbstractVector((1.0, 0.0, 0.0)),
         AbstractVector((0.0, 1.0, 0.0)),

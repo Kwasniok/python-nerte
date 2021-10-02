@@ -19,14 +19,16 @@ from nerte.values.linalg import (
     length,
 )
 from nerte.values.manifolds.cylindrical_swirl import (
-    cylindrical_swirl_metric,
-    cylindrical_swirl_geodesic_equation,
-    cylindrical_swirl_to_cylindrical_coords,
-    cylindrical_to_cylindrical_swirl_tangential_vector,
+    metric,
+    geodesic_equation,
 )
-from nerte.values.manifolds.cylindrical import (
+from nerte.values.transformations.cylindrical_cylindrical_swirl import (
+    cylindrical_swirl_to_cylindrical_coords,
+    cylindrical_to_cylindrical_swirl_vector,
+)
+from nerte.values.transformations.cartesian_cylindrical import (
     cylindrical_to_cartesian_coords,
-    cartesian_to_cylindrical_tangential_vector,
+    cartesian_to_cylindrical_vector,
 )
 from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 
@@ -63,9 +65,7 @@ class SwirlCylindricalRungeKuttaGeometry(RungeKuttaGeometry):
         def _geodesic_equation(
             tan: TangentialVectorDelta,
         ) -> TangentialVectorDelta:
-            return cylindrical_swirl_geodesic_equation(
-                self._swirl, delta_as_tangent(tan)
-            )
+            return geodesic_equation(self._swirl, delta_as_tangent(tan))
 
         self._geodesic_equation = _geodesic_equation
 
@@ -101,9 +101,9 @@ class SwirlCylindricalRungeKuttaGeometry(RungeKuttaGeometry):
         start_flat_vec = coordinates_as_vector(start_flat)
         target_flat_vec = coordinates_as_vector(target_flat)
         delta_flat = target_flat_vec - start_flat_vec
-        tangent = cylindrical_to_cylindrical_swirl_tangential_vector(
+        tangent = cylindrical_to_cylindrical_swirl_vector(
             self._swirl,
-            cartesian_to_cylindrical_tangential_vector(
+            cartesian_to_cylindrical_vector(
                 TangentialVector(start_flat, delta_flat)
             ),
         )
@@ -115,8 +115,7 @@ class SwirlCylindricalRungeKuttaGeometry(RungeKuttaGeometry):
                 f"Cannot calculate length of tangential vector {tangent}."
                 f" Coordinates are outside of the manifold."
             )
-        metric = cylindrical_swirl_metric(self._swirl, tangent.point)
-        return length(tangent.vector, metric=metric)
+        return length(tangent.vector, metric=metric(self._swirl, tangent.point))
 
     def geodesic_equation(
         self,

@@ -8,7 +8,7 @@ import math
 from enum import IntEnum
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.domain import Domain1D
+from nerte.values.interval import Interval
 from nerte.values.linalg import AbstractVector
 from nerte.values.face import Face
 from nerte.values.manifolds.cartesian_swirl import (
@@ -66,8 +66,8 @@ def make_camera(swirl: float, canvas_dimension: int) -> Camera:
         swirl=swirl,
         b0=AbstractVector((1.0, 0.0, 0.0)),
         b1=AbstractVector((0.0, math.cos(alpha), math.sin(alpha))),
-        x0_domain=Domain1D(-1.0, +1.0),
-        x1_domain=Domain1D(-1.0, +1.0),
+        x0_domain=Interval(-1.0, +1.0),
+        x1_domain=Interval(-1.0, +1.0),
         offset=AbstractVector((0.0, 2.0, 2.0)),
     )
     camera = Camera(

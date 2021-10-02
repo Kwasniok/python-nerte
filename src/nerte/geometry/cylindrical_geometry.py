@@ -17,8 +17,10 @@ from nerte.values.linalg import (
     length,
 )
 from nerte.values.manifolds.cylindrical import (
-    cylindrical_metric,
-    cylindrical_geodesic_equation,
+    metric,
+    geodesic_equation,
+)
+from nerte.values.transformations.cartesian_cylindrical import (
     cylindrical_to_cartesian_coords,
     cartesian_to_cylindrical_vector,
 )
@@ -36,7 +38,7 @@ class CylindricalRungeKuttaGeometry(RungeKuttaGeometry):
         def _geodesic_equation(
             tan: TangentialVectorDelta,
         ) -> TangentialVectorDelta:
-            return cylindrical_geodesic_equation(delta_as_tangent(tan))
+            return geodesic_equation(delta_as_tangent(tan))
 
         self._geodesic_equation = _geodesic_equation
 
@@ -62,13 +64,13 @@ class CylindricalRungeKuttaGeometry(RungeKuttaGeometry):
         start_flat_vec = coordinates_as_vector(start_flat)
         target_flat_vec = coordinates_as_vector(target_flat)
         delta_flat = target_flat_vec - start_flat_vec
-        direction = cartesian_to_cylindrical_vector(start_flat, delta_flat)
-        tangent = TangentialVector(point=start, vector=direction)
+        tangent = cartesian_to_cylindrical_vector(
+            TangentialVector(start_flat, delta_flat)
+        )
         return RungeKuttaGeometry.Ray(geometry=self, initial_tangent=tangent)
 
     def length(self, tangent: TangentialVector) -> float:
-        metric = cylindrical_metric(tangent.point)
-        return length(tangent.vector, metric=metric)
+        return length(tangent.vector, metric=metric(tangent.point))
 
     def geodesic_equation(
         self,

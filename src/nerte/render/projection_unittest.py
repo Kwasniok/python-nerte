@@ -13,11 +13,10 @@ from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D, Coordinates2D
 from nerte.values.coordinates_unittest import coordinates_2d_equiv
-from nerte.values.domain import Domain1D
+from nerte.values.interval import Interval
 from nerte.values.linalg import AbstractVector
 from nerte.values.tangential_vector import TangentialVector
-from nerte.values.manifolds.cartesian import Plane as PlaneCartesian
-from nerte.values.manifolds.cylindrical import Plane as PlaneCylindrical
+from nerte.values.manifolds.cartesian import Plane
 from nerte.world.camera import Camera
 from nerte.geometry.cartesian_geometry import CartesianGeometry
 from nerte.geometry.cartesian_geometry_unittest import cartesian_ray_equiv
@@ -35,8 +34,8 @@ class DetectorManifoldCoordsTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, 0.0))
-        domain = Domain1D(-1.0, 1.0)
-        manifold = PlaneCartesian(
+        domain = Interval(-1.0, 1.0)
+        manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
             x0_domain=domain,
@@ -102,8 +101,8 @@ class OrthographicProjectionTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, 0.0))
-        domain = Domain1D(-1.0, 1.0)
-        manifold = PlaneCylindrical(
+        domain = Interval(-1.0, 1.0)
+        manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
             x0_domain=domain,
@@ -183,8 +182,8 @@ class PerspectiveProjectionTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, 0.0))
-        domain = Domain1D(-1.0, 1.0)
-        manifold = PlaneCartesian(
+        domain = Interval(-1.0, 1.0)
+        manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
             x0_domain=domain,
@@ -264,8 +263,8 @@ class ObscuraProjectionTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, 1.0))
-        domain = Domain1D(-1.0, 1.0)
-        manifold = PlaneCartesian(
+        domain = Interval(-1.0, 1.0)
+        manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
             x0_domain=domain,

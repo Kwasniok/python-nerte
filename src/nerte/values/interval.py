@@ -1,17 +1,17 @@
 """
-Module for representations of domains (e.g. for manifolds).
-Domains are Cartesian and must be convertible to an open interval.
+Module for representations of intervals (e.g. for charts of manifolds).
+Intervals must be convertible to an open interval.
 """
 
 import math
 
 
-class Domain1D:
+class Interval:
 
     """
-    Representation of a one-dimensional range of real numbers.
+    Representation of a one-dimensional range betwenn two real numbers.
     Note: Must be convertible to an open interval - i.e. of non-zero length.
-    Note: Used to denote domains of manifolds.
+    Note: Used to denote domains of charts of manifolds.
     """
 
     def __init__(self, start: float, stop: float) -> None:
@@ -20,12 +20,12 @@ class Domain1D:
         # NOTE: DON'T use: start == math.nan
         if math.isnan(start) or math.isnan(stop):
             raise ValueError(
-                f"Cannot define one-dimensional domain with {start} or {stop}."
+                f"Cannot define one-dimensional interval with {start} or {stop}."
                 + " Values cannot be NaN."
             )
         if start == stop:
             raise ValueError(
-                f"Cannot define one-dimensional domain with {start} or {stop}."
+                f"Cannot define one-dimensional interval with {start} or {stop}."
                 + " Values cannot be identical, since the domain must be open"
             )
         self._start = start
@@ -35,7 +35,10 @@ class Domain1D:
         self._max = max(start, stop)
 
     def __repr__(self) -> str:
-        return f"D({self._start}, {self._stop})"
+        return f"Interval({self._start}, {self._stop})"
+
+    def __str__(self) -> str:
+        return f"({self._start}, {self._stop})"
 
     def __contains__(self, val: float) -> bool:
         return self._min <= val <= self._max

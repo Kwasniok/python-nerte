@@ -1,7 +1,7 @@
 """"Module for representing a camera."""
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.manifold import Manifold2D
+from nerte.values.manifolds.chart_2_to_3 import Chart2DTo3D
 
 
 class Camera:
@@ -16,7 +16,7 @@ class Camera:
     def __init__(
         self,
         location: Coordinates3D,
-        detector_manifold: Manifold2D,
+        detector_manifold: Chart2DTo3D,
         canvas_dimensions: tuple[int, int],
     ) -> None:
         self.location = location

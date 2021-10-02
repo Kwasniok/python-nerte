@@ -20,6 +20,7 @@ from nerte.values.tangential_vector_delta_unittest import (
     tangential_vector_delta_equiv,
 )
 from nerte.values.face import Face
+from nerte.values.manifolds import OutOfDomainError
 from nerte.geometry.cylindrical_geometry import CylindricalRungeKuttaGeometry
 
 
@@ -154,11 +155,11 @@ class CylindricalRungeKuttaGeometryRayFromTest(BaseTestCase):
             tan_vec_equiv, initial_tangent, self.initial_tangent
         )
         for invalid_coords in self.invalid_coords:
-            with self.assertRaises(ValueError):
+            with self.assertRaises(OutOfDomainError):
                 self.geo.ray_from_coords(invalid_coords, self.coords2)
-            with self.assertRaises(ValueError):
+            with self.assertRaises(OutOfDomainError):
                 self.geo.ray_from_coords(self.coords1, invalid_coords)
-            with self.assertRaises(ValueError):
+            with self.assertRaises(OutOfDomainError):
                 self.geo.ray_from_coords(invalid_coords, invalid_coords)
 
     def test_ray_from_tangent(self) -> None:
@@ -169,7 +170,7 @@ class CylindricalRungeKuttaGeometryRayFromTest(BaseTestCase):
             tan_vec_equiv, initial_tangent, self.initial_tangent
         )
         for invalid_tangent in self.invalid_tangents:
-            with self.assertRaises(ValueError):
+            with self.assertRaises(OutOfDomainError):
                 self.geo.ray_from_tangent(invalid_tangent)
 
 
@@ -227,7 +228,7 @@ class CylindricalRungeKuttaGeometryVectorTest(BaseTestCase):
         for tangent, length in zip(self.tangents, self.lengths):
             self.assertAlmostEqual(self.geo.length(tangent), length)
         for tangent in self.invalid_tangents:
-            with self.assertRaises(ValueError):
+            with self.assertRaises(OutOfDomainError):
                 self.geo.length(tangent)
 
     def test_normalized(self) -> None:
@@ -238,7 +239,7 @@ class CylindricalRungeKuttaGeometryVectorTest(BaseTestCase):
             tangent = self.geo.normalized(tangent)
             self.assertPredicate2(tan_vec_equiv, tangent, tangent_normalized)
         for tangent in self.invalid_tangents:
-            with self.assertRaises(ValueError):
+            with self.assertRaises(OutOfDomainError):
                 self.geo.normalized(tangent)
 
 
