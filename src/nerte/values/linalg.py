@@ -51,6 +51,13 @@ def _abstract_vector_from_numpy(np_array: np.ndarray) -> AbstractVector:
     return vec
 
 
+ZERO_VECTOR = AbstractVector((0.0, 0.0, 0.0))
+UNIT_VECTOR0 = AbstractVector((1.0, 0.0, 0.0))
+UNIT_VECTOR1 = AbstractVector((0.0, 1.0, 0.0))
+UNIT_VECTOR2 = AbstractVector((0.0, 0.0, 1.0))
+STANDARD_BASIS = (UNIT_VECTOR0, UNIT_VECTOR1, UNIT_VECTOR2)
+
+
 class AbstractMatrix:
     """
     Represents an abstract matrix via three vectors.
@@ -126,6 +133,9 @@ def _abstract_matrix_from_numpy(np_array: np.ndarray) -> AbstractMatrix:
     return mat
 
 
+IDENTITY_MATRIX = AbstractMatrix(UNIT_VECTOR0, UNIT_VECTOR1, UNIT_VECTOR2)
+
+
 class Metric:
     """
     Represents a metric as a matrix acting on contravariant representations of
@@ -166,6 +176,9 @@ class Metric:
                     "Cannot construct a metric from non-invertible matrix."
                 ) from ex
         return self._g_inv
+
+
+IDENTITY_METRIC = Metric(IDENTITY_MATRIX)
 
 
 def covariant(metric: Metric, contra_vec: AbstractVector) -> AbstractVector:
