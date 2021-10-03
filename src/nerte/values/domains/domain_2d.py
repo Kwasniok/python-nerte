@@ -72,6 +72,8 @@ class Empty(Domain2D):
         return f"Coordinates {coords} are not inside the empty set."
 
 
+EMPTY2D = Empty()
+
 # TODO: test
 class CartesianProduct2D(Domain2D):
     """
