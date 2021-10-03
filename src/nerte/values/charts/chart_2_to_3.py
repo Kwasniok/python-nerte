@@ -126,7 +126,7 @@ class CanonicalImmersionChart2DTo3D(Chart2DTo3D):
 
     def internal_hook_tangential_space(
         self, coords: Coordinates2D
-    ) -> tuple[AbstractVector, AbstractVector, AbstractVector]:
+    ) -> tuple[AbstractVector, AbstractVector]:
         return (UNIT_VECTOR0, UNIT_VECTOR1)
 
     def internal_hook_surface_normal(
