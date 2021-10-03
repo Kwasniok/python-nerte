@@ -1,36 +1,13 @@
 """Base module for representing manifolds in cartesian coordinates."""
 
-import math
-
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector, AbstractMatrix, Metric
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_delta import TangentialVectorDelta
-
-# TODO: test
-def are_valid_coords(coords: Coordinates3D) -> bool:
-    """
-    Returns True, iff the coordinates are a valid representation of a point.
-    """
-    # pylint: disable=C0103
-    x, y, z = coords
-    return (
-        -math.inf < x < math.inf
-        and -math.inf < y < math.inf
-        and -math.inf < z < math.inf
-    )
+from nerte.values.domains import R3
 
 
-# TODO: test
-def invalid_coords_reason(coords: Coordinates3D) -> str:
-    """
-    Returns a string describing the domain for for expressive error messages.
-    """
-    # pylint: disable=C0103
-    return (
-        f"Cartesian coordinates (x, y, z)={coords} are invalid."
-        f" All values must be finite numbers."
-    )
+DOMAIN = R3
 
 
 def metric(coords: Coordinates3D) -> Metric:
