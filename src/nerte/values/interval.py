@@ -1,6 +1,5 @@
 """
-Module for representations of intervals (e.g. for charts of manifolds).
-Intervals must be convertible to an open interval.
+Module for representations of open intervals (e.g. for charts of manifolds).
 """
 
 import math
@@ -9,24 +8,24 @@ import math
 class Interval:
 
     """
-    Representation of a one-dimensional range betwenn two real numbers.
-    Note: Must be convertible to an open interval - i.e. of non-zero length.
+    Representation of a one-dimensional open range between two real numbers.
+    Note: Must be of non-zero length.
     Note: Used to denote domains of charts of manifolds.
     """
 
     def __init__(self, start: float, stop: float) -> None:
         """:raises: ValueError for invalid domain parameters."""
 
-        # NOTE: DON'T use: start == math.nan
         if math.isnan(start) or math.isnan(stop):
             raise ValueError(
-                f"Cannot define one-dimensional interval with {start} or {stop}."
-                + " Values cannot be NaN."
+                f"Cannot define one-dimensional interval with start={start}"
+                f" and stop={stop}. Values cannot be NaN."
             )
         if start == stop:
             raise ValueError(
-                f"Cannot define one-dimensional interval with {start} or {stop}."
-                + " Values cannot be identical, since the domain must be open"
+                f"Cannot define one-dimensional interval with start={start}"
+                f" and stop={stop}. Values cannot be identical,"
+                f" since the domain must be open"
             )
         self._start = start
         self._stop = stop
@@ -41,7 +40,7 @@ class Interval:
         return f"({self._start}, {self._stop})"
 
     def __contains__(self, val: float) -> bool:
-        return self._min <= val <= self._max and math.isfinite(val)
+        return self._min < val < self._max
 
     def as_tuple(self) -> tuple[float, float]:
         """Returns start and stop parameter as a tuple."""

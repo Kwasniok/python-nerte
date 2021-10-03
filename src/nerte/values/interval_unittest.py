@@ -45,7 +45,7 @@ class FiniteIntervalPropertiesTest(BaseTestCase):
     def setUp(self) -> None:
         self.parameters = (2.0, -1.0)
         self.interval = Interval(*self.parameters)
-        self.included_values = (-1.0, 0.0, 2.0)
+        self.included_values = (-0.9, 0.0, 1.9)
         self.excluded_values = (-1.1, 2.2 - math.inf, math.inf, math.nan)
 
     def test_as_tuple(self) -> None:
@@ -75,7 +75,7 @@ class SemifiniteIntervalPropertiesTest(BaseTestCase):
     def setUp(self) -> None:
         self.parameters = (2.0, -math.inf)
         self.interval = Interval(*self.parameters)
-        self.included_values = (-1.1, -1.0, 0.0, 2.0)
+        self.included_values = (-1.1, -1.0, 0.0, 1.9)
         self.excluded_values = (2.2, -math.inf, math.inf, math.nan)
 
     def test_as_tuple(self) -> None:
