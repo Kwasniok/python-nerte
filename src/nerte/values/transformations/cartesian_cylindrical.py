@@ -12,76 +12,84 @@ from nerte.values.linalg import (
     AbstractMatrix,
     mat_vec_mult,
 )
+from nerte.values.transformations.base import Transformation3D
+from nerte.values.charts.cartesian import DOMAIN as CARTESIAN_DOMAIN
+from nerte.values.charts.cylindrical import DOMAIN as CYLINDRICAL_DOMAIN
 
 
-def cartesian_to_cylindrical_coords(coords: Coordinates3D) -> Coordinates3D:
+class CartesianToCylindricalTransformation(Transformation3D):
     """
-    Returns cylindrical coordinates obtained from cartesian coordinates.
-
-    :param coords: cartesian coordinates (x, y, z)
-                   where -inf < x < inf and -inf < y < inf and -inf < z < inf
-                   and 0 < r = sqrt(x^2 + y^2)
+    Transforms cartesian to cylindrical coordinates according to:
+        f(x, y, z) = (r, 𝜑, z)
+    where
+        r = sqrt(x ** 2 + y ** 2)
+        𝜑 = arctan(y / x)
     """
-    # pylint:disable=C0103
-    x, y, z = coords
-    r = math.sqrt(x ** 2 + y ** 2)
-    phi = math.atan2(y, x)
-    return Coordinates3D((r, phi, z))
+
+    def internal_hook_transform_coords(
+        self, coords: Coordinates3D
+    ) -> Coordinates3D:
+        # pylint:disable=C0103
+        x, y, z = coords
+        r = math.sqrt(x ** 2 + y ** 2)
+        phi = math.atan2(y, x)
+        return Coordinates3D((r, phi, z))
+
+    def internal_hook_transform_tangent(
+        self, tangent: TangentialVector
+    ) -> TangentialVector:
+        # pylint:disable=C0103
+        x, y, z = tangent.point
+        r = math.sqrt(x ** 2 + y ** 2)
+        phi = math.atan2(y, x)
+        jacobian = AbstractMatrix(
+            AbstractVector((math.cos(phi), math.sin(phi), 0.0)),
+            AbstractVector((-math.sin(phi) / r, math.cos(phi) / r, 0.0)),
+            AbstractVector((0.0, 0.0, 1.0)),
+        )
+        return TangentialVector(
+            point=Coordinates3D((r, phi, z)),
+            vector=mat_vec_mult(jacobian, tangent.vector),
+        )
 
 
-def cylindrical_to_cartesian_coords(coords: Coordinates3D) -> Coordinates3D:
+class CylindricalToCartesianTransformation(Transformation3D):
     """
-    Returns cartesian coordinates obtained from cylindrical coordinates.
-
-    :param coords: cylindrical coordinates (r, phi, z)
-                   where 0 < r < inf and -pi < phi < pi and -inf < z < inf
+    Transforms cylindrical to cartesian coordinates according to:
+        f(r, 𝜑, z) = (x, y, z)
+    where
+        x = r * cos(𝜑)
+        y = r * sin(𝜑)
     """
-    # pylint:disable=C0103
-    r, phi, z = coords
-    x = r * math.cos(phi)
-    y = r * math.sin(phi)
-    return Coordinates3D((x, y, z))
+
+    def internal_hook_transform_coords(
+        self, coords: Coordinates3D
+    ) -> Coordinates3D:
+        # pylint:disable=C0103
+        r, phi, z = coords
+        x = r * math.cos(phi)
+        y = r * math.sin(phi)
+        return Coordinates3D((x, y, z))
+
+    def internal_hook_transform_tangent(
+        self, tangent: TangentialVector
+    ) -> TangentialVector:
+        # pylint:disable=C0103
+        r, phi, z = tangent.point
+        x = r * math.cos(phi)
+        y = r * math.sin(phi)
+        jacobian = AbstractMatrix(
+            AbstractVector((math.cos(phi), -r * math.sin(phi), 0.0)),
+            AbstractVector((math.sin(phi), r * math.cos(phi), 0.0)),
+            AbstractVector((0.0, 0.0, 1.0)),
+        )
+        return TangentialVector(
+            point=Coordinates3D((x, y, z)),
+            vector=mat_vec_mult(jacobian, tangent.vector),
+        )
 
 
-def cartesian_to_cylindrical_vector(
-    tangential_vector: TangentialVector,
-) -> TangentialVector:
-    """
-    Returns tangential vector transformed from cartesian to cylindrical
-    coordinates.
-    """
-    # pylint:disable=C0103
-    x, y, z = tangential_vector.point
-    r = math.sqrt(x ** 2 + y ** 2)
-    phi = math.atan2(y, x)
-    jacobian = AbstractMatrix(
-        AbstractVector((math.cos(phi), math.sin(phi), 0.0)),
-        AbstractVector((-math.sin(phi) / r, math.cos(phi) / r, 0.0)),
-        AbstractVector((0.0, 0.0, 1.0)),
-    )
-    return TangentialVector(
-        point=Coordinates3D((r, phi, z)),
-        vector=mat_vec_mult(jacobian, tangential_vector.vector),
-    )
-
-
-def cylindrical_to_cartesian_vector(
-    tangential_vector: TangentialVector,
-) -> TangentialVector:
-    """
-    Returns tangential vector transformed from cylindrical to cartesian
-    coordinates.
-    """
-    # pylint:disable=C0103
-    r, phi, z = tangential_vector.point
-    x = r * math.cos(phi)
-    y = r * math.sin(phi)
-    jacobian = AbstractMatrix(
-        AbstractVector((math.cos(phi), -r * math.sin(phi), 0.0)),
-        AbstractVector((math.sin(phi), r * math.cos(phi), 0.0)),
-        AbstractVector((0.0, 0.0, 1.0)),
-    )
-    return TangentialVector(
-        point=Coordinates3D((x, y, z)),
-        vector=mat_vec_mult(jacobian, tangential_vector.vector),
-    )
+CARTESIAN_TO_CYLINDRIC = CartesianToCylindricalTransformation(CARTESIAN_DOMAIN)
+CYLINDRIC_TO_CARTESIAN = CylindricalToCartesianTransformation(
+    CYLINDRICAL_DOMAIN
+)

@@ -1,5 +1,6 @@
 """Module for representing manifolds in cylindrical swirl coordinates."""
 
+import math
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.tangential_vector import TangentialVector
@@ -8,6 +9,8 @@ from nerte.values.linalg import (
     AbstractMatrix,
     mat_vec_mult,
 )
+from nerte.values.domains import Domain3D
+from nerte.values.transformations.base import Transformation3D
 
 
 def _trafo(a: float, coords: Coordinates3D) -> Coordinates3D:
@@ -53,81 +56,63 @@ def _jacobian(a: float, coords: Coordinates3D) -> AbstractMatrix:
     )
 
 
-def cylindrical_to_cylindrical_swirl_coords(
-    swirl: float,
-    coords: Coordinates3D,
-) -> Coordinates3D:
+class CylindricalToCylindricalSwirlTransformation(Transformation3D):
     """
-    Returns cylindrical swirl coordinates obtained from cylindrical coordinates.
-
-    :param coords: cylindrical coordinates (r, 𝜑, z)
-        where
-        0 < r < inf
-        -pi < 𝜑 < pi
-        -inf < z < inf
+    Transforms cartesian to cylindrical coordinates according to:
+        f(r, 𝜑, z) = (r, 𝛼 + swirl * r * z, z)
     """
-    return Coordinates3D(_trafo(-swirl, coords))
+
+    def __init__(self, domain: Domain3D, swirl: float) -> None:
+        if not math.isfinite(swirl):
+            raise ValueError(
+                f"Cannot construct cylindrical swirl to cylindrical"
+                f" transformation. Parameter swirl={swirl} must be finite."
+            )
+
+        Transformation3D.__init__(self, domain)
+
+        self.swirl = swirl
+
+    def internal_hook_transform_coords(
+        self, coords: Coordinates3D
+    ) -> Coordinates3D:
+        return Coordinates3D(_trafo(-self.swirl, coords))
+
+    def internal_hook_transform_tangent(
+        self, tangent: TangentialVector
+    ) -> TangentialVector:
+        jacobian = _jacobian(-self.swirl, tangent.point)
+        point = Coordinates3D(_trafo(-self.swirl, tangent.point))
+        vector = mat_vec_mult(jacobian, tangent.vector)
+        return TangentialVector(point=point, vector=vector)
 
 
-def cylindrical_swirl_to_cylindrical_coords(
-    swirl: float,
-    coords: Coordinates3D,
-) -> Coordinates3D:
+class CylindricalSwirlToCylindricalTransformation(Transformation3D):
     """
-    Returns cylindrical coordinates obtained from cylindrical swirl coordinates.
-
-    :param coords: cylindrical coordinates (r, 𝛼, z)
-        where
-        0 < r < inf
-        -pi < 𝛼 - swirl * r * z < pi
-        -inf < z < inf
+    Transforms cartesian to cylindrical coordinates according to:
+        f(r, 𝛼, z) = (r, 𝜑 - swirl * r * z, z)
     """
-    return Coordinates3D(_trafo(+swirl, coords))
 
+    def __init__(self, domain: Domain3D, swirl: float) -> None:
+        if not math.isfinite(swirl):
+            raise ValueError(
+                f"Cannot construct cylindrical to cylindrical swirl"
+                f" transformation. Parameter swirl={swirl} must be finite."
+            )
 
-def cylindrical_to_cylindrical_swirl_vector(
-    swirl: float,
-    tangential_vector: TangentialVector,
-) -> TangentialVector:
-    """
-    Returns tangential vector transformed from cylindrical to cylindrical swirl
-    coordinates.
+        Transformation3D.__init__(self, domain)
 
-    :param tangential_vector: (contravariant) tangential vector
-        at cylindrical coordinates (r, y, z)
-        with vector coefficients (v_r, v_𝜑, v_z)
-        describing the vector v = e_r * v_r + e_𝜑 * v_𝜑 + e_z * v_z
-        where 0 < r < inf, -pi < 𝜑 < pi and -inf < z < inf
-    :returns: transformed (contravariant) tangential vector
-        at cylindrical swirl coordinates (r, 𝛼, z)
-        with vector coefficients (v_r, v_𝛼, v_z)
-        describing the vector v = e_r * v_r + e_𝜑 * v_𝜑 + e_z * v_z
-    """
-    jacobian = _jacobian(-swirl, tangential_vector.point)
-    point = Coordinates3D(_trafo(-swirl, tangential_vector.point))
-    vector = mat_vec_mult(jacobian, tangential_vector.vector)
-    return TangentialVector(point=point, vector=vector)
+        self.swirl = swirl
 
+    def internal_hook_transform_coords(
+        self, coords: Coordinates3D
+    ) -> Coordinates3D:
+        return Coordinates3D(_trafo(+self.swirl, coords))
 
-def cylindrical_swirl_to_cylindrical_vector(
-    swirl: float,
-    tangential_vector: TangentialVector,
-) -> TangentialVector:
-    """
-    Returns tangential vector transformed from cylindrical swirl to cylindrical
-    coordinates.
-
-    :param tangential_vector: (contravariant) tangential vector
-        at cylindrical swirl coordinates (r, 𝛼, z)
-        with vector coefficients (v_r, v_𝛼, v_z)
-        describing the vector v = e_r * v_r + e_𝜑 * v_𝜑 + e_z * v_z
-        where 0 < r < inf, -pi < 𝛼 - swirl * r * z < pi and -inf < z < inf
-    :returns: transformed (contravariant) tangential vector
-        at cylindrical coordinates (r, y, z)
-        with vector coefficients (v_r, v_𝜑, v_z)
-        describing the vector v = e_r * v_r + e_𝜑 * v_𝜑 + e_z * v_z
-    """
-    jacobian = _jacobian(+swirl, tangential_vector.point)
-    point = Coordinates3D(_trafo(+swirl, tangential_vector.point))
-    vector = mat_vec_mult(jacobian, tangential_vector.vector)
-    return TangentialVector(point=point, vector=vector)
+    def internal_hook_transform_tangent(
+        self, tangent: TangentialVector
+    ) -> TangentialVector:
+        jacobian = _jacobian(+self.swirl, tangent.point)
+        point = Coordinates3D(_trafo(+self.swirl, tangent.point))
+        vector = mat_vec_mult(jacobian, tangent.vector)
+        return TangentialVector(point=point, vector=vector)

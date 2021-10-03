@@ -68,17 +68,17 @@ class IdentityTransformation3DTest(BaseTestCase):
             with self.assertRaises(OutOfDomainError):
                 self.trafo.transform_coords(coords)
 
-    def test_transform_vector(self) -> None:
+    def test_transform_tangent(self) -> None:
         """Test the tangential vector transformation."""
         for tangent in self.tangents_inside:
-            tan = self.trafo.transform_vector(tangent)
+            tan = self.trafo.transform_tangent(tangent)
             self.assertPredicate2(tan_vec_equiv, tan, tangent)
 
-    def test_transform_vector_rises(self) -> None:
+    def test_transform_tangent_rises(self) -> None:
         """Test the tangential vector transformation raises."""
         for tangent in self.tangents_outside:
             with self.assertRaises(OutOfDomainError):
-                self.trafo.transform_vector(tangent)
+                self.trafo.transform_tangent(tangent)
 
 
 if __name__ == "__main__":

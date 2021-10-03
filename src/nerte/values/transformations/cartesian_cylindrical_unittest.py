@@ -16,27 +16,25 @@ from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_unittest import tan_vec_equiv
 from nerte.values.linalg import AbstractVector
 from nerte.values.transformations.cartesian_cylindrical import (
-    cartesian_to_cylindrical_coords,
-    cylindrical_to_cartesian_coords,
-    cartesian_to_cylindrical_vector,
-    cylindrical_to_cartesian_vector,
+    CARTESIAN_TO_CYLINDRIC,
+    CYLINDRIC_TO_CARTESIAN,
 )
 
 
-class CylindricalCoordinatesTransfomrationTest(BaseTestCase):
+class CoordinateTransformationTest(BaseTestCase):
     def setUp(self) -> None:
-        # r, phi, z
-        self.cylin_coords = Coordinates3D((2.0, math.pi / 4, 3.0))
         # x, y, z
-        self.carth_coords = Coordinates3D(
+        self.cart_coords = Coordinates3D(
             (2.0 * math.sqrt(1 / 2), 2.0 * math.sqrt(1 / 2), 3.0)
         )
+        # r, phi, z
+        self.cylin_coords = Coordinates3D((2.0, math.pi / 4, 3.0))
 
     def test_cartesian_to_cylindrical_coords(self) -> None:
         """Tests cathesian to cylindrical coordinates conversion."""
         self.assertPredicate2(
             coordinates_3d_equiv,
-            cartesian_to_cylindrical_coords(self.carth_coords),
+            CARTESIAN_TO_CYLINDRIC.transform_coords(self.cart_coords),
             self.cylin_coords,
         )
 
@@ -44,12 +42,12 @@ class CylindricalCoordinatesTransfomrationTest(BaseTestCase):
         """Tests cylindrical to cartesian coordinates conversion."""
         self.assertPredicate2(
             coordinates_3d_equiv,
-            cylindrical_to_cartesian_coords(self.cylin_coords),
-            self.carth_coords,
+            CYLINDRIC_TO_CARTESIAN.transform_coords(self.cylin_coords),
+            self.cart_coords,
         )
 
 
-class CylindricalTangentialVectorTransfomrationTest(BaseTestCase):
+class VectorTransfomrationTest(BaseTestCase):
     def setUp(self) -> None:
         # r, phi, z
         cylin_coords = Coordinates3D((2.0, math.pi / 4, 3.0))
@@ -67,10 +65,10 @@ class CylindricalTangentialVectorTransfomrationTest(BaseTestCase):
             TangentialVector(point=cylin_coords, vector=v) for v in cylin_vecs
         )
         # x, y, z
-        carth_coords = Coordinates3D(
+        cart_coords = Coordinates3D(
             (2.0 * math.sqrt(1 / 2), 2.0 * math.sqrt(1 / 2), 3.0)
         )
-        carth_vecs = (
+        cart_vecs = (
             AbstractVector(
                 (
                     (+5.0 - 7.0 * 2.0) * math.sqrt(1 / 2),
@@ -80,47 +78,27 @@ class CylindricalTangentialVectorTransfomrationTest(BaseTestCase):
             ),
             AbstractVector((5.0, 7.0, 11.0)),
         )
-        self.carth_tangents = tuple(
-            TangentialVector(point=carth_coords, vector=v) for v in carth_vecs
+        self.cart_tangents = tuple(
+            TangentialVector(point=cart_coords, vector=v) for v in cart_vecs
         )
 
     def test_cartesian_to_cylindrical_vector(self) -> None:
         """Tests cartesian to cylindrical tangential vector conversion."""
-        for carth_tan, cylin_tan in zip(
-            self.carth_tangents, self.cylin_tangents
-        ):
+        for cart_tan, cylin_tan in zip(self.cart_tangents, self.cylin_tangents):
             self.assertPredicate2(
                 tan_vec_equiv,
-                cartesian_to_cylindrical_vector(carth_tan),
+                CARTESIAN_TO_CYLINDRIC.transform_tangent(cart_tan),
                 cylin_tan,
             )
 
     def test_cylindrical_to_cartesian_vector(self) -> None:
         """Tests cylindrical to cartesian tangential vector conversion."""
-        for cylin_tan, carth_tan in zip(
-            self.cylin_tangents, self.carth_tangents
-        ):
+        for cylin_tan, cart_tan in zip(self.cylin_tangents, self.cart_tangents):
             self.assertPredicate2(
                 tan_vec_equiv,
-                cylindrical_to_cartesian_vector(cylin_tan),
-                carth_tan,
+                CYLINDRIC_TO_CARTESIAN.transform_tangent(cylin_tan),
+                cart_tan,
             )
-
-    def test_cartesian_to_cylindrical_inversion(self) -> None:
-        """Tests cartesian to cylindrical tangential vector inversion."""
-        for carth_tan in self.carth_tangents:
-            tan = carth_tan
-            tan = cartesian_to_cylindrical_vector(tan)
-            tan = cylindrical_to_cartesian_vector(tan)
-            self.assertPredicate2(tan_vec_equiv, tan, carth_tan)
-
-    def test_cylindrical_to_cartesian_inversion(self) -> None:
-        """Tests cylindrical to cartesian tangential vector inversion."""
-        for cylin_tan in self.cylin_tangents:
-            tan = cylin_tan
-            tan = cylindrical_to_cartesian_vector(tan)
-            tan = cartesian_to_cylindrical_vector(tan)
-            self.assertPredicate2(tan_vec_equiv, tan, cylin_tan)
 
 
 if __name__ == "__main__":

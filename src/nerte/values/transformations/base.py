@@ -44,29 +44,29 @@ class Transformation3D(ABC):
         IMPORTANT: It is trusted that self.domain.assert_inside(coords) is True.
         """
 
-    def transform_vector(self, vector: TangentialVector) -> TangentialVector:
+    def transform_tangent(self, tangent: TangentialVector) -> TangentialVector:
         """
-        Returns the transformed (tangential) vector.
+        Returns the transformed tangential vector.
 
         :raises: OutOfDomainError iff coordinates are outside the domain
             NOTE: Membership of the codomain is NOT checked!
         """
         try:
-            self.domain.assert_inside(vector.point)
+            self.domain.assert_inside(tangent.point)
         except OutOfDomainError as ex:
             raise OutOfDomainError(
-                f"Cannot transform vector={vector}."
-                + self.domain.not_inside_reason(vector.point)
+                f"Cannot transform tanential vector={tangent}."
+                + self.domain.not_inside_reason(tangent.point)
             ) from ex
-        return self.internal_hook_transform_vector(vector)
+        return self.internal_hook_transform_tangent(tangent)
 
     @abstractmethod
-    def internal_hook_transform_vector(
-        self, vector: TangentialVector
+    def internal_hook_transform_tangent(
+        self, tangent: TangentialVector
     ) -> TangentialVector:
         """
-        Hook for transform_vector method.
-        Returns the transformed (tangential) vector.
+        Hook for transform_tangent method.
+        Returns the transformed tangential vector.
         IMPORTANT: It is trusted that self.domain.assert_inside(coords) is True.
         """
 
@@ -79,7 +79,7 @@ class Identity(Transformation3D):
     ) -> Coordinates3D:
         return coords
 
-    def internal_hook_transform_vector(
-        self, vector: TangentialVector
+    def internal_hook_transform_tangent(
+        self, tangent: TangentialVector
     ) -> TangentialVector:
-        return vector
+        return tangent
