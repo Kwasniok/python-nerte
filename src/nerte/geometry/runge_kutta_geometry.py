@@ -5,23 +5,22 @@ the Runge-Kutta algortihm.
 
 from typing import Optional
 
-from abc import abstractmethod
-from collections.abc import Callable
-
 import math
 
 from nerte.algorithm.runge_kutta import runge_kutta_4_delta
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.face import Face
 from nerte.values.tangential_vector import TangentialVector
-from nerte.values.ray_segment import RaySegment
 from nerte.values.tangential_vector_delta import (
     TangentialVectorDelta,
+    delta_as_tangent,
     tangent_as_delta,
     add_tangential_vector_delta,
 )
+from nerte.values.ray_segment import RaySegment
 from nerte.values.intersection_info import IntersectionInfo, IntersectionInfos
 from nerte.values.extended_intersection_info import ExtendedIntersectionInfo
+from nerte.values.charts import Chart3DTo3D
 from nerte.geometry.geometry import Geometry, intersection_ray_depth
 
 
@@ -63,12 +62,13 @@ class RungeKuttaGeometry(Geometry):
         tangents and segments must be distinguished!
         """
 
+        # pylint: disable=R0902
         def __init__(
             self,
             geometry: "RungeKuttaGeometry",
             initial_tangent: TangentialVector,
         ) -> None:
-            initial_tangent = geometry.normalized(initial_tangent)
+            initial_tangent = geometry.chart().normalized(initial_tangent)
             self._geometry = geometry
             self._initial_tangent = initial_tangent
             self._current_tangent = initial_tangent
@@ -101,6 +101,8 @@ class RungeKuttaGeometry(Geometry):
 
             :raises: RuntimeError if next segment cannot be created.
             """
+            chart = self._geometry.chart()
+
             if self._cached_ray_left_manifold:
                 return
             if self._segments_cached > self._geometry.max_steps():
@@ -119,7 +121,7 @@ class RungeKuttaGeometry(Geometry):
                     f" {self._geometry.max_ray_depth()}."
                 )
             tangent = self._current_tangent
-            if not self._geometry.is_valid_coordinate(tangent.point):
+            if not chart.domain.are_inside(tangent.point):
                 raise RuntimeError(
                     f"Cannot generate next ray segment for ray pointing with"
                     f" initial tangent {self._initial_tangent}."
@@ -127,14 +129,22 @@ class RungeKuttaGeometry(Geometry):
                     f" possible, since it's initial tangent={tangent} has"
                     f" invalid pointing coordinates."
                 )
+
             geometry = self._geometry
+
+            # wrapper to adapt type
+            def geodesics_equation(
+                delta: TangentialVectorDelta,
+            ) -> TangentialVectorDelta:
+                return chart.geodesics_equation(delta_as_tangent(delta))
+
             # calculate difference to next point/tangent on the ray
             # Note: The step size behaves like Δt where t is the
             #       parameter of the curve on which the light travels.
             # Note: The smaller the step size, the better the approximation.
             try:
                 tangent_delta = runge_kutta_4_delta(
-                    geometry.geodesic_equation(),
+                    geodesics_equation,
                     tangent_as_delta(tangent),
                     geometry.step_size(),
                 )
@@ -148,7 +158,7 @@ class RungeKuttaGeometry(Geometry):
                     vector=tangent_delta.point_delta,
                 )
             )
-            segment_length = geometry.length(segment.tangential_vector)
+            segment_length = chart.length(segment.tangential_vector)
             self._segments_and_lengths[self._segments_cached] = (
                 segment,
                 segment_length,
@@ -158,7 +168,7 @@ class RungeKuttaGeometry(Geometry):
             )
             self._segments_cached += 1
             self._cached_ray_depth += segment_length
-            if not geometry.is_valid_coordinate(self._current_tangent.point):
+            if not chart.domain.are_inside(self._current_tangent.point):
                 self._cached_ray_left_manifold = True
 
         def intersection_info(self, face: Face) -> IntersectionInfo:
@@ -196,6 +206,7 @@ class RungeKuttaGeometry(Geometry):
 
     def __init__(
         self,
+        chart: Chart3DTo3D,
         max_ray_depth: float,
         step_size: float,
         max_steps: int,
@@ -218,9 +229,17 @@ class RungeKuttaGeometry(Geometry):
                 f"Cannot create Runge-Kutta geometry."
                 f" Maximum of steps must be positive (not {max_steps})."
             )
+
+        self._chart = chart
         self._max_ray_depth = max_ray_depth
         self._step_size = step_size
         self._max_steps = max_steps
+
+    def chart(self) -> Chart3DTo3D:
+        """
+        Returns the chart used to represent the manifold.
+        """
+        return self._chart
 
     def max_ray_depth(self) -> float:
         """
@@ -247,53 +266,37 @@ class RungeKuttaGeometry(Geometry):
         """
         return self._max_steps
 
-    @abstractmethod
+    def are_valid_coords(self, coords: Coordinates3D) -> bool:
+        return self._chart.domain.are_inside(coords)
+
     def ray_from_coords(
         self, start: Coordinates3D, target: Coordinates3D
     ) -> "RungeKuttaGeometry.Ray":
-        pass
+        try:
+            initial_tangent = self._chart.initial_geodesic_tangent_from_coords(
+                start, target
+            )
+        except ValueError as ex:
+            raise ValueError(
+                f"Cannot create Runge-Kutta ray from coordinates start={start}"
+                f" and target={target}."
+            ) from ex
+
+        return RungeKuttaGeometry.Ray(
+            geometry=self, initial_tangent=initial_tangent
+        )
 
     def ray_from_tangent(
-        self, tangential_vector: TangentialVector
+        self, initial_tangent: TangentialVector
     ) -> "RungeKuttaGeometry.Ray":
-        if not self.is_valid_coordinate(tangential_vector.point):
+        domain = self._chart.domain
+        if not domain.are_inside(initial_tangent.point):
             raise ValueError(
-                f"Cannot create Runge-Kuuta ray from tangential vector"
-                f" {tangential_vector}."
-                f" It is illdefined with coordinated outside the manifold."
+                f"Cannot create Runge-Kutta ray from tangential vector"
+                f" {initial_tangent}. "
+                + domain.not_inside_reason(initial_tangent.point)
             )
+
         return RungeKuttaGeometry.Ray(
-            geometry=self, initial_tangent=tangential_vector
+            geometry=self, initial_tangent=initial_tangent
         )
-
-    @abstractmethod
-    def length(self, tangent: TangentialVector) -> float:
-        # pylint: disable=W0107
-        """
-        Returns the length of the vector with respect to the tangential space.
-
-        :raises: ValueError if tangent.point are invalid coordinates
-        """
-        pass
-
-    def normalized(self, tangent: TangentialVector) -> TangentialVector:
-        """
-        Returns the normalized vector with respect to the tangential space.
-
-        :raises: ValueError if tangent.point are invalid coordinates
-        """
-        return TangentialVector(
-            point=tangent.point,
-            vector=tangent.vector / self.length(tangent),
-        )
-
-    @abstractmethod
-    def geodesic_equation(
-        self,
-    ) -> Callable[[TangentialVectorDelta], TangentialVectorDelta]:
-        # pylint: disable=W0107
-        """
-        Returns the equation of motion for the geodesics encoded in a function
-        of the trajectory configuration.
-        """
-        pass

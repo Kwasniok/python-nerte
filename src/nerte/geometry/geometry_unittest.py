@@ -13,14 +13,12 @@ import math
 from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.linalg import AbstractVector
+from nerte.values.linalg import AbstractVector, normalized
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.ray_segment import RaySegment
+from nerte.values.ray_segment_unittest import ray_segment_equiv
 from nerte.values.face import Face
-from nerte.geometry.geometry import intersection_ray_depth
-
-
-# no test for abstract class/interface Geometry & Geometry.Ray
+from nerte.geometry.geometry import intersection_ray_depth, StandardGeometry
 
 
 class IntersectionRayDepthTest(BaseTestCase):
@@ -152,6 +150,179 @@ class IntersectionRayDepthTest(BaseTestCase):
             for face in self.faces:
                 ray_depth = intersection_ray_depth(ray=ray, face=face)
                 self.assertTrue(ray_depth == math.inf)
+
+
+def standard_ray_equiv(
+    x: StandardGeometry.Ray, y: StandardGeometry.Ray
+) -> bool:
+    """Returns true iff both cartesian rays are considered equivalent."""
+    return ray_segment_equiv(x.as_segment(), y.as_segment())
+
+
+class StandardGeometryConstructorTest(BaseTestCase):
+    def test_constructor(self) -> None:
+        # pylint: disable=R0201
+        """Test the constructor."""
+        StandardGeometry()
+
+
+class StandardGeometryRayFromTest(BaseTestCase):
+    def setUp(self) -> None:
+        self.geo = StandardGeometry()
+        self.coords1 = Coordinates3D((0.0, 0.0, 0.0))
+        self.coords2 = Coordinates3D((0.0, 1.0, 2.0))
+        self.vector = AbstractVector((0.0, 1.0, 2.0))  # equiv to cords2
+        self.tangent = TangentialVector(
+            point=self.coords1, vector=normalized(self.vector)
+        )
+        self.init_seg = RaySegment(
+            tangential_vector=self.tangent, is_finite=False
+        )
+
+    def test_ray_from_coords(self) -> None:
+        """Tests ray from coordinates."""
+        ray = self.geo.ray_from_coords(self.coords1, self.coords2)
+        init_seg = ray.as_segment()
+        self.assertPredicate2(ray_segment_equiv, init_seg, self.init_seg)
+
+    def test_ray_from_tangent(self) -> None:
+        """Tests ray from tangent."""
+        ray = self.geo.ray_from_tangent(self.tangent)
+        init_seg = ray.as_segment()
+        self.assertPredicate2(ray_segment_equiv, init_seg, self.init_seg)
+
+
+class StandardGeometryIntersectsTest1(BaseTestCase):
+    def setUp(self) -> None:
+        # face with all permuations of its coordinates
+        # NOTE: Results are invariant under coordinate permutation!
+        p1 = Coordinates3D((1.0, 0.0, 0.0))
+        p2 = Coordinates3D((0.0, 1.0, 0.0))
+        p3 = Coordinates3D((0.0, 0.0, 1.0))
+        self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
+        # geometry
+        geo = StandardGeometry()
+        # rays pointing 'forwards' towards faces and parallel to face normal
+        s0 = Coordinates3D((0.0, 0.0, 0.0))
+        s1 = Coordinates3D((0.3, 0.0, 0.0))  # one third of p1
+        s2 = Coordinates3D((0.0, 0.3, 0.0))  # one third of p2
+        s3 = Coordinates3D((0.0, 0.0, 0.3))  # one third of p3
+        ss = (s0, s1, s2, s3)
+        v = AbstractVector((1.0, 1.0, 1.0))
+        self.intersecting_rays = list(
+            geo.ray_from_tangent(TangentialVector(point=s, vector=v))
+            for s in ss
+        )
+
+    def test_euclidean_intersects_1(self) -> None:
+        """
+        Tests if rays intersect as expected.
+        Each ray points 'forwards' towards the face and is parallel to face's
+        normal.
+        """
+        for r in self.intersecting_rays:
+            for f in self.faces:
+                info = r.intersection_info(f)
+                self.assertTrue(info.hits())
+
+
+class StandardGeometryIntersectsTest2(BaseTestCase):
+    def setUp(self) -> None:
+        # face with all permuations of its coordinates
+        # NOTE: Results are invariant under coordinate permutation!
+        p1 = Coordinates3D((1.0, 0.0, 0.0))
+        p2 = Coordinates3D((0.0, 1.0, 0.0))
+        p3 = Coordinates3D((0.0, 0.0, 1.0))
+        self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
+        # geometry
+        geo = StandardGeometry()
+        # rays pointing 'backwards' and are parallel to face's normal
+        s0 = Coordinates3D((0.0, 0.0, 0.0))
+        s1 = Coordinates3D((0.3, 0.0, 0.0))  # one third of p1
+        s2 = Coordinates3D((0.0, 0.3, 0.0))  # one third of p2
+        s3 = Coordinates3D((0.0, 0.0, 0.3))  # one third of p3
+        ss = (s0, s1, s2, s3)
+        v = AbstractVector((1.0, 1.0, 1.0))
+        self.non_intersecting_rays = list(
+            geo.ray_from_tangent(TangentialVector(point=s, vector=-v))
+            for s in ss
+        )
+
+    def test_euclidean_intersects_2(self) -> None:
+        """
+        Tests if rays do not intersect as expected.
+        Each ray points 'backwards' away from the face and is parallel to face's
+        normal.
+        """
+        for r in self.non_intersecting_rays:
+            for f in self.faces:
+                info = r.intersection_info(f)
+                self.assertTrue(info.misses())
+
+
+class StandardGeometryIntersectsTest3(BaseTestCase):
+    def setUp(self) -> None:
+        # face with all permuations of its coordinates
+        # NOTE: Results are invariant under coordinate permutation!
+        p1 = Coordinates3D((1.0, 0.0, 0.0))
+        p2 = Coordinates3D((0.0, 1.0, 0.0))
+        p3 = Coordinates3D((0.0, 0.0, 1.0))
+        self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
+        # geometry
+        geo = StandardGeometry()
+        # rays miss the face and are parallel to face's normal
+        s1 = Coordinates3D((0.0, 0.6, 0.6))  # 'complement' of p1
+        s2 = Coordinates3D((0.6, 0.0, 0.6))  # 'complement' of p2
+        s3 = Coordinates3D((0.6, 0.6, 0.0))  # 'complement' of p3
+        ss = (s1, s2, s3)
+        v = AbstractVector((1.0, 1.0, 1.0))
+        self.non_intersecting_rays = list(
+            geo.ray_from_tangent(TangentialVector(point=s, vector=v))
+            for s in ss
+        )
+
+    def test_euclidean_intersects_3(self) -> None:
+        """
+        Tests if rays do not intersect as expected.
+        Each ray misses the face and is parallel to face's normal.
+        """
+        for r in self.non_intersecting_rays:
+            for f in self.faces:
+                info = r.intersection_info(f)
+                self.assertTrue(info.misses())
+
+
+class StandardGeometryIntersectsTest4(BaseTestCase):
+    def setUp(self) -> None:
+        # face with all permuations of its coordinates
+        # NOTE: Results are invariant under coordinate permutation!
+        p1 = Coordinates3D((1.0, 0.0, 0.0))
+        p2 = Coordinates3D((0.0, 1.0, 0.0))
+        p3 = Coordinates3D((0.0, 0.0, 1.0))
+        self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
+        # geometry
+        geo = StandardGeometry()
+        # rays completely miss the face by pointing away from it
+        # and are parallel to face's normal
+        s1 = Coordinates3D((0.0, 0.6, 0.6))  # 'complement' of p1
+        s2 = Coordinates3D((0.6, 0.0, 0.6))  # 'complement' of p2
+        s3 = Coordinates3D((0.6, 0.6, 0.0))  # 'complement' of p3
+        ss = (s1, s2, s3)
+        v = AbstractVector((1.0, 1.0, 1.0))
+        self.non_intersecting_rays = list(
+            geo.ray_from_tangent(TangentialVector(point=s, vector=-v))
+            for s in ss
+        )
+
+    def test_euclidean_intersects_4(self) -> None:
+        """
+        Tests if rays do not intersect as expected.
+        Each ray completely misses the face and is parallel to face's normal.
+        """
+        for r in self.non_intersecting_rays:
+            for f in self.faces:
+                info = r.intersection_info(f)
+                self.assertTrue(info.misses())
 
 
 if __name__ == "__main__":

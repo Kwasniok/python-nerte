@@ -5,12 +5,18 @@ from abc import ABC, abstractmethod
 import math
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.linalg import AbstractVector, dot, cross, normalized
+from nerte.values.linalg import (
+    AbstractVector,
+    dot,
+    cross,
+    normalized,
+    is_zero_vector,
+)
 from nerte.values.tangential_vector import TangentialVector
-from nerte.values.face import Face
-from nerte.values.ray_segment import RaySegment
-from nerte.values.intersection_info import IntersectionInfo
 from nerte.values.util.convert import coordinates_as_vector
+from nerte.values.ray_segment import RaySegment
+from nerte.values.face import Face
+from nerte.values.intersection_info import IntersectionInfo
 
 
 class Geometry(ABC):
@@ -30,7 +36,7 @@ class Geometry(ABC):
             pass
 
     @abstractmethod
-    def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
+    def are_valid_coords(self, coords: Coordinates3D) -> bool:
         """Returns True, iff coordinates are within the valid domain."""
         # pylint: disable=W0107
         pass
@@ -49,7 +55,7 @@ class Geometry(ABC):
         pass
 
     @abstractmethod
-    def ray_from_tangent(self, tangential_vector: TangentialVector) -> Ray:
+    def ray_from_tangent(self, initial_tangent: TangentialVector) -> Ray:
         """
         Returns the ray, whith the given starting point and direction.
 
@@ -155,3 +161,69 @@ def intersection_ray_depth(ray: RaySegment, face: Face) -> float:
     if _in_triangle(b1, b2, (s + u * t) - v0):
         return t
     return math.inf
+
+
+class StandardGeometry(Geometry):
+    """
+    Represenation of the euclidean geometry in Cartesian coordinates.
+
+    Note: Can be used for mocking as well.
+    """
+
+    class Ray(Geometry.Ray):
+        """Represenation of a ray in euclidean geometry in Cartesian coordinates."""
+
+        def __init__(self, tangential_vector: TangentialVector):
+            if is_zero_vector(tangential_vector.vector):
+                raise ValueError(
+                    f"Cannot construct cartesian ray with zero vector"
+                    f" {tangential_vector}."
+                )
+            vector = normalized(tangential_vector.vector)
+            tangent = TangentialVector(
+                point=tangential_vector.point, vector=vector
+            )
+            self._segment = RaySegment(
+                tangential_vector=tangent, is_finite=False
+            )
+
+        def __repr__(self) -> str:
+            return (
+                f"CartesianGeometry.Ray("
+                f"start={self._segment.start()}"
+                f", direction={self._segment.direction()})"
+            )
+
+        def intersection_info(self, face: Face) -> IntersectionInfo:
+            ray_depth = intersection_ray_depth(ray=self._segment, face=face)
+            # no length factor required since segment is normalized
+            return IntersectionInfo(ray_depth=ray_depth)
+
+        def as_segment(self) -> RaySegment:
+            """Returns ray converted to a ray segment."""
+            return self._segment
+
+    def are_valid_coords(self, coords: Coordinates3D) -> bool:
+        return (
+            math.isfinite(coords[0])
+            and math.isfinite(coords[1])
+            and math.isfinite(coords[2])
+        )
+
+    def ray_from_coords(
+        self, start: Coordinates3D, target: Coordinates3D
+    ) -> Ray:
+        if not self.are_valid_coords(start) or not self.are_valid_coords(
+            target
+        ):
+            raise ValueError(
+                f"Cannot create standard ray from coordinates start={start}"
+                f" and target={target}. Coordinates must consist of finite values."
+            )
+        vec_s = coordinates_as_vector(start)
+        vec_t = coordinates_as_vector(target)
+        tangent = TangentialVector(point=start, vector=(vec_t - vec_s))
+        return StandardGeometry.Ray(tangential_vector=tangent)
+
+    def ray_from_tangent(self, initial_tangent: TangentialVector) -> Ray:
+        return StandardGeometry.Ray(tangential_vector=initial_tangent)

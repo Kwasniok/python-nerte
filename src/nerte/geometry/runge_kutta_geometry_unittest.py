@@ -6,7 +6,7 @@
 
 import unittest
 
-from typing import Callable, Type, cast
+from typing import cast
 
 from itertools import permutations
 import math
@@ -14,146 +14,81 @@ import math
 from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.linalg import AbstractVector, length
+from nerte.values.linalg import AbstractVector
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_unittest import tan_vec_equiv
-from nerte.values.tangential_vector_delta import TangentialVectorDelta
 from nerte.values.face import Face
 from nerte.values.intersection_info import IntersectionInfo
 from nerte.values.extended_intersection_info import ExtendedIntersectionInfo
-from nerte.values.util.convert import coordinates_as_vector
+from nerte.values.interval import Interval, REALS
+from nerte.values.domains import CartesianProduct3D
+from nerte.values.charts import IdentityChart3D
 from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 
 
-def _make_dummy_runge_kutta_geometry() -> Type[RungeKuttaGeometry]:
-    class DummyRungeKuttaGeometry(RungeKuttaGeometry):
-        """
-        Propagates in cartesian coordinates on straight lines (euclidean).
-        """
-
-        def __init__(
-            self,
-            max_ray_depth: float,
-            step_size: float,
-            max_steps: int,
-        ):
-            RungeKuttaGeometry.__init__(
-                self, max_ray_depth, step_size, max_steps
-            )
-
-            # cartesian & euclidean geometry
-            def geodesic_equation(
-                ray: TangentialVectorDelta,
-            ) -> TangentialVectorDelta:
-                return TangentialVectorDelta(
-                    ray.vector_delta, AbstractVector((0, 0, 0))
-                )
-
-            self._geodesic_equation = geodesic_equation
-
-        def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
-            x, _, _ = coordinates
-            return -1 < x < 1
-
-        def ray_from_coords(
-            self, start: Coordinates3D, target: Coordinates3D
-        ) -> RungeKuttaGeometry.Ray:
-            if not self.is_valid_coordinate(start):
-                raise ValueError(
-                    f"Cannot create ray from coordinates."
-                    f" Start coordinates {start} are invalid."
-                )
-            if not self.is_valid_coordinate(target):
-                raise ValueError(
-                    f"Cannot create ray from coordinates."
-                    f" Target coordinates {target} are invalid."
-                )
-            vec_s = coordinates_as_vector(start)
-            vec_t = coordinates_as_vector(target)
-            tangent = TangentialVector(point=start, vector=(vec_t - vec_s))
-            return RungeKuttaGeometry.Ray(
-                geometry=self, initial_tangent=tangent
-            )
-
-        def length(self, tangent: TangentialVector) -> float:
-            return length(tangent.vector)
-
-        def geodesic_equation(
-            self,
-        ) -> Callable[[TangentialVectorDelta], TangentialVectorDelta]:
-            return self._geodesic_equation
-
-    return DummyRungeKuttaGeometry
-
-
-class RungeKuttaGeometryImplementaionTest(BaseTestCase):
-    def test_runge_kutta_geometry_implementation(self) -> None:
-        # pylint: disable=R0201
-        """
-        Tests the Runge-Kutta based geometry interface implementation with a dummy.
-        """
-        _make_dummy_runge_kutta_geometry()
-
-
-class DummyRungeKuttaGeometryConstructorTest(BaseTestCase):
+class ConstructorTest(BaseTestCase):
     def setUp(self) -> None:
-        self.DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
+        self.chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
 
     def test_constructor(self) -> None:
         """Test the constructor."""
-        DummyRungeKuttaGeometryGeo = self.DummyRungeKuttaGeometryGeo
 
-        DummyRungeKuttaGeometryGeo(
-            max_ray_depth=1.0, step_size=0.1, max_steps=1
+        RungeKuttaGeometry(
+            self.chart, max_ray_depth=1.0, step_size=0.1, max_steps=1
         )
         # invalid max_ray_depth
         with self.assertRaises(ValueError):
-            DummyRungeKuttaGeometryGeo(
-                max_ray_depth=-1.0, step_size=0.1, max_steps=1
+            RungeKuttaGeometry(
+                self.chart, max_ray_depth=-1.0, step_size=0.1, max_steps=1
             )
         with self.assertRaises(ValueError):
-            DummyRungeKuttaGeometryGeo(
-                max_ray_depth=0.0, step_size=0.1, max_steps=1
+            RungeKuttaGeometry(
+                self.chart, max_ray_depth=0.0, step_size=0.1, max_steps=1
             )
         with self.assertRaises(ValueError):
-            DummyRungeKuttaGeometryGeo(
-                max_ray_depth=math.nan, step_size=0.1, max_steps=1
+            RungeKuttaGeometry(
+                self.chart, max_ray_depth=math.nan, step_size=0.1, max_steps=1
             )
         # invalid step_size
         with self.assertRaises(ValueError):
-            DummyRungeKuttaGeometryGeo(
-                max_ray_depth=1.0, step_size=0.0, max_steps=1
+            RungeKuttaGeometry(
+                self.chart, max_ray_depth=1.0, step_size=0.0, max_steps=1
             )
         with self.assertRaises(ValueError):
-            DummyRungeKuttaGeometryGeo(
-                max_ray_depth=1.0, step_size=-1.0, max_steps=1
+            RungeKuttaGeometry(
+                self.chart, max_ray_depth=1.0, step_size=-1.0, max_steps=1
             )
         with self.assertRaises(ValueError):
-            DummyRungeKuttaGeometryGeo(
-                max_ray_depth=1.0, step_size=math.inf, max_steps=1
+            RungeKuttaGeometry(
+                self.chart, max_ray_depth=1.0, step_size=math.inf, max_steps=1
             )
         with self.assertRaises(ValueError):
-            DummyRungeKuttaGeometryGeo(
-                max_ray_depth=1.0, step_size=math.nan, max_steps=1
+            RungeKuttaGeometry(
+                self.chart, max_ray_depth=1.0, step_size=math.nan, max_steps=1
             )
         # invalid max_steps
         with self.assertRaises(ValueError):
-            DummyRungeKuttaGeometryGeo(
-                max_ray_depth=1.0, step_size=1.0, max_steps=-1
+            RungeKuttaGeometry(
+                self.chart, max_ray_depth=1.0, step_size=1.0, max_steps=-1
             )
         with self.assertRaises(ValueError):
-            DummyRungeKuttaGeometryGeo(
-                max_ray_depth=1.0, step_size=0.1, max_steps=0
+            RungeKuttaGeometry(
+                self.chart, max_ray_depth=1.0, step_size=0.1, max_steps=0
             )
 
 
-class DummyRungeKuttaGeometryPropertiesTest(BaseTestCase):
+class PropertiesTest(BaseTestCase):
     def setUp(self) -> None:
-        self.DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
+        self.chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
         self.max_ray_depth = 1.0
         self.step_size = 0.1
         self.max_steps = 1
-        self.geometry = self.DummyRungeKuttaGeometryGeo(
+        self.geometry = RungeKuttaGeometry(
+            chart=self.chart,
             max_ray_depth=self.max_ray_depth,
             step_size=self.step_size,
             max_steps=self.max_steps,
@@ -161,16 +96,19 @@ class DummyRungeKuttaGeometryPropertiesTest(BaseTestCase):
 
     def test_properties(self) -> None:
         """Tests the properties."""
+        self.assertTrue(self.geometry.chart() is self.chart)
         self.assertTrue(self.geometry.max_ray_depth() == self.max_ray_depth)
         self.assertTrue(self.geometry.step_size() == self.step_size)
         self.assertTrue(self.geometry.max_steps() == self.max_steps)
 
 
-class DummyRungeKuttaGeometryIsValidCoordinateTest(BaseTestCase):
+class AreValidCoordinatesTest(BaseTestCase):
     def setUp(self) -> None:
-        DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
-        self.geo = DummyRungeKuttaGeometryGeo(
-            max_ray_depth=1.0, step_size=0.1, max_steps=10
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
+        self.geo = RungeKuttaGeometry(
+            chart, max_ray_depth=1.0, step_size=0.1, max_steps=10
         )
         self.valid_coords = (Coordinates3D((0.0, 0.0, 0.0)),)
         self.invalid_coords = (
@@ -181,18 +119,21 @@ class DummyRungeKuttaGeometryIsValidCoordinateTest(BaseTestCase):
             Coordinates3D((math.nan, 0.0, 0.0)),
         )
 
-    def test_is_valid_coordinate(self) -> None:
+    def test_are_valid_coords(self) -> None:
         """Tests coordinate validity."""
         for coords in self.valid_coords:
-            self.assertTrue(self.geo.is_valid_coordinate(coords))
+            self.assertTrue(self.geo.are_valid_coords(coords))
         for coords in self.invalid_coords:
-            self.assertFalse(self.geo.is_valid_coordinate(coords))
+            self.assertFalse(self.geo.are_valid_coords(coords))
 
 
-class RungeKuttaGeometryRayConstructorTest(BaseTestCase):
+class RayConstructorTest(BaseTestCase):
     def setUp(self) -> None:
-        DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
-        self.geo = DummyRungeKuttaGeometryGeo(
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
+        self.geo = RungeKuttaGeometry(
+            chart,
             max_ray_depth=1.0,
             step_size=0.1,  # enforce multiple steps until hit
             max_steps=10,
@@ -200,7 +141,7 @@ class RungeKuttaGeometryRayConstructorTest(BaseTestCase):
         self.coords = Coordinates3D((0.0, 0.0, 0.0))
         self.vector = AbstractVector((0.0, 1.0, 2.0))
         self.tangent = TangentialVector(point=self.coords, vector=self.vector)
-        self.initial_tangent = self.geo.normalized(self.tangent)
+        self.initial_tangent = chart.normalized(self.tangent)
 
     def test_constructor(self) -> None:
         """Tests the constructor."""
@@ -209,10 +150,13 @@ class RungeKuttaGeometryRayConstructorTest(BaseTestCase):
         )
 
 
-class RungeKuttaGeometryRayPropertiesTest(BaseTestCase):
+class RayPropertiesTest(BaseTestCase):
     def setUp(self) -> None:
-        DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
-        self.geo = DummyRungeKuttaGeometryGeo(
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
+        self.geo = RungeKuttaGeometry(
+            chart,
             max_ray_depth=1.0,
             step_size=0.1,  # enforce multiple steps until hit
             max_steps=10,
@@ -224,7 +168,7 @@ class RungeKuttaGeometryRayPropertiesTest(BaseTestCase):
             geometry=self.geo,
             initial_tangent=tangent,
         )
-        self.initial_tangent = self.geo.normalized(tangent)
+        self.initial_tangent = chart.normalized(tangent)
 
     def test_properties(self) -> None:
         """Tests the properties."""
@@ -235,7 +179,7 @@ class RungeKuttaGeometryRayPropertiesTest(BaseTestCase):
         )
 
 
-class RungeKuttaGeometryRayIntersectsTest(BaseTestCase):
+class RayIntersectsTest(BaseTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -244,8 +188,11 @@ class RungeKuttaGeometryRayIntersectsTest(BaseTestCase):
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry (cartesian & euclidean)
-        DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
-        self.geo = DummyRungeKuttaGeometryGeo(
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
+        self.geo = RungeKuttaGeometry(
+            chart,
             max_ray_depth=1.0,
             step_size=0.1,  # enforce multiple steps until hit
             max_steps=10,
@@ -293,7 +240,7 @@ class RungeKuttaGeometryRayIntersectsTest(BaseTestCase):
         self.ray_depths = list(self.ray_depths)
         self.non_intersecting_rays = list(self.non_intersecting_rays)
 
-    def test_runge_kutta_geometry_intersects(self) -> None:
+    def test_intersects(self) -> None:
         """
         Tests if rays intersect as expected.
         Each ray points 'forwards' towards the face and is parallel to face's
@@ -310,9 +257,7 @@ class RungeKuttaGeometryRayIntersectsTest(BaseTestCase):
                 self.assertTrue(info.misses())
 
 
-class RungeKuttaGeometryRayIntersectsRayLeftManifoldEventuallyTest(
-    BaseTestCase
-):
+class RayIntersectsRayLeftManifoldEventuallyTest(BaseTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -321,8 +266,11 @@ class RungeKuttaGeometryRayIntersectsRayLeftManifoldEventuallyTest(
         p3 = Coordinates3D((2.0, 1.0, 1.0))
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry (cartesian & euclidean)
-        DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
-        self.geo = DummyRungeKuttaGeometryGeo(
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
+        self.geo = RungeKuttaGeometry(
+            chart,
             max_ray_depth=10.0,
             step_size=0.1,  # enforce multiple steps until hit
             max_steps=15,
@@ -334,7 +282,7 @@ class RungeKuttaGeometryRayIntersectsRayLeftManifoldEventuallyTest(
             )
         )
 
-    def test_runge_kutta_geometry_intersects(self) -> None:
+    def test_intersects(self) -> None:
         """
         Tests if rays does not intersect because it left the manifold eventually.
         """
@@ -348,9 +296,7 @@ class RungeKuttaGeometryRayIntersectsRayLeftManifoldEventuallyTest(
             )
 
 
-class RungeKuttaGeometryRayIntersectsRayLeftManifoldImmediatelyTest(
-    BaseTestCase
-):
+class RayIntersectsRayLeftManifoldImmediatelyTest(BaseTestCase):
     def setUp(self) -> None:
         # face with all permuations of its coordinates
         # NOTE: Results are invariant under coordinate permutation!
@@ -359,8 +305,11 @@ class RungeKuttaGeometryRayIntersectsRayLeftManifoldImmediatelyTest(
         p3 = Coordinates3D((2.0, 1.0, 1.0))
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry (cartesian & euclidean)
-        DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
-        self.geo = DummyRungeKuttaGeometryGeo(
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
+        self.geo = RungeKuttaGeometry(
+            chart,
             max_ray_depth=10.0,
             step_size=0.1,  # enforce multiple steps until hit
             max_steps=15,
@@ -374,7 +323,7 @@ class RungeKuttaGeometryRayIntersectsRayLeftManifoldImmediatelyTest(
             )
         )
 
-    def test_runge_kutta_geometry_intersects(self) -> None:
+    def test_intersects(self) -> None:
         """
         Tests if rays does not intersect because it left the manifold immediately.
         """
@@ -388,21 +337,25 @@ class RungeKuttaGeometryRayIntersectsRayLeftManifoldImmediatelyTest(
             )
 
 
-class RungeKuttaGeometryRayIntersectsMetaDataTest(BaseTestCase):
+class RayIntersectsMetaDataTest(BaseTestCase):
     def setUp(self) -> None:
         p1 = Coordinates3D((1.0, 0.0, 0.0))
         p2 = Coordinates3D((0.0, 1.0, 0.0))
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.face = Face(p1, p2, p3)
         # geometry (cartesian & euclidean)
-        DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
         geos = (
-            DummyRungeKuttaGeometryGeo(
+            RungeKuttaGeometry(
+                chart,
                 max_ray_depth=1000.0,
                 step_size=1,  # direct hit
                 max_steps=100,
             ),
-            DummyRungeKuttaGeometryGeo(
+            RungeKuttaGeometry(
+                chart,
                 max_ray_depth=1000.0,
                 step_size=0.1,  # 6 steps until hit (1/sqrt(3) ~ 0.577...)
                 max_steps=100,
@@ -419,7 +372,7 @@ class RungeKuttaGeometryRayIntersectsMetaDataTest(BaseTestCase):
         )
         self.steps = (1, 6)
 
-    def test_runge_kutta_geometry_intersects_meta_data(self) -> None:
+    def test_intersects_meta_data(self) -> None:
         """
         Tests if ray's meta data.
         """
@@ -435,11 +388,13 @@ class RungeKuttaGeometryRayIntersectsMetaDataTest(BaseTestCase):
                     self.assertAlmostEqual(meta_data["steps"], steps)
 
 
-class DummyRungeKuttaGeometryRayFromTest(BaseTestCase):
+class RayFromTest(BaseTestCase):
     def setUp(self) -> None:
-        DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
-        self.geo = DummyRungeKuttaGeometryGeo(
-            max_ray_depth=1.0, step_size=0.1, max_steps=10
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
+        self.geo = RungeKuttaGeometry(
+            chart, max_ray_depth=1.0, step_size=0.1, max_steps=10
         )
         self.coords1 = Coordinates3D((0.0, 0.0, 0.0))
         self.coords2 = Coordinates3D((0.0, 1.0, 2.0))
@@ -449,7 +404,7 @@ class DummyRungeKuttaGeometryRayFromTest(BaseTestCase):
         self.invalid_tangent = TangentialVector(
             point=self.invalid_coords, vector=vector
         )
-        self.initial_tangent = self.geo.normalized(self.tangent)
+        self.initial_tangent = chart.normalized(self.tangent)
 
     def test_ray_from_coords(self) -> None:
         """Tests ray from coordinates."""
@@ -474,35 +429,6 @@ class DummyRungeKuttaGeometryRayFromTest(BaseTestCase):
         )
         with self.assertRaises(ValueError):
             self.geo.ray_from_tangent(self.invalid_tangent)
-
-
-class RungeKuttaGeometryVectorTest(BaseTestCase):
-    def setUp(self) -> None:
-        v = AbstractVector((1.0, -2.0, 3.0))
-        self.coords = Coordinates3D((0.0, 0.0, 0.0))
-        self.tangent = TangentialVector(point=self.coords, vector=v)
-        self.n = AbstractVector((1.0, -2.0, 3.0)) * (14.0) ** -0.5
-        # geometry
-        DummyRungeKuttaGeometryGeo = _make_dummy_runge_kutta_geometry()
-        self.geo = DummyRungeKuttaGeometryGeo(
-            max_ray_depth=math.inf, step_size=1.0, max_steps=10
-        )
-        self.tangent_normalized = TangentialVector(
-            point=self.coords, vector=self.n
-        )
-
-    def test_dummy_runge_kutta_geometry_length(self) -> None:
-        """Tests dummy Runge-Kutta geometry vector length."""
-        self.assertAlmostEqual(self.geo.length(self.tangent), 14.0 ** 0.5)
-
-    def test_dummy_runge_kutta_geometry_normalized(self) -> None:
-        """Tests dummy Runge-Kutta geometry vector normalization."""
-        tangent_normalized = self.geo.normalized(self.tangent)
-        self.assertPredicate2(
-            tan_vec_equiv,
-            tangent_normalized,
-            self.tangent_normalized,
-        )
 
 
 if __name__ == "__main__":

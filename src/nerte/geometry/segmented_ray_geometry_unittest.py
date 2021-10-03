@@ -6,7 +6,7 @@
 
 import unittest
 
-from typing import Type, Optional, cast
+from typing import cast
 
 import math
 
@@ -20,117 +20,51 @@ from nerte.values.ray_segment_unittest import ray_segment_equiv
 from nerte.values.face import Face
 from nerte.values.intersection_info import IntersectionInfo
 from nerte.values.extended_intersection_info import ExtendedIntersectionInfo
-from nerte.values.util.convert import coordinates_as_vector
+from nerte.values.interval import Interval, REALS
+from nerte.values.domains import CartesianProduct3D
+from nerte.values.charts import IdentityChart3D
 from nerte.geometry.segmented_ray_geometry import SegmentedRayGeometry
 
 
-def _dummy_segmented_ray_geometry_class() -> Type[SegmentedRayGeometry]:
-    class DummySegmentedRayGeometry(SegmentedRayGeometry):
-        """
-        Represenation of an euclidean geometry with semi-finite domain.
-        """
-
-        def __init__(self, max_steps: int, max_ray_depth: float):
-            SegmentedRayGeometry.__init__(self, max_steps, max_ray_depth)
-
-        def is_valid_coordinate(self, coordinates: Coordinates3D) -> bool:
-            x, _, _ = coordinates
-            return -1 < x < 1
-
-        def ray_from_coords(
-            self, start: Coordinates3D, target: Coordinates3D
-        ) -> SegmentedRayGeometry.Ray:
-            if not self.is_valid_coordinate(start):
-                raise ValueError(
-                    f"Cannot create ray from coordinates."
-                    f" Start coordinates {start} are invalid."
-                )
-            if not self.is_valid_coordinate(target):
-                raise ValueError(
-                    f"Cannot create ray from coordinates."
-                    f" Target coordinates {target} are invalid."
-                )
-            vec_s = coordinates_as_vector(start)
-            vec_t = coordinates_as_vector(target)
-            tangent = TangentialVector(point=start, vector=(vec_t - vec_s))
-            return SegmentedRayGeometry.Ray(
-                geometry=self,
-                initial_segment=RaySegment(tangential_vector=tangent),
-            )
-
-        def next_ray_segment(self, segment: RaySegment) -> Optional[RaySegment]:
-            # old segment
-            point_old = segment.start()
-            vec_old = segment.direction()
-            # advance pointing point
-            point_new = Coordinates3D(
-                (
-                    point_old[0] + vec_old[0],
-                    point_old[1] + vec_old[1],
-                    point_old[2] + vec_old[2],
-                )
-            )
-            vector_new = vec_old
-            # new segment
-            if self.is_valid_coordinate(point_new):
-                return RaySegment(
-                    tangential_vector=TangentialVector(
-                        point=point_new, vector=vector_new
-                    )
-                )
-            return None
-
-        def normalize_initial_ray_segment(
-            self, segment: RaySegment
-        ) -> RaySegment:
-            tangent = TangentialVector(
-                point=segment.start(),
-                vector=normalized(segment.direction())
-                * self.ray_segment_length(),
-            )
-            return RaySegment(tangential_vector=tangent)
-
-    return DummySegmentedRayGeometry
-
-
-class SegmentedRayGeometryImplemetationTest(BaseTestCase):
-    def test_implementation(self) -> None:
-        # pylint: disable=R0201
-        """Tests implementation."""
-        _dummy_segmented_ray_geometry_class()
-
-
-class SegmentedRayGeometryConstructorTest(BaseTestCase):
+class ConstructorTest(BaseTestCase):
     def setUp(self) -> None:
-        self.DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
+        self.chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
 
     def test_constructor(self) -> None:
         """Tests constructor."""
-        self.DummySegmentedRayGeometry(max_steps=1, max_ray_depth=1.0)
+        SegmentedRayGeometry(self.chart, max_steps=1, max_ray_depth=1.0)
         # invalid max_step
         with self.assertRaises(ValueError):
-            self.DummySegmentedRayGeometry(max_steps=0, max_ray_depth=1.0)
+            SegmentedRayGeometry(self.chart, max_steps=0, max_ray_depth=1.0)
         with self.assertRaises(ValueError):
-            self.DummySegmentedRayGeometry(max_steps=-1, max_ray_depth=1.0)
+            SegmentedRayGeometry(self.chart, max_steps=-1, max_ray_depth=1.0)
         # invalid max_ray_depth
         with self.assertRaises(ValueError):
-            self.DummySegmentedRayGeometry(max_steps=1, max_ray_depth=0.0)
+            SegmentedRayGeometry(self.chart, max_steps=1, max_ray_depth=0.0)
         with self.assertRaises(ValueError):
-            self.DummySegmentedRayGeometry(max_steps=1, max_ray_depth=-1.0)
+            SegmentedRayGeometry(self.chart, max_steps=1, max_ray_depth=-1.0)
         with self.assertRaises(ValueError):
-            self.DummySegmentedRayGeometry(max_steps=1, max_ray_depth=math.inf)
+            SegmentedRayGeometry(
+                self.chart, max_steps=1, max_ray_depth=math.inf
+            )
         with self.assertRaises(ValueError):
-            self.DummySegmentedRayGeometry(max_steps=1, max_ray_depth=math.nan)
+            SegmentedRayGeometry(
+                self.chart, max_steps=1, max_ray_depth=math.nan
+            )
 
 
-class SegmentedRayGeometryPropertiesTest(BaseTestCase):
+class PropertiesTest(BaseTestCase):
     def setUp(self) -> None:
-        DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
         self.max_steps = 10
         self.max_ray_depth = 1.0
         self.ray_segment_length = self.max_ray_depth / self.max_steps
-        self.geo = DummySegmentedRayGeometry(
-            max_steps=self.max_steps, max_ray_depth=self.max_ray_depth
+        self.geo = SegmentedRayGeometry(
+            chart, max_steps=self.max_steps, max_ray_depth=self.max_ray_depth
         )
 
     def test_properties(self) -> None:
@@ -142,10 +76,12 @@ class SegmentedRayGeometryPropertiesTest(BaseTestCase):
         )
 
 
-class SegmentedRayGeometryIsValidCoordinateTest(BaseTestCase):
+class AreValidCoordinatesTest(BaseTestCase):
     def setUp(self) -> None:
-        DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
-        self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
+        self.geo = SegmentedRayGeometry(chart, max_steps=10, max_ray_depth=1.0)
         self.valid_coords = (Coordinates3D((0.0, 0.0, 0.0)),)
         self.invalid_coords = (
             Coordinates3D((-3.0, 0.0, 0.0)),
@@ -155,18 +91,20 @@ class SegmentedRayGeometryIsValidCoordinateTest(BaseTestCase):
             Coordinates3D((math.nan, 0.0, 0.0)),
         )
 
-    def test_is_valid_coordinate(self) -> None:
+    def test_are_valid_coords(self) -> None:
         """Tests coordinate validity."""
         for coords in self.valid_coords:
-            self.assertTrue(self.geo.is_valid_coordinate(coords))
+            self.assertTrue(self.geo.are_valid_coords(coords))
         for coords in self.invalid_coords:
-            self.assertFalse(self.geo.is_valid_coordinate(coords))
+            self.assertFalse(self.geo.are_valid_coords(coords))
 
 
-class SegmentedRayGeometryRayConstructorTest(BaseTestCase):
+class RayConstructorTest(BaseTestCase):
     def setUp(self) -> None:
-        DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
-        self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
+        self.geo = SegmentedRayGeometry(chart, max_steps=10, max_ray_depth=1.0)
         self.coords = Coordinates3D((0.0, 0.0, 0.0))
         self.vector = AbstractVector((0.0, 1.0, 2.0))
         self.tangent = TangentialVector(point=self.coords, vector=self.vector)
@@ -181,10 +119,12 @@ class SegmentedRayGeometryRayConstructorTest(BaseTestCase):
         )
 
 
-class SegmentedRayGeometryRayPropertiesTest(BaseTestCase):
+class RayPropertiesTest(BaseTestCase):
     def setUp(self) -> None:
-        DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
-        self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
+        self.geo = SegmentedRayGeometry(chart, max_steps=10, max_ray_depth=1.0)
         coords = Coordinates3D((0.0, 0.0, 0.0))
         vector = AbstractVector((0.0, 1.0, 2.0))
         tangent = TangentialVector(point=coords, vector=vector)
@@ -203,10 +143,12 @@ class SegmentedRayGeometryRayPropertiesTest(BaseTestCase):
         )
 
 
-class SegmentedRayGeometryRayIntersectsTest(BaseTestCase):
+class RayIntersectsTest(BaseTestCase):
     def setUp(self) -> None:
-        DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
-        geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
+        geo = SegmentedRayGeometry(chart, max_steps=10, max_ray_depth=1.0)
         self.ray = geo.ray_from_tangent(
             TangentialVector(
                 point=Coordinates3D((0.0, 0.0, 0.0)),
@@ -236,12 +178,12 @@ class SegmentedRayGeometryRayIntersectsTest(BaseTestCase):
         )
 
 
-class SegmentedRayGeometryRayIntersectsRayEventuallyLeftManifoldTest(
-    BaseTestCase
-):
+class RayIntersectsRayEventuallyLeftManifoldTest(BaseTestCase):
     def setUp(self) -> None:
-        DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
-        geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=10.0)
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
+        geo = SegmentedRayGeometry(chart, max_steps=10, max_ray_depth=10.0)
         self.ray = geo.ray_from_tangent(
             TangentialVector(
                 point=Coordinates3D((0.0, 0.0, 0.0)),
@@ -265,12 +207,12 @@ class SegmentedRayGeometryRayIntersectsRayEventuallyLeftManifoldTest(
         )
 
 
-class SegmentedRayGeometryRayIntersectsRayImmediatelyLeftManifoldTest(
-    BaseTestCase
-):
+class RayIntersectsRayImmediatelyLeftManifoldTest(BaseTestCase):
     def setUp(self) -> None:
-        DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
-        geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=10.0)
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
+        geo = SegmentedRayGeometry(chart, max_steps=10, max_ray_depth=10.0)
         self.ray = geo.ray_from_tangent(
             TangentialVector(
                 point=Coordinates3D(
@@ -296,21 +238,25 @@ class SegmentedRayGeometryRayIntersectsRayImmediatelyLeftManifoldTest(
         )
 
 
-class SegmentedRayGeometryRayIntersectsMetaDataTest(BaseTestCase):
+class RayIntersectsMetaDataTest(BaseTestCase):
     def setUp(self) -> None:
         p1 = Coordinates3D((1.0, 0.0, 0.0))
         p2 = Coordinates3D((0.0, 1.0, 0.0))
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.face = Face(p1, p2, p3)
         # geometry (cartesian & euclidean)
-        DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
         geos = (
-            DummySegmentedRayGeometry(
+            SegmentedRayGeometry(
+                chart,
                 max_ray_depth=10.0,
                 max_steps=10,
                 # step size = 1 -> direct hit
             ),
-            DummySegmentedRayGeometry(
+            SegmentedRayGeometry(
+                chart,
                 max_ray_depth=10.0,
                 max_steps=100,
                 # step size = 0.1 -> 6 steps until hit (1/sqrt(3) ~ 0.577...)
@@ -327,7 +273,7 @@ class SegmentedRayGeometryRayIntersectsMetaDataTest(BaseTestCase):
         )
         self.steps = (1, 6)
 
-    def test_runge_kutta_geometry_intersects_meta_data(self) -> None:
+    def test_intersects_meta_data(self) -> None:
         """
         Tests if ray's meta data.
         """
@@ -343,10 +289,12 @@ class SegmentedRayGeometryRayIntersectsMetaDataTest(BaseTestCase):
                     self.assertAlmostEqual(meta_data["steps"], steps)
 
 
-class SegmentedRayGeometryRayFromTest(BaseTestCase):
+class RayFromTest(BaseTestCase):
     def setUp(self) -> None:
-        DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
-        self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
+        self.geo = SegmentedRayGeometry(chart, max_steps=10, max_ray_depth=1.0)
         self.coords1 = Coordinates3D((0.0, 0.0, 0.0))
         self.coords2 = Coordinates3D((0.0, 1.0, 2.0))
         self.invalid_coords = Coordinates3D((-3.0, 0.0, 0.0))
@@ -384,10 +332,12 @@ class SegmentedRayGeometryRayFromTest(BaseTestCase):
             self.geo.ray_from_tangent(self.invalid_tangent)
 
 
-class SegmentedRayGeometryNextRaySegmentTest(BaseTestCase):
+class NextRaySegmentTest(BaseTestCase):
     def setUp(self) -> None:
-        DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
-        self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
+        self.geo = SegmentedRayGeometry(chart, max_steps=10, max_ray_depth=1.0)
         vector = AbstractVector((0.75, 2.0, 3.0))
         self.ray1 = RaySegment(
             tangential_vector=TangentialVector(
@@ -414,10 +364,12 @@ class SegmentedRayGeometryNextRaySegmentTest(BaseTestCase):
         self.assertTrue(ray3 is None)
 
 
-class SegmentedRayGeometryNormalizedInitialRayTest(BaseTestCase):
+class NormalizedInitialRayTest(BaseTestCase):
     def setUp(self) -> None:
-        DummySegmentedRayGeometry = _dummy_segmented_ray_geometry_class()
-        self.geo = DummySegmentedRayGeometry(max_steps=10, max_ray_depth=1.0)
+        chart = IdentityChart3D(
+            CartesianProduct3D(Interval(-1, +1), REALS, REALS)
+        )
+        self.geo = SegmentedRayGeometry(chart, max_steps=10, max_ray_depth=1.0)
         corrds0 = Coordinates3D((0.0, 0.0, 0.0))
         self.ray = RaySegment(
             tangential_vector=TangentialVector(
