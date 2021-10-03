@@ -9,9 +9,10 @@ import unittest
 from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.interval import Interval
 from nerte.values.linalg import AbstractVector
-from nerte.values.manifolds.cartesian import Plane
+from nerte.values.interval import Interval
+from nerte.values.domains import CartesianProduct2D
+from nerte.values.charts.cartesian import Plane
 from nerte.values.face import Face
 from nerte.world.object import Object
 from nerte.world.camera import Camera
@@ -31,15 +32,17 @@ class SceneTest(BaseTestCase):
         # camera
         loc = Coordinates3D((0.0, 0.0, -10.0))
         interval = Interval(-1.0, 1.0)
+        detector_domain = CartesianProduct2D(interval, interval)
         manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
-            x0_domain=interval,
-            x1_domain=interval,
+            interval0=interval,
+            interval1=interval,
         )
         dim = 20
         self.camera = Camera(
             location=loc,
+            detector_domain=detector_domain,
             detector_manifold=manifold,
             canvas_dimensions=(dim, dim),
         )
