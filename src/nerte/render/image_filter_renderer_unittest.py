@@ -12,16 +12,19 @@ from PIL import Image
 from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.interval import Interval
 from nerte.values.linalg import AbstractVector
-from nerte.values.manifolds.cartesian import Plane
+from nerte.values.interval import Interval
+from nerte.values.domains import CartesianProduct2D, EMPTY3D
+from nerte.values.charts import IdentityChart3D
+from nerte.values.charts.cartesian import Plane
 from nerte.values.face import Face
 from nerte.values.intersection_info import IntersectionInfo, IntersectionInfos
 from nerte.values.color import Color, Colors
 from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
-from nerte.geometry.cartesian_geometry import CartesianGeometry
+from nerte.geometry.geometry import StandardGeometry
+from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_filter_renderer import (
     Filter,
@@ -250,23 +253,23 @@ class ImageFilterRendererAutoApplyFilterTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, -1.0))
-        domain = Interval(-1.0, 1.0)
+        interval = Interval(-1.0, 1.0)
+        domain = CartesianProduct2D(interval, interval)
         manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
-            x0_domain=domain,
-            x1_domain=domain,
         )
         dim = 10
         cam = Camera(
             location=loc,
+            detector_domain=domain,
             detector_manifold=manifold,
             canvas_dimensions=(dim, dim),
         )
         # scene
         self.scene = Scene(camera=cam)
         # geometry
-        self.geometry = CartesianGeometry()
+        self.geometry = StandardGeometry()
         # filters
         self.filter1 = HitFilter()
         self.filter2 = HitFilter()
@@ -325,16 +328,16 @@ class ImageFilterRendererRenderTest(BaseTestCase):
         obj.add_face(Face(p0, p1, p2))
         # camera
         loc = Coordinates3D((0.0, 0.0, -1.0))
-        domain = Interval(-1.0, 1.0)
+        interval = Interval(-1.0, 1.0)
+        domain = CartesianProduct2D(interval, interval)
         manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
-            x0_domain=domain,
-            x1_domain=domain,
         )
         dim = 10
         cam = Camera(
             location=loc,
+            detector_domain=domain,
             detector_manifold=manifold,
             canvas_dimensions=(dim, dim),
         )
@@ -342,7 +345,7 @@ class ImageFilterRendererRenderTest(BaseTestCase):
         self.scene = Scene(camera=cam)
         self.scene.add_object(obj)
         # geometry
-        self.geometry = CartesianGeometry()
+        self.geometry = StandardGeometry()
         # filter
         self.filter = HitFilter()
         # renderer
@@ -375,16 +378,16 @@ class ImageFilterProjectionTest(BaseTestCase):
         obj.add_face(Face(p0, p2, p3))
         # camera
         loc = Coordinates3D((0.0, 0.0, -1.0))
-        domain = Interval(-2.0, 2.0)
+        interval = Interval(-2.0, 2.0)
+        domain = CartesianProduct2D(interval, interval)
         manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
-            x0_domain=domain,
-            x1_domain=domain,
         )
         dim = 25
         cam = Camera(
             location=loc,
+            detector_domain=domain,
             detector_manifold=manifold,
             canvas_dimensions=(dim, dim),
         )
@@ -392,7 +395,7 @@ class ImageFilterProjectionTest(BaseTestCase):
         self.scene = Scene(camera=cam)
         self.scene.add_object(obj)
         # geometry
-        self.geometry = CartesianGeometry()
+        self.geometry = StandardGeometry()
         # filter
         self.filter = HitFilter()
         # renderers
@@ -482,29 +485,30 @@ class ImageFilterRendererProjectionFailureTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, 0.0))
-        domain = Interval(-1.0, 1.0)
+        interval = Interval(-1.0, 1.0)
+        domain = CartesianProduct2D(interval, interval)
         # manifold with invalid coordinates for pixel (0,0)
         manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
-            x0_domain=domain,
-            x1_domain=domain,
         )
         self.dim = 2  # tiny canvas
         cam = Camera(
             location=loc,
+            detector_domain=domain,
             detector_manifold=manifold,
             canvas_dimensions=(self.dim, self.dim),
         )
         # scene
         self.scene = Scene(camera=cam)
+        # chart
+        chart = IdentityChart3D(EMPTY3D)
         # geometry
-        self.geometry = (
-            CylindricalRungeKuttaGeometry(  # TODO: replace with mock
-                max_ray_depth=math.inf,
-                step_size=0.1,
-                max_steps=2,
-            )
+        self.geometry = RungeKuttaGeometry(
+            chart=chart,
+            max_ray_depth=math.inf,
+            step_size=0.1,
+            max_steps=2,
         )
         # filter
         self.filter = HitFilter()

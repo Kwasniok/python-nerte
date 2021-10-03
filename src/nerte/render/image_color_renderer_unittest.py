@@ -9,15 +9,16 @@ import unittest
 from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.interval import Interval
 from nerte.values.linalg import AbstractVector
-from nerte.values.manifolds.cartesian import Plane
+from nerte.values.interval import Interval
+from nerte.values.domains import CartesianProduct2D
+from nerte.values.charts.cartesian import Plane
 from nerte.values.face import Face
 from nerte.values.color import Colors
 from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
-from nerte.geometry.cartesian_geometry import CartesianGeometry
+from nerte.geometry.geometry import StandardGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_color_renderer import ImageColorRenderer
 
@@ -40,16 +41,16 @@ class ImageColorRendererRenderTest(BaseTestCase):
         obj.add_face(Face(p0, p1, p2))
         # camera
         loc = Coordinates3D((0.0, 0.0, -1.0))
-        domain = Interval(-1.0, 1.0)
+        interval = Interval(-1.0, 1.0)
+        domain = CartesianProduct2D(interval, interval)
         manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
-            x0_domain=domain,
-            x1_domain=domain,
         )
         dim = 10
         cam = Camera(
             location=loc,
+            detector_domain=domain,
             detector_manifold=manifold,
             canvas_dimensions=(dim, dim),
         )
@@ -57,7 +58,7 @@ class ImageColorRendererRenderTest(BaseTestCase):
         self.scene = Scene(camera=cam)
         self.scene.add_object(obj)
         # geometry
-        self.geometry = CartesianGeometry()
+        self.geometry = StandardGeometry()
 
         self.renderers = tuple(
             ImageColorRenderer(projection_mode=mode) for mode in ProjectionMode
@@ -83,16 +84,16 @@ class ImageColorRendererProjectionTest(BaseTestCase):
         obj.add_face(Face(p0, p2, p3))
         # camera
         loc = Coordinates3D((0.0, 0.0, -1.0))
-        domain = Interval(-2.0, 2.0)
+        interval = Interval(-2.0, 2.0)
+        domain = CartesianProduct2D(interval, interval)
         manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
-            x0_domain=domain,
-            x1_domain=domain,
         )
         dim = 25
         cam = Camera(
             location=loc,
+            detector_domain=domain,
             detector_manifold=manifold,
             canvas_dimensions=(dim, dim),
         )
@@ -100,7 +101,7 @@ class ImageColorRendererProjectionTest(BaseTestCase):
         self.scene = Scene(camera=cam)
         self.scene.add_object(obj)
         # geometry
-        self.geometry = CartesianGeometry()
+        self.geometry = StandardGeometry()
 
         # renderers
         self.renderer_ortho = ImageColorRenderer(

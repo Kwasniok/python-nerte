@@ -23,8 +23,8 @@ def detector_manifold_coords(
             f" pixel_location={pixel_location} must be inside the canvas"
             f" dimensions {camera.canvas_dimensions}."
         )
-    x0_min, x0_max = camera.detector_manifold.domain[0].as_tuple()
-    x1_min, x1_max = camera.detector_manifold.domain[1].as_tuple()
+    x0_min, x0_max = camera.detector_domain.intervals[0].as_tuple()
+    x1_min, x1_max = camera.detector_domain.intervals[0].as_tuple()
     # x goes from left to right
     x0 = x0_min + (x0_max - x0_min) * (pixel_x / width)
     # y goes from top to bottom
