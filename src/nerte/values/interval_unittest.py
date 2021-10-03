@@ -63,7 +63,6 @@ class FiniteIntervalPropertiesTest(BaseTestCase):
     def test_contains(self) -> None:
         """Tests in."""
         for val in self.included_values:
-            print(val)
             self.assertTrue(val in self.interval)
 
     def test_contains_not(self) -> None:
@@ -94,7 +93,6 @@ class SemifiniteIntervalPropertiesTest(BaseTestCase):
     def test_contains(self) -> None:
         """Tests in."""
         for val in self.included_values:
-            print(val)
             self.assertTrue(val in self.interval)
 
     def test_contains_not(self) -> None:
@@ -125,7 +123,6 @@ class InfiniteIntervalPropertiesTest(BaseTestCase):
     def test_contains(self) -> None:
         """Tests in."""
         for val in self.included_values:
-            print(val)
             self.assertTrue(val in self.interval)
 
     def test_contains_not(self) -> None:
