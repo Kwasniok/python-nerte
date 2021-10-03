@@ -41,7 +41,7 @@ class Interval:
         return f"({self._start}, {self._stop})"
 
     def __contains__(self, val: float) -> bool:
-        return self._min <= val <= self._max
+        return self._min <= val <= self._max and math.isfinite(val)
 
     def as_tuple(self) -> tuple[float, float]:
         """Returns start and stop parameter as a tuple."""

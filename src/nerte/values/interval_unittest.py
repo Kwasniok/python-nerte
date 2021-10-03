@@ -41,50 +41,97 @@ class IntervalConstructorTest(BaseTestCase):
             Interval(math.inf, math.inf)
 
 
-class IntervalPropertiesTest(BaseTestCase):
+class FiniteIntervalPropertiesTest(BaseTestCase):
     def setUp(self) -> None:
-        self.domain_params = (
-            (1.1, 3.3),
-            (math.inf, 4.4),  # intentionally in reversed order!
-            (-5.5, 7.7),
-        )
-        self.domains = tuple(Interval(*ps) for ps in self.domain_params)
-        self.included_values = (
-            (2.0, 2.2, 3.0),
-            (5.5, 11.11, 1e8),
-            (-3.3, 2.2, 5.5),
-        )
-        self.excluded_values = (
-            (-2.2, -1.1),
-            (-5.5, -math.inf),
-            (-7.7, -math.inf, math.inf),
-        )
+        self.parameters = (2.0, -1.0)
+        self.interval = Interval(*self.parameters)
+        self.included_values = (-1.0, 0.0, 2.0)
+        self.excluded_values = (-1.1, 2.2 - math.inf, math.inf, math.nan)
 
-    def test_attributes(self) -> None:
-        """Tests domain parameters getters."""
-        for domain, params in zip(self.domains, self.domain_params):
-            self.assertAlmostEqual(domain.as_tuple()[0], params[0])
-            self.assertAlmostEqual(domain.as_tuple()[1], params[1])
-            self.assertAlmostEqual(domain.start(), params[0])
-            self.assertAlmostEqual(domain.stop(), params[1])
-            self.assertAlmostEqual(domain.min(), min(params))
-            self.assertAlmostEqual(domain.max(), max(params))
+    def test_as_tuple(self) -> None:
+        """Tests as tuple conversion."""
+        self.assertAlmostEqual(self.interval.as_tuple()[0], self.parameters[0])
+        self.assertAlmostEqual(self.interval.as_tuple()[1], self.parameters[1])
+
+    def test_getters(self) -> None:
+        """Tests getters."""
+        self.assertAlmostEqual(self.interval.start(), self.parameters[0])
+        self.assertAlmostEqual(self.interval.stop(), self.parameters[1])
+        self.assertAlmostEqual(self.interval.min(), min(self.parameters))
+        self.assertAlmostEqual(self.interval.max(), max(self.parameters))
 
     def test_contains(self) -> None:
-        """Tests domain contains."""
-        for domain, params, incl_vals, excl_vals in zip(
-            self.domains,
-            self.domain_params,
-            self.included_values,
-            self.excluded_values,
-        ):
-            # boundaries are included
-            for val in params:
-                self.assertTrue(val in domain)
-            for val in incl_vals:
-                self.assertTrue(val in domain)
-            for val in excl_vals:
-                self.assertFalse(val in domain)
+        """Tests in."""
+        for val in self.included_values:
+            print(val)
+            self.assertTrue(val in self.interval)
+
+    def test_contains_not(self) -> None:
+        """Tests not in."""
+        for val in self.excluded_values:
+            self.assertFalse(val in self.interval)
+
+
+class SemifiniteIntervalPropertiesTest(BaseTestCase):
+    def setUp(self) -> None:
+        self.parameters = (2.0, -math.inf)
+        self.interval = Interval(*self.parameters)
+        self.included_values = (-1.1, -1.0, 0.0, 2.0)
+        self.excluded_values = (2.2, -math.inf, math.inf, math.nan)
+
+    def test_as_tuple(self) -> None:
+        """Tests as tuple conversion."""
+        self.assertAlmostEqual(self.interval.as_tuple()[0], self.parameters[0])
+        self.assertAlmostEqual(self.interval.as_tuple()[1], self.parameters[1])
+
+    def test_getters(self) -> None:
+        """Tests getters."""
+        self.assertAlmostEqual(self.interval.start(), self.parameters[0])
+        self.assertAlmostEqual(self.interval.stop(), self.parameters[1])
+        self.assertAlmostEqual(self.interval.min(), min(self.parameters))
+        self.assertAlmostEqual(self.interval.max(), max(self.parameters))
+
+    def test_contains(self) -> None:
+        """Tests in."""
+        for val in self.included_values:
+            print(val)
+            self.assertTrue(val in self.interval)
+
+    def test_contains_not(self) -> None:
+        """Tests not in."""
+        for val in self.excluded_values:
+            self.assertFalse(val in self.interval)
+
+
+class InfiniteIntervalPropertiesTest(BaseTestCase):
+    def setUp(self) -> None:
+        self.parameters = (math.inf, -math.inf)
+        self.interval = Interval(*self.parameters)
+        self.included_values = (-1.1, -1.0, 0.0, 2.0, 2.2)
+        self.excluded_values = (-math.inf, math.inf, math.nan)
+
+    def test_as_tuple(self) -> None:
+        """Tests as tuple conversion."""
+        self.assertAlmostEqual(self.interval.as_tuple()[0], self.parameters[0])
+        self.assertAlmostEqual(self.interval.as_tuple()[1], self.parameters[1])
+
+    def test_getters(self) -> None:
+        """Tests getters."""
+        self.assertAlmostEqual(self.interval.start(), self.parameters[0])
+        self.assertAlmostEqual(self.interval.stop(), self.parameters[1])
+        self.assertAlmostEqual(self.interval.min(), min(self.parameters))
+        self.assertAlmostEqual(self.interval.max(), max(self.parameters))
+
+    def test_contains(self) -> None:
+        """Tests in."""
+        for val in self.included_values:
+            print(val)
+            self.assertTrue(val in self.interval)
+
+    def test_contains_not(self) -> None:
+        """Tests not in."""
+        for val in self.excluded_values:
+            self.assertFalse(val in self.interval)
 
 
 if __name__ == "__main__":
