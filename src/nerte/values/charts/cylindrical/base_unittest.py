@@ -57,12 +57,12 @@ class DomainTest(BaseTestCase):
         )
 
     def test_domain_inside(self) -> None:
-        """Test the domain."""
+        """Test the coordinates inside the domain."""
         for coords in self.coords_inside:
             self.assertTrue(DOMAIN.are_inside(coords))
 
     def test_domain_outside(self) -> None:
-        """Test the domain."""
+        """Test the coordinates outside the domain."""
         for coords in self.coords_outside:
             self.assertFalse(DOMAIN.are_inside(coords))
 
