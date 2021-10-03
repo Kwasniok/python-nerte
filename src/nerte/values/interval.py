@@ -61,3 +61,6 @@ class Interval:
     def max(self) -> float:
         """Returns the maximum of start and stop parameter."""
         return self._max
+
+
+REALS = Interval(-math.inf, math.inf)
