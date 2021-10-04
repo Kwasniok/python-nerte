@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 
 from nerte.values.coordinates import Coordinates3D
+from nerte.values.linalg import mat_vec_mult, AbstractMatrix, IDENTITY_MATRIX
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.domains import OutOfDomainError, Domain3D
 
@@ -44,6 +45,29 @@ class Transformation3D(ABC):
         IMPORTANT: It is trusted that self.domain.assert_inside(coords) is True.
         """
 
+    def jacobian(self, coords: Coordinates3D) -> AbstractMatrix:
+        """
+        Returns the Jacobian matrix of the transformation.
+
+        :raises: OutOfDomainError iff coordinates are outside the domain
+        """
+        try:
+            self.domain.assert_inside(coords)
+        except OutOfDomainError as ex:
+            raise OutOfDomainError(
+                f"Cannot create Jacobian for coordinates={coords}. "
+                + self.domain.not_inside_reason(coords)
+            ) from ex
+        return self.internal_hook_jacobian(coords)
+
+    @abstractmethod
+    def internal_hook_jacobian(self, coords: Coordinates3D) -> AbstractMatrix:
+        """
+        Hook for jacobian method.
+        Returns the Jacobian matrix of the transformation.
+        IMPORTANT: It is trusted that self.domain.assert_inside(coords) is True.
+        """
+
     def transform_tangent(self, tangent: TangentialVector) -> TangentialVector:
         """
         Returns the transformed tangential vector.
@@ -58,17 +82,11 @@ class Transformation3D(ABC):
                 f"Cannot transform tanential vector={tangent}."
                 + self.domain.not_inside_reason(tangent.point)
             ) from ex
-        return self.internal_hook_transform_tangent(tangent)
 
-    @abstractmethod
-    def internal_hook_transform_tangent(
-        self, tangent: TangentialVector
-    ) -> TangentialVector:
-        """
-        Hook for transform_tangent method.
-        Returns the transformed tangential vector.
-        IMPORTANT: It is trusted that self.domain.assert_inside(coords) is True.
-        """
+        point = self.transform_coords(tangent.point)
+        jacobian = self.jacobian(tangent.point)
+        vector = mat_vec_mult(jacobian, tangent.vector)
+        return TangentialVector(point, vector)
 
 
 class Identity(Transformation3D):
@@ -79,7 +97,5 @@ class Identity(Transformation3D):
     ) -> Coordinates3D:
         return coords
 
-    def internal_hook_transform_tangent(
-        self, tangent: TangentialVector
-    ) -> TangentialVector:
-        return tangent
+    def internal_hook_jacobian(self, coords: Coordinates3D) -> AbstractMatrix:
+        return IDENTITY_MATRIX

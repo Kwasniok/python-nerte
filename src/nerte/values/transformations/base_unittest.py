@@ -14,7 +14,8 @@ from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.coordinates_unittest import coordinates_3d_equiv
-from nerte.values.linalg import UNIT_VECTOR0
+from nerte.values.linalg import UNIT_VECTOR0, IDENTITY_MATRIX
+from nerte.values.linalg_unittest import mat_equiv
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_unittest import tan_vec_equiv
 from nerte.values.interval import Interval
@@ -67,6 +68,18 @@ class IdentityTransformation3DTest(BaseTestCase):
         for coords in self.coords_outside:
             with self.assertRaises(OutOfDomainError):
                 self.trafo.transform_coords(coords)
+
+    def test_jacobian(self) -> None:
+        """Test the Jacobian."""
+        for coords in self.coords_inside:
+            jacobian = self.trafo.jacobian(coords)
+            self.assertPredicate2(mat_equiv, jacobian, IDENTITY_MATRIX)
+
+    def test_jacobian_rises(self) -> None:
+        """Test the Jacobian raises."""
+        for coords in self.coords_outside:
+            with self.assertRaises(OutOfDomainError):
+                self.trafo.jacobian(coords)
 
     def test_transform_tangent(self) -> None:
         """Test the tangential vector transformation."""

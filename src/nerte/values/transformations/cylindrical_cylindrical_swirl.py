@@ -3,12 +3,7 @@
 import math
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.tangential_vector import TangentialVector
-from nerte.values.linalg import (
-    AbstractVector,
-    AbstractMatrix,
-    mat_vec_mult,
-)
+from nerte.values.linalg import AbstractVector, AbstractMatrix
 from nerte.values.domains import Domain3D
 from nerte.values.transformations.base import Transformation3D
 
@@ -78,13 +73,8 @@ class CylindricalToCylindricalSwirlTransformation(Transformation3D):
     ) -> Coordinates3D:
         return Coordinates3D(_trafo(-self.swirl, coords))
 
-    def internal_hook_transform_tangent(
-        self, tangent: TangentialVector
-    ) -> TangentialVector:
-        jacobian = _jacobian(-self.swirl, tangent.point)
-        point = Coordinates3D(_trafo(-self.swirl, tangent.point))
-        vector = mat_vec_mult(jacobian, tangent.vector)
-        return TangentialVector(point=point, vector=vector)
+    def internal_hook_jacobian(self, coords: Coordinates3D) -> AbstractMatrix:
+        return _jacobian(-self.swirl, coords)
 
 
 class CylindricalSwirlToCylindricalTransformation(Transformation3D):
@@ -109,10 +99,5 @@ class CylindricalSwirlToCylindricalTransformation(Transformation3D):
     ) -> Coordinates3D:
         return Coordinates3D(_trafo(+self.swirl, coords))
 
-    def internal_hook_transform_tangent(
-        self, tangent: TangentialVector
-    ) -> TangentialVector:
-        jacobian = _jacobian(+self.swirl, tangent.point)
-        point = Coordinates3D(_trafo(+self.swirl, tangent.point))
-        vector = mat_vec_mult(jacobian, tangent.vector)
-        return TangentialVector(point=point, vector=vector)
+    def internal_hook_jacobian(self, coords: Coordinates3D) -> AbstractMatrix:
+        return _jacobian(+self.swirl, coords)
