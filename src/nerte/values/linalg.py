@@ -130,6 +130,8 @@ def _abstract_matrix_from_numpy(np_array: np.ndarray) -> AbstractMatrix:
     """
     mat = AbstractMatrix.__new__(AbstractMatrix)
     mat._m = np_array
+    mat._is_symmetric = None
+    mat._is_invertible = None
     return mat
 
 
