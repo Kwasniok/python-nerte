@@ -26,6 +26,7 @@ from nerte.values.linalg import (
     length,
     normalized,
     are_linear_dependent,
+    transposed,
     inverted,
 )
 
@@ -613,6 +614,22 @@ class InvertedTest(BaseTestCase):
         with self.assertRaises(ArithmeticError):
             inverted(self.m3)
         self.assertPredicate2(mat_equiv, inverted(self.m4), self.m4_inv)
+
+
+class TransposedTest(BaseTestCase):
+    def setUp(self) -> None:
+        v0 = AbstractVector((1.0, 2.0, 3.0))
+        v1 = AbstractVector((4.0, 5.0, 6.0))
+        v2 = AbstractVector((7.0, 8.0, 9.0))
+        w0 = AbstractVector((1.0, 4.0, 7.0))
+        w1 = AbstractVector((2.0, 5.0, 8.0))
+        w2 = AbstractVector((3.0, 6.0, 9.0))
+        self.m1 = AbstractMatrix(v0, v1, v2)
+        self.m2 = AbstractMatrix(w0, w1, w2)
+
+    def test_transposed(self) -> None:
+        """Tests matrix trasposition."""
+        self.assertPredicate2(mat_equiv, transposed(self.m1), self.m2)
 
 
 class CoAndCoraviantTest(BaseTestCase):

@@ -314,6 +314,17 @@ def are_linear_dependent(vectors: tuple[AbstractVector, ...]) -> bool:
     return True
 
 
+def transposed(mat: AbstractMatrix) -> AbstractMatrix:
+    """
+    Returns the transposed of a matrix.
+    """
+    return AbstractMatrix(
+        AbstractVector((mat[0][0], mat[1][0], mat[2][0])),
+        AbstractVector((mat[0][1], mat[1][1], mat[2][1])),
+        AbstractVector((mat[0][2], mat[1][2], mat[2][2])),
+    )
+
+
 def inverted(mat: AbstractMatrix) -> AbstractMatrix:
     """
     Returns the inverse of a matrix.
