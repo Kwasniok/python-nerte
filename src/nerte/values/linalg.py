@@ -4,7 +4,6 @@
 
 from typing import Optional
 
-import math
 import numpy as np
 
 
@@ -70,7 +69,6 @@ class AbstractMatrix:
         self, vec0: AbstractVector, vec1: AbstractVector, vec2: AbstractVector
     ) -> None:
         self._m = np.array((vec0._v, vec1._v, vec2._v))
-        self._is_symmetric: Optional[bool] = None  # cache
         self._is_invertible: Optional[bool] = None  # cache
 
     def __repr__(self) -> str:
@@ -94,21 +92,6 @@ class AbstractMatrix:
     def __getitem__(self, i: int) -> AbstractVector:
         return _abstract_vector_from_numpy(self._m[i])
 
-    def is_symmetric(self) -> bool:
-        """
-        Returns True, iff matrix is symmetric.
-
-        Note: Small numerical deviations of the coefficients are allowed.
-        """
-        if self._is_symmetric is None:
-            # NOTE: np.isclose is significantly slower
-            self._is_symmetric = (
-                math.isclose(self._m[0][1], self._m[1][0])
-                and math.isclose(self._m[0][2], self._m[2][0])
-                and math.isclose(self._m[1][2], self._m[2][1])
-            )
-        return self._is_symmetric
-
     def is_invertible(self) -> bool:
         """
         Returns True, iff matrix is invertible.
@@ -130,7 +113,6 @@ def _abstract_matrix_from_numpy(np_array: np.ndarray) -> AbstractMatrix:
     """
     mat = AbstractMatrix.__new__(AbstractMatrix)
     mat._m = np_array
-    mat._is_symmetric = None
     mat._is_invertible = None
     return mat
 
@@ -146,11 +128,6 @@ class Metric:
     """
 
     def __init__(self, matrix: AbstractMatrix) -> None:
-        if not matrix.is_symmetric():
-            raise ValueError(
-                f"Cannot construct metric form non-symmetric matrix"
-                f" {matrix}."
-            )
 
         if not matrix.is_invertible():
             raise ValueError(

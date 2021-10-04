@@ -164,34 +164,6 @@ class AbstractMatrixTestItem(BaseTestCase):
             self.assertPredicate2(vec_equiv, m[i], v)
 
 
-class AbstractMatrixIsSymmetricTest(BaseTestCase):
-    def setUp(self) -> None:
-        v0 = AbstractVector((0.0, 1e-9, 0.0))  # simulated small numerical error
-        v1 = AbstractVector((1.1, 2.2, 3.3))
-        v2 = AbstractVector((2.2, 5.5, 6.6))
-        v3 = AbstractVector((3.3, 6.6, 9.9))
-        v2_anti = AbstractVector((-2.2, 5.5, 6.6))
-        v3_anti = AbstractVector((-3.3, -6.6, 9.9))
-
-        self.symmetic_mats = (
-            AbstractMatrix(v1, v2, v3),
-            AbstractMatrix(v1 + v0, v2, v3 + v0),
-        )
-
-        self.non_symmetic_mats = (
-            AbstractMatrix(v0, v0, v0),
-            AbstractMatrix(v1, v1, v1),
-            AbstractMatrix(v1, v2_anti, v3_anti),
-        )
-
-    def test_matrix_is_symmetric(self) -> None:
-        """Tests matix symmetry property."""
-        for mat in self.symmetic_mats:
-            self.assertTrue(mat.is_symmetric())
-        for mat in self.non_symmetic_mats:
-            self.assertFalse(mat.is_symmetric())
-
-
 class AbstractMatrixIsInvertibleTest(BaseTestCase):
     def setUp(self) -> None:
         v0 = AbstractVector((0.0, 0.0, 0.0))
@@ -255,19 +227,12 @@ class MetricTest(BaseTestCase):
             AbstractVector((5.0, 13.0, 23.0)),
         )
         self.m_inv = inverted(self.m)
-        self.m_non_symm = AbstractMatrix(
-            AbstractVector((2.0, 3.0, 5.0)),
-            AbstractVector((7.0, 11.0, 13.0)),
-            AbstractVector((17.0, 19.0, 23.0)),
-        )
 
     def test_metric_constructor(self) -> None:
         """Tests metric constructor."""
         Metric(self.m)
         with self.assertRaises(ValueError):
             Metric(self.m0)
-        with self.assertRaises(ValueError):
-            Metric(self.m_non_symm)
 
     def test_metric_matrix_getters(self) -> None:
         """Tests metric matrix getters."""
