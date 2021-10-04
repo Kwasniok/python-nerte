@@ -92,6 +92,21 @@ def metric_equiv(x: Metric, y: Metric) -> bool:
     return mat_equiv(x.matrix(), y.matrix())
 
 
+def metric_almost_equal(
+    places: Optional[int] = None, delta: Optional[float] = None
+) -> Callable[[Metric, Metric], bool]:
+    """
+    Returns a function which true iff both metrics are considered almost equal.
+    """
+
+    # pylint: disable=W0621
+    def metric_almost_equal(x: Metric, y: Metric) -> bool:
+        pred = mat_almost_equal(places=places, delta=delta)
+        return pred(x.matrix(), y.matrix())
+
+    return metric_almost_equal
+
+
 class AbstractVectorTestItem(BaseTestCase):
     def setUp(self) -> None:
         self.cs = (1.0, 2.0, 3.0)
