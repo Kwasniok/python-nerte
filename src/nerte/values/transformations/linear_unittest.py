@@ -30,15 +30,19 @@ from nerte.values.transformations.linear import Linear
 class LinearTransformation3DTest(BaseTestCase):
     # pylint: disable=R0902
     def setUp(self) -> None:
-        interval = Interval(-1.0, +1.0)
-        domain = CartesianProduct3D(interval, interval, interval)
+        domain = CartesianProduct3D(
+            Interval(-1.0, +1.0), Interval(-1.0, +1.0), Interval(-1.0, +1.0)
+        )
         self.matrix = AbstractMatrix(
             AbstractVector((2.0, 3.0, 5.0)),
             AbstractVector((7.0, 11.0, 13.0)),
             AbstractVector((17.0, 19.0, 23.0)),
         )
-        self.trafo = Linear(domain, matrix=self.matrix)
-        inside = (0.0,)
+        codomain = CartesianProduct3D(
+            Interval(-10, 10), Interval(-21, 21), Interval(-59, 59)
+        )
+        self.trafo = Linear(domain, codomain, matrix=self.matrix)
+        inside = (-0.5, 0.0, 0.5)
         outside = (-2.0, 2.0, -math.inf, math.inf, math.nan)
         values = tuple(itertools.chain(inside, outside))
         self.coords_inside = tuple(
@@ -79,9 +83,11 @@ class LinearTransformation3DTest(BaseTestCase):
 
     def test_transform_coords(self) -> None:
         """Test the coordinate transformation."""
-        for coords in self.coords_inside:
+        for coords, coords_expected in zip(
+            self.coords_inside, self.coords_inside_embedded
+        ):
             cs = self.trafo.transform_coords(coords)
-            self.assertPredicate2(coordinates_3d_equiv, cs, coords)
+            self.assertPredicate2(coordinates_3d_equiv, cs, coords_expected)
 
     def test_transform_coords_rises(self) -> None:
         """Test the coordinate transformation raises."""
