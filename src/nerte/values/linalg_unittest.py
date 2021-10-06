@@ -16,6 +16,7 @@ from nerte.values.linalg import (
     AbstractVector,
     AbstractMatrix,
     Metric,
+    Rank3Tensor,
     covariant,
     contravariant,
     is_zero_vector,
@@ -105,6 +106,31 @@ def metric_almost_equal(
         return pred(x.matrix(), y.matrix())
 
     return metric_almost_equal
+
+
+def rank3tensor_equiv(x: Rank3Tensor, y: Rank3Tensor) -> bool:
+    """Returns true iff both rank 3 tensors are considered equivalent."""
+    return (
+        mat_equiv(x[0], y[0])
+        and mat_equiv(x[1], y[1])
+        and mat_equiv(x[2], y[2])
+    )
+
+
+def rank3tensor_almost_equal(
+    places: Optional[int] = None, delta: Optional[float] = None
+) -> Callable[[Rank3Tensor, Rank3Tensor], bool]:
+    """
+    Returns a function which true iff both rank 3 tensors are considered almost
+    equal.
+    """
+
+    # pylint: disable=W0621
+    def rank3tensor_almost_equal(x: Rank3Tensor, y: Rank3Tensor) -> bool:
+        pred = mat_almost_equal(places=places, delta=delta)
+        return pred(x[0], y[0]) and pred(x[1], y[1]) and pred(x[2], y[2])
+
+    return rank3tensor_almost_equal
 
 
 class AbstractVectorTestItem(BaseTestCase):
@@ -239,6 +265,76 @@ class MetricTest(BaseTestCase):
         g = Metric(self.m)
         self.assertPredicate2(mat_equiv, g.matrix(), self.m)
         self.assertPredicate2(mat_equiv, g.inverse_matrix(), self.m_inv)
+
+
+class Rank3TensorTest(BaseTestCase):
+    def setUp(self) -> None:
+        v0 = AbstractVector((0.0, 0.0, 0.0))
+        v1 = AbstractVector((1.1, 2.2, 3.3))
+        v2 = AbstractVector((4.4, 5.5, 6.6))
+        v3 = AbstractVector((5.5, 7.7, 9.9))
+        v4 = AbstractVector((1.0, 1.1, 1.2))
+        v5 = AbstractVector((1.3, 1.4, 1.5))
+        self.m0 = AbstractMatrix(v0, v1, v2)
+        self.m1 = AbstractMatrix(v1, v2, v3)
+        self.m2 = AbstractMatrix(v2, v3, v4)
+        self.m3 = AbstractMatrix(v3, v4, v5)
+
+    def test_constructor(self) -> None:
+        """Test rank 3 tensor constructor."""
+        Rank3Tensor(self.m0, self.m1, self.m2)
+        Rank3Tensor(self.m1, self.m1, self.m1)
+        Rank3Tensor(self.m1, self.m2, self.m3)
+
+
+class Rank3TensorTestItem(BaseTestCase):
+    def setUp(self) -> None:
+        v0 = AbstractVector((0.0, 0.0, 0.0))
+        v1 = AbstractVector((1.1, 2.2, 3.3))
+        v2 = AbstractVector((4.4, 5.5, 6.6))
+        v3 = AbstractVector((5.5, 7.7, 9.9))
+        v4 = AbstractVector((1.0, 1.1, 1.2))
+        m0 = AbstractMatrix(v0, v1, v2)
+        m1 = AbstractMatrix(v1, v2, v3)
+        m2 = AbstractMatrix(v2, v3, v4)
+        self.ms = (m0, m1, m2)
+        self.r3tensor = Rank3Tensor(m0, m1, m2)
+
+    def test_item(self) -> None:
+        """Tests item related operations or a rank 3 tensor."""
+        for i, m in zip(range(3), self.ms):
+            self.assertPredicate2(mat_equiv, self.r3tensor[i], m)
+
+
+class Rank3TensorMathTest(BaseTestCase):
+    def setUp(self) -> None:
+        v0 = AbstractVector((0.0, 0.0, 0.0))
+        v1 = AbstractVector((1.1, 2.2, 3.3))
+        v2 = AbstractVector((4.4, 5.5, 6.6))
+        v3 = AbstractVector((5.5, 7.7, 9.9))
+        v4 = AbstractVector((1.0, 1.1, 1.2))
+        v5 = AbstractVector((1.1, 7.7, 16.5))
+        v5 = AbstractVector((5.5, 7.7, 19.9))
+        m0 = AbstractMatrix(v0, v1, v2)
+        m1 = AbstractMatrix(v1, v2, v3)
+        m2 = AbstractMatrix(v2, v3, v4)
+        m3 = AbstractMatrix(v3, v4, v5)
+        self.r3t1 = Rank3Tensor(m0, m1, m2)
+        self.r3t2 = Rank3Tensor(m1, m2, m3)
+        self.r3t3 = Rank3Tensor(m0 + m1, m1 + m2, m2 + m3)
+        self.r3t4 = Rank3Tensor(m0 * 3.3, m1 * 3.3, m2 * 3.3)
+
+    def test_linear(self) -> None:
+        """Tests linear operations on rank 3 tensors."""
+
+        self.assertPredicate2(
+            rank3tensor_equiv, self.r3t1 + self.r3t2, self.r3t3
+        )
+        self.assertPredicate2(
+            rank3tensor_equiv, self.r3t3 - self.r3t2, self.r3t1
+        )
+        self.assertPredicate2(rank3tensor_equiv, self.r3t1 * 3.3, self.r3t4)
+        self.assertPredicate2(rank3tensor_equiv, self.r3t4 / 3.3, self.r3t1)
 
 
 class AbstractVectorIsZero(BaseTestCase):

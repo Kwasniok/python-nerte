@@ -161,6 +161,67 @@ class Metric:
 IDENTITY_METRIC = Metric(IDENTITY_MATRIX)
 
 
+class Rank3Tensor:
+    """
+    Represents an abstract rank three tensor.
+    Note: The basis of the vector space and the kindness (co- or contra-variant)
+          of each rank must be implicitly given by the context the vector is
+          used in.
+    """
+
+    def __init__(
+        self, mat0: AbstractMatrix, mat1: AbstractMatrix, mat2: AbstractMatrix
+    ) -> None:
+        self._data = (mat0, mat1, mat2)
+
+    def __repr__(self) -> str:
+        return "T3(" + (",".join(repr(x) for x in self._data)) + ")"
+
+    def __add__(self, other: "Rank3Tensor") -> "Rank3Tensor":
+        return Rank3Tensor(
+            self._data[0] + other._data[0],
+            self._data[1] + other._data[1],
+            self._data[2] + other._data[2],
+        )
+
+    def __neg__(self) -> "Rank3Tensor":
+        return Rank3Tensor(
+            -self._data[0],
+            -self._data[1],
+            -self._data[2],
+        )
+
+    def __sub__(self, other: "Rank3Tensor") -> "Rank3Tensor":
+        return Rank3Tensor(
+            self._data[0] - other._data[0],
+            self._data[1] - other._data[1],
+            self._data[2] - other._data[2],
+        )
+
+    def __mul__(self, fac: float) -> "Rank3Tensor":
+        return Rank3Tensor(
+            self._data[0] * fac,
+            self._data[1] * fac,
+            self._data[2] * fac,
+        )
+
+    def __truediv__(self, fac: float) -> "Rank3Tensor":
+        return Rank3Tensor(
+            self._data[0] / fac,
+            self._data[1] / fac,
+            self._data[2] / fac,
+        )
+
+    def __getitem__(self, i: int) -> AbstractMatrix:
+        return self._data[i]
+
+
+ZERO_RANK3TENSOR = Rank3Tensor(ZERO_MATRIX, ZERO_MATRIX, ZERO_MATRIX)
+IDENTITY_RANK3TENSOR = Rank3Tensor(
+    IDENTITY_MATRIX, IDENTITY_MATRIX, IDENTITY_MATRIX
+)
+
+
 def covariant(metric: Metric, contra_vec: AbstractVector) -> AbstractVector:
     """
     Returns the co-variant vector.
