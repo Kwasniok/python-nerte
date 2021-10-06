@@ -6,7 +6,13 @@ coordinates.
 import math
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.linalg import AbstractVector, AbstractMatrix
+from nerte.values.linalg import (
+    AbstractVector,
+    ZERO_VECTOR,
+    AbstractMatrix,
+    ZERO_MATRIX,
+    Rank3Tensor,
+)
 from nerte.values.transformations.base import Transformation3D
 from nerte.values.charts.cartesian import DOMAIN as CARTESIAN_DOMAIN
 from nerte.values.charts.cylindrical import DOMAIN as CYLINDRICAL_DOMAIN
@@ -30,6 +36,15 @@ class CartesianToCylindricalTransformation(Transformation3D):
         phi = math.atan2(y, x)
         return Coordinates3D((r, phi, z))
 
+    def internal_hook_inverse_transform_coords(
+        self, coords: Coordinates3D
+    ) -> Coordinates3D:
+        # pylint:disable=C0103
+        r, phi, z = coords
+        x = r * math.cos(phi)
+        y = r * math.sin(phi)
+        return Coordinates3D((x, y, z))
+
     def internal_hook_jacobian(self, coords: Coordinates3D) -> AbstractMatrix:
         # pylint:disable=C0103
         x, y, _ = coords
@@ -41,26 +56,9 @@ class CartesianToCylindricalTransformation(Transformation3D):
             AbstractVector((0.0, 0.0, 1.0)),
         )
 
-
-class CylindricalToCartesianTransformation(Transformation3D):
-    """
-    Transforms cylindrical to cartesian coordinates according to:
-        f(r, 𝜑, z) = (x, y, z)
-    where
-        x = r * cos(𝜑)
-        y = r * sin(𝜑)
-    """
-
-    def internal_hook_transform_coords(
+    def internal_hook_inverse_jacobian(
         self, coords: Coordinates3D
-    ) -> Coordinates3D:
-        # pylint:disable=C0103
-        r, phi, z = coords
-        x = r * math.cos(phi)
-        y = r * math.sin(phi)
-        return Coordinates3D((x, y, z))
-
-    def internal_hook_jacobian(self, coords: Coordinates3D) -> AbstractMatrix:
+    ) -> AbstractMatrix:
         # pylint:disable=C0103
         r, phi, _ = coords
         return AbstractMatrix(
@@ -69,8 +67,44 @@ class CylindricalToCartesianTransformation(Transformation3D):
             AbstractVector((0.0, 0.0, 1.0)),
         )
 
+    def internal_hook_hesse_tensor(self, coords: Coordinates3D) -> Rank3Tensor:
+        # pylint:disable=C0103
+        x, y, _ = coords
+        R4 = (x ** 2 + y ** 2) ** -2
+        Y = -(y ** 3) * R4
+        X = -(x ** 3) * R4
+        return Rank3Tensor(
+            AbstractMatrix(
+                AbstractVector((-x * y ** 2 * R4, Y, 0.0)),
+                AbstractVector((Y, x * (x ** 2 + 2 * y ** 2) * R4, 0.0)),
+                ZERO_VECTOR,
+            ),
+            AbstractMatrix(
+                AbstractVector((y * (y ** 2 + 2 * x ** 2) * R4, X, 0.0)),
+                AbstractVector((X, -(x ** 2) * y * R4, 0.0)),
+                ZERO_VECTOR,
+            ),
+            ZERO_MATRIX,
+        )
 
-CARTESIAN_TO_CYLINDRIC = CartesianToCylindricalTransformation(CARTESIAN_DOMAIN)
-CYLINDRIC_TO_CARTESIAN = CylindricalToCartesianTransformation(
-    CYLINDRICAL_DOMAIN
+    def internal_hook_inverse_hesse_tensor(
+        self, coords: Coordinates3D
+    ) -> Rank3Tensor:
+        # pylint:disable=C0103
+        r, _, _ = coords
+        return Rank3Tensor(
+            AbstractMatrix(
+                ZERO_VECTOR, AbstractVector((0.0, -r, 0.0)), ZERO_VECTOR
+            ),
+            AbstractMatrix(
+                AbstractVector((0.0, 1 / r, 0.0)),
+                AbstractVector((1 / r, 0.0, 0.0)),
+                ZERO_VECTOR,
+            ),
+            ZERO_MATRIX,
+        )
+
+
+CARTESIAN_TO_CYLINDRIC = CartesianToCylindricalTransformation(
+    CARTESIAN_DOMAIN, CYLINDRICAL_DOMAIN
 )

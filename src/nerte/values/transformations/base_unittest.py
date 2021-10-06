@@ -14,8 +14,8 @@ from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.coordinates_unittest import coordinates_3d_equiv
-from nerte.values.linalg import UNIT_VECTOR0, IDENTITY_MATRIX
-from nerte.values.linalg_unittest import mat_equiv
+from nerte.values.linalg import UNIT_VECTOR0, IDENTITY_MATRIX, ZERO_RANK3TENSOR
+from nerte.values.linalg_unittest import mat_equiv, rank3tensor_equiv
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_unittest import tan_vec_equiv
 from nerte.values.interval import Interval
@@ -55,7 +55,7 @@ class IdentityTransformation3DTest(BaseTestCase):
         self.tangents_outside = (
             TangentialVector(c, UNIT_VECTOR0) for c in self.coords_outside
         )
-        self.trafo = Identity(domain)
+        self.trafo = Identity(domain, domain)
 
     def test_transform_coords(self) -> None:
         """Test the coordinate transformation."""
@@ -69,6 +69,18 @@ class IdentityTransformation3DTest(BaseTestCase):
             with self.assertRaises(OutOfDomainError):
                 self.trafo.transform_coords(coords)
 
+    def test_inverse_transform_coords(self) -> None:
+        """Test the inverse coordinate transformation."""
+        for coords in self.coords_inside:
+            cs = self.trafo.inverse_transform_coords(coords)
+            self.assertPredicate2(coordinates_3d_equiv, cs, coords)
+
+    def test_inverse_transform_coords_rises(self) -> None:
+        """Test the inverse coordinate transformation raises."""
+        for coords in self.coords_outside:
+            with self.assertRaises(OutOfDomainError):
+                self.trafo.inverse_transform_coords(coords)
+
     def test_jacobian(self) -> None:
         """Test the Jacobian."""
         for coords in self.coords_inside:
@@ -81,6 +93,18 @@ class IdentityTransformation3DTest(BaseTestCase):
             with self.assertRaises(OutOfDomainError):
                 self.trafo.jacobian(coords)
 
+    def test_inverse_jacobian(self) -> None:
+        """Test the inverse Jacobian."""
+        for coords in self.coords_inside:
+            jacobian = self.trafo.inverse_jacobian(coords)
+            self.assertPredicate2(mat_equiv, jacobian, IDENTITY_MATRIX)
+
+    def test_inverse_jacobian_rises(self) -> None:
+        """Test the inverse Jacobian raises."""
+        for coords in self.coords_outside:
+            with self.assertRaises(OutOfDomainError):
+                self.trafo.inverse_jacobian(coords)
+
     def test_transform_tangent(self) -> None:
         """Test the tangential vector transformation."""
         for tangent in self.tangents_inside:
@@ -92,6 +116,42 @@ class IdentityTransformation3DTest(BaseTestCase):
         for tangent in self.tangents_outside:
             with self.assertRaises(OutOfDomainError):
                 self.trafo.transform_tangent(tangent)
+
+    def test_inverse_transform_tangent(self) -> None:
+        """Test the innverse tangential vector transformation."""
+        for tangent in self.tangents_inside:
+            tan = self.trafo.inverse_transform_tangent(tangent)
+            self.assertPredicate2(tan_vec_equiv, tan, tangent)
+
+    def test_inverse_transform_tangent_rises(self) -> None:
+        """Test the innverse tangential vector transformation raises."""
+        for tangent in self.tangents_outside:
+            with self.assertRaises(OutOfDomainError):
+                self.trafo.inverse_transform_tangent(tangent)
+
+    def test_hesse_tensor(self) -> None:
+        """Test the Hesse tensor."""
+        for coords in self.coords_inside:
+            hesse = self.trafo.hesse_tensor(coords)
+            self.assertPredicate2(rank3tensor_equiv, hesse, ZERO_RANK3TENSOR)
+
+    def test_hesse_tensor_rises(self) -> None:
+        """Test the Hesse tensor raises."""
+        for coords in self.coords_outside:
+            with self.assertRaises(OutOfDomainError):
+                self.trafo.hesse_tensor(coords)
+
+    def test_inverse_hesse_tensor(self) -> None:
+        """Test the inverse Hesse tensor."""
+        for coords in self.coords_inside:
+            hesse = self.trafo.inverse_hesse_tensor(coords)
+            self.assertPredicate2(rank3tensor_equiv, hesse, ZERO_RANK3TENSOR)
+
+    def test_inverse_hesse_tensor_rises(self) -> None:
+        """Test the inverse Hesse tensor raises."""
+        for coords in self.coords_outside:
+            with self.assertRaises(OutOfDomainError):
+                self.trafo.inverse_hesse_tensor(coords)
 
 
 if __name__ == "__main__":

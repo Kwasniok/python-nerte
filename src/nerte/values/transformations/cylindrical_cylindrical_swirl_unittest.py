@@ -14,12 +14,18 @@ from nerte.values.coordinates import Coordinates3D
 from nerte.values.coordinates_unittest import coordinates_3d_equiv
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_unittest import tan_vec_equiv
-from nerte.values.linalg import AbstractVector
+from nerte.values.linalg import (
+    AbstractVector,
+    ZERO_VECTOR,
+    AbstractMatrix,
+    ZERO_MATRIX,
+    Rank3Tensor,
+)
+from nerte.values.linalg_unittest import rank3tensor_equiv
 from nerte.values.charts.cylindrical import DOMAIN as CYLINDRICAL_DOMAIN
 from nerte.values.charts.cylindrical_swirl import CylindricalSwirlDomain
 from nerte.values.transformations.cylindrical_cylindrical_swirl import (
     CylindricalToCylindricalSwirlTransformation,
-    CylindricalSwirlToCylindricalTransformation,
 )
 
 
@@ -27,32 +33,29 @@ class ConstructorTest(BaseTestCase):
     def setUp(self) -> None:
         self.valid_swirls = (0.0, +1.0, -1)
         self.invalid_swirls = (-math.inf, +math.inf, math.nan)
-        self.valid_cylindrical_domains = (CYLINDRICAL_DOMAIN,)
-        self.valid_cylindrical_swirl_domains = tuple(
+        self.valid_domains = (CYLINDRICAL_DOMAIN,)
+        self.valid_codomains = tuple(
             CylindricalSwirlDomain(s) for s in self.valid_swirls
         )
 
     def test_constructor(self) -> None:
         """Test the constructor."""
         for swirl in self.valid_swirls:
-            for cylin_domain in self.valid_cylindrical_domains:
-                CylindricalToCylindricalSwirlTransformation(cylin_domain, swirl)
-            for swirl_domain in self.valid_cylindrical_swirl_domains:
-                CylindricalSwirlToCylindricalTransformation(swirl_domain, swirl)
+            for domain in self.valid_domains:
+                for codomain in self.valid_codomains:
+                    CylindricalToCylindricalSwirlTransformation(
+                        domain, codomain, swirl
+                    )
 
     def test_constructor_invalid_swirl(self) -> None:
         """Test the constructor invalid swirl."""
         for swirl in self.invalid_swirls:
-            for cylin_domain in self.valid_cylindrical_domains:
-                with self.assertRaises(ValueError):
-                    CylindricalToCylindricalSwirlTransformation(
-                        cylin_domain, swirl
-                    )
-            for swirl_domain in self.valid_cylindrical_swirl_domains:
-                with self.assertRaises(ValueError):
-                    CylindricalSwirlToCylindricalTransformation(
-                        swirl_domain, swirl
-                    )
+            for domain in self.valid_domains:
+                for codomain in self.valid_codomains:
+                    with self.assertRaises(ValueError):
+                        CylindricalToCylindricalSwirlTransformation(
+                            domain, codomain, swirl
+                        )
 
 
 class CoordinatesTransfomrationTest(BaseTestCase):
@@ -66,35 +69,23 @@ class CoordinatesTransfomrationTest(BaseTestCase):
         self.swirl_coords = Coordinates3D((2.0, -(10 / 17) + math.pi / 3, 5.0))
         # self.swirl_coords numerically:
         #   {2.0, 0.458962, 5.0}
-        self.cylindrical_to_cylindrical_swirl = (
-            CylindricalToCylindricalSwirlTransformation(
-                CYLINDRICAL_DOMAIN, swirl
-            )
-        )
-        self.cylindrical_swirl_to_cylindrical = (
-            CylindricalSwirlToCylindricalTransformation(
-                CylindricalSwirlDomain(swirl), swirl
-            )
+        self.trafo = CylindricalToCylindricalSwirlTransformation(
+            CYLINDRICAL_DOMAIN, CylindricalSwirlDomain(swirl), swirl
         )
 
-    def test_cylindrical_to_cylindrical_swirl_coords(self) -> None:
-        """Tests cylindrical to cylindrical coordinates conversion."""
-
+    def test_transform_coords(self) -> None:
+        """Tests coordinate transformation."""
         self.assertPredicate2(
             coordinates_3d_equiv,
-            self.cylindrical_to_cylindrical_swirl.transform_coords(
-                self.cylin_coords
-            ),
+            self.trafo.transform_coords(self.cylin_coords),
             self.swirl_coords,
         )
 
-    def test_cylindrical_swirl_to_cylindrical_coords(self) -> None:
-        """Tests cylindrical to cylindrical coordinates conversion."""
+    def test_inverse_transform_coords(self) -> None:
+        """Tests inverse coordinate transformation."""
         self.assertPredicate2(
             coordinates_3d_equiv,
-            self.cylindrical_swirl_to_cylindrical.transform_coords(
-                self.swirl_coords
-            ),
+            self.trafo.inverse_transform_coords(self.swirl_coords),
             self.cylin_coords,
         )
 
@@ -126,42 +117,69 @@ class VectorTransfomrationTest(BaseTestCase):
         # self.swirl_tangents numerically:
         #   {2.0, 0.458962, 5.0} {7.0, 7.41176, 13.0}
         #   {2.0, 0.458962, 5.0} {-0.142857, -1.39649, 13.0}
-        self.cylindrical_to_cylindrical_swirl = (
-            CylindricalToCylindricalSwirlTransformation(
-                CYLINDRICAL_DOMAIN, swirl
-            )
-        )
-        self.cylindrical_swirl_to_cylindrical = (
-            CylindricalSwirlToCylindricalTransformation(
-                CylindricalSwirlDomain(swirl), swirl
-            )
+        self.trafo = CylindricalToCylindricalSwirlTransformation(
+            CYLINDRICAL_DOMAIN, CylindricalSwirlDomain(swirl), swirl
         )
 
-    def test_cylindrical_to_cylindrical_swirl_tangential_vector(self) -> None:
-        """Tests cylindrical to cylindrical tangential vector conversion."""
+    def test_transform_vector(self) -> None:
+        """Tests vector transformation."""
         for swirl_tan, cylin_tan in zip(
             self.swirl_tangents, self.cylin_tangents
         ):
             self.assertPredicate2(
                 tan_vec_equiv,
-                self.cylindrical_to_cylindrical_swirl.transform_tangent(
-                    cylin_tan
-                ),
+                self.trafo.transform_tangent(cylin_tan),
                 swirl_tan,
             )
 
-    def test_cylindrical_swirl_to_cylindrical_tangential_vector(self) -> None:
-        """Tests cylindrical to cylindrical tangential vector conversion."""
+    def test_inverse_transform_vector(self) -> None:
+        """Tests inverse vector transformation."""
         for cylin_tan, swirl_tan in zip(
             self.cylin_tangents, self.swirl_tangents
         ):
             self.assertPredicate2(
                 tan_vec_equiv,
-                self.cylindrical_swirl_to_cylindrical.transform_tangent(
-                    swirl_tan
-                ),
+                self.trafo.inverse_transform_tangent(swirl_tan),
                 cylin_tan,
             )
+
+
+class HesseTensorTest(BaseTestCase):
+    def setUp(self) -> None:
+        swirl = 1 / 17
+        # r, phi, z
+        self.cylin_coords = Coordinates3D((2, math.pi / 3, 5))
+        # r, alpha, z
+        self.swirl_coords = Coordinates3D((2, -(10 / 17) + math.pi / 3, 5))
+        self.trafo = CylindricalToCylindricalSwirlTransformation(
+            CYLINDRICAL_DOMAIN, CylindricalSwirlDomain(swirl), swirl
+        )
+        self.cylin_hesse = Rank3Tensor(
+            ZERO_MATRIX,
+            AbstractMatrix(
+                AbstractVector((0, 0, -swirl)),
+                ZERO_VECTOR,
+                AbstractVector((-swirl, 0, 0)),
+            ),
+            ZERO_MATRIX,
+        )
+        self.swirl_hesse = -self.cylin_hesse
+
+    def test_hesse_tensor(self) -> None:
+        """Tests Hesse tensor."""
+        self.assertPredicate2(
+            rank3tensor_equiv,
+            self.trafo.hesse_tensor(self.cylin_coords),
+            self.cylin_hesse,
+        )
+
+    def test_inverse_transform_vector(self) -> None:
+        """Tests Hesse tensor of inverse transformation."""
+        self.assertPredicate2(
+            rank3tensor_equiv,
+            self.trafo.inverse_hesse_tensor(self.swirl_coords),
+            self.swirl_hesse,
+        )
 
 
 if __name__ == "__main__":
