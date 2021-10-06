@@ -120,7 +120,7 @@ def _abstract_matrix_from_numpy(np_array: np.ndarray) -> AbstractMatrix:
 ZERO_MATRIX = AbstractMatrix(ZERO_VECTOR, ZERO_VECTOR, ZERO_VECTOR)
 IDENTITY_MATRIX = AbstractMatrix(UNIT_VECTOR0, UNIT_VECTOR1, UNIT_VECTOR2)
 
-
+# TODO: remove dedicated class
 class Metric:
     """
     Represents a metric as a matrix acting on contravariant representations of
