@@ -21,6 +21,7 @@ class CameraTest(BaseTestCase):
         self.location = Coordinates3D((1.1, 2.2, 3.3))
         interval = Interval(-1.0, 1.0)
         self.detector_domain = CartesianProduct2D(interval, interval)
+        self.detector_domain_filter = CartesianProduct2D(interval, interval)
         self.detector_manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
@@ -34,12 +35,16 @@ class CameraTest(BaseTestCase):
         camera = Camera(
             location=self.location,
             detector_domain=self.detector_domain,
+            detector_domain_filter=self.detector_domain_filter,
             detector_manifold=self.detector_manifold,
             canvas_dimensions=(self.dim, self.dim),
         )
 
         self.assertTrue(camera.location == self.location)
         self.assertTrue(camera.detector_domain is self.detector_domain)
+        self.assertTrue(
+            camera.detector_domain_filter is self.detector_domain_filter
+        )
         self.assertTrue(camera.detector_manifold is self.detector_manifold)
         self.assertTrue(camera.canvas_dimensions == (self.dim, self.dim))
 

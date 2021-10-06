@@ -16,7 +16,7 @@ from nerte.values.coordinates_unittest import coordinates_2d_equiv
 from nerte.values.linalg import AbstractVector
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.interval import Interval
-from nerte.values.domains import CartesianProduct2D
+from nerte.values.domains import CartesianProduct2D, EMPTY2D
 from nerte.values.charts.cartesian import Plane
 from nerte.world.camera import Camera
 from nerte.geometry.geometry import StandardGeometry
@@ -91,6 +91,56 @@ class DetectorManifoldCoordsTest(BaseTestCase):
         # preconditions
         self.assertTrue(len(self.invalid_pixel_locations) > 0)
 
+        for pix_loc in self.invalid_pixel_locations:
+            with self.assertRaises(ValueError):
+                detector_manifold_coords(
+                    camera=self.camera, pixel_location=pix_loc
+                )
+
+
+class DetectorManifoldCoordsWithFilterTest(BaseTestCase):
+    def setUp(self) -> None:
+        # camera
+        loc = Coordinates3D((0.0, 0.0, 0.0))
+        interval = Interval(-1.0, 1.0)
+        domain = CartesianProduct2D(interval, interval)
+        manifold = Plane(
+            AbstractVector((1.0, 0.0, 0.0)),
+            AbstractVector((0.0, 1.0, 0.0)),
+            offset=AbstractVector((0.0, 0.0, 1.0)),
+        )
+        dim = 10
+        self.camera = Camera(
+            location=loc,
+            detector_domain=domain,
+            detector_domain_filter=EMPTY2D,  # must be EMPTY!!
+            detector_manifold=manifold,
+            canvas_dimensions=(dim, dim),
+        )
+        # pixels
+        self.invalid_pixel_locations = (
+            (5, 5),
+            (0, 0),
+            (0, dim),
+            (dim, 0),
+            (dim, dim),
+            (-1, 1),
+            (1, -1),
+            (1, dim + 1),
+            (dim + 1, 1),
+        )
+        # y coordinate must be flipped
+        self.coords2ds = (
+            Coordinates2D((0.0, 0.0)),
+            Coordinates2D((-1.0, +1.0)),
+            Coordinates2D((-1.0, -1.0)),
+            Coordinates2D((+1.0, +1.0)),
+            Coordinates2D((+1.0, -1.0)),
+        )
+
+    def test_domain_filter(self) -> None:
+        """Tests detector domain filter."""
+        # all attempts must fail since the filter is the empty set
         for pix_loc in self.invalid_pixel_locations:
             with self.assertRaises(ValueError):
                 detector_manifold_coords(

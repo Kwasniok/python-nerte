@@ -29,7 +29,17 @@ def detector_manifold_coords(
     x0 = x0_min + (x0_max - x0_min) * (pixel_x / width)
     # y goes from top to bottom
     x1 = x1_max - (x1_max - x1_min) * (pixel_y / height)
-    return Coordinates2D((x0, x1))
+    coords = Coordinates2D((x0, x1))
+    if camera.detector_domain_filter is not None:
+        if not camera.detector_domain_filter.are_inside(coords):
+            raise ValueError(
+                f"Cannot create camera detector manifold coordinates for"
+                f" pixel_location={pixel_location}. Associated domain"
+                f" coordinates={coords} do not lie inside the filter domain."
+                f" The filter domain requires: "
+                + camera.detector_domain_filter.not_inside_reason(coords)
+            )
+    return coords
 
 
 def orthographic_ray_for_pixel(
