@@ -56,7 +56,7 @@ class CartesianGeodesicEquationPropagationTest(BaseTestCase):
         )
         self.step_size = 0.1
         self.steps = math.floor(1 / self.step_size)
-        self.places = 14  # TODO
+        self.places = 14
 
     def test_propagation(self) -> None:
         """Tests the cartesian geodesic equation via propagation."""
