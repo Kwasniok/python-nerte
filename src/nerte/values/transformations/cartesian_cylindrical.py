@@ -13,7 +13,7 @@ from nerte.values.linalg import (
     ZERO_MATRIX,
     Rank3Tensor,
 )
-from nerte.values.transformations.base import Transformation3D
+from nerte.values.transformations.transformation_3d import Transformation3D
 from nerte.values.charts.cartesian import DOMAIN as CARTESIAN_DOMAIN
 from nerte.values.charts.cylindrical import DOMAIN as CYLINDRICAL_DOMAIN
 

@@ -20,7 +20,7 @@ from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_unittest import tan_vec_equiv
 from nerte.values.interval import Interval
 from nerte.values.domains import OutOfDomainError, CartesianProduct3D
-from nerte.values.transformations.base import Identity
+from nerte.values.transformations.transformation_3d import Identity
 
 
 class IdentityTransformation3DTest(BaseTestCase):

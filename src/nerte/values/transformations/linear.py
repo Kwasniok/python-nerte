@@ -13,7 +13,7 @@ from nerte.values.util.convert import (
     vector_as_coordinates,
 )
 from nerte.values.domains import Domain3D
-from nerte.values.transformations.base import Transformation3D
+from nerte.values.transformations.transformation_3d import Transformation3D
 
 
 class Linear(Transformation3D):

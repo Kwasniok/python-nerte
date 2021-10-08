@@ -1,4 +1,4 @@
-"""Base module for transformations between charts."""
+"""Module for transformations between two three-dimensional charts."""
 
 from abc import ABC, abstractmethod
 

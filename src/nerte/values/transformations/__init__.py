@@ -1,4 +1,7 @@
 """Module for transformations (diffeomerphisms) between domains."""
 
-from .base import Transformation3D, Identity as IdentityTransformation
+from .transformation_3d import (
+    Transformation3D,
+    Identity as IdentityTransformation,
+)
 from .linear import Linear

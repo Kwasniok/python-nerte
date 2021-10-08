@@ -11,7 +11,7 @@ from nerte.values.linalg import (
     Rank3Tensor,
 )
 from nerte.values.domains import Domain3D
-from nerte.values.transformations.base import Transformation3D
+from nerte.values.transformations.transformation_3d import Transformation3D
 
 
 def _trafo(a: float, coords: Coordinates3D) -> Coordinates3D:
