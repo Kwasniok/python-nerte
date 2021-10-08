@@ -8,9 +8,12 @@ from nerte.values.linalg import Metric
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_delta import TangentialVectorDelta
 from nerte.values.domains import Domain3D
-from nerte.values.domains.cylinder import CYLINDER
 from nerte.values.charts.chart_3_to_3 import Chart3DTo3D
-from nerte.values.charts.cylindrical.base import metric, geodesic_equation
+from nerte.values.charts.cylindrical.base import (
+    DOMAIN,
+    metric,
+    geodesic_equation,
+)
 
 
 class Cylinder(Chart3DTo3D):
@@ -19,7 +22,7 @@ class Cylinder(Chart3DTo3D):
     dimensional cylindrical coordinates.
     """
 
-    def __init__(self, domain: Domain3D = CYLINDER):
+    def __init__(self, domain: Domain3D = DOMAIN):
 
         Chart3DTo3D.__init__(self, domain)
 
