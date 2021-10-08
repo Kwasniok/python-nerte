@@ -2,13 +2,10 @@
 
 from typing import Optional
 
-import math
-
 from nerte.values.linalg import AbstractVector, is_zero_vector
 from nerte.values.util.convert import vector_as_coordinates
 from nerte.values.coordinates import Coordinates1D, Coordinates3D
-from nerte.values.interval import Interval
-from nerte.values.domains import CartesianProduct1D
+from nerte.values.domains import Domain1D, R1
 from nerte.values.charts.chart_1_to_3 import Chart1DTo3D
 
 
@@ -21,17 +18,14 @@ class Line(Chart1DTo3D):
     def __init__(
         self,
         direction: AbstractVector,
-        interval: Optional[Interval] = None,
+        domain: Domain1D = R1,
         offset: Optional[AbstractVector] = None,
     ):
         # pylint: disable=R0913
         if is_zero_vector(direction):
             raise ValueError("Directional vector cannot be zero vector..")
 
-        if interval is None:
-            interval = Interval(-math.inf, math.inf)
-
-        Chart1DTo3D.__init__(self, CartesianProduct1D(interval))
+        Chart1DTo3D.__init__(self, domain)
 
         self._direction = direction
 

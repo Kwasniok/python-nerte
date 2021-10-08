@@ -20,13 +20,14 @@ from nerte.values.linalg import (
     UNIT_VECTOR1,
 )
 from nerte.values.linalg_unittest import vec_equiv
-from nerte.values.domains import OutOfDomainError
+from nerte.values.domains import OutOfDomainError, CartesianProduct1D
 from nerte.values.charts.cartesian.line import Line
 
 
 class LineConstructorTest(BaseTestCase):
     def setUp(self) -> None:
-        self.interval = Interval(-math.inf, 4.0)
+        interval = Interval(-math.inf, 4.0)
+        self.domain = CartesianProduct1D(interval)
         self.v0 = ZERO_VECTOR
         self.v1 = UNIT_VECTOR0
         self.offset = UNIT_VECTOR1
@@ -34,9 +35,9 @@ class LineConstructorTest(BaseTestCase):
     def test_constructor(self) -> None:
         """Tests the constructor."""
         Line(direction=self.v1)
-        Line(direction=self.v1, interval=self.interval)
+        Line(direction=self.v1, domain=self.domain)
         Line(direction=self.v1, offset=self.offset)
-        Line(direction=self.v1, interval=self.interval, offset=self.offset)
+        Line(direction=self.v1, domain=self.domain, offset=self.offset)
         with self.assertRaises(ValueError):
             Line(self.v0)
 
@@ -45,6 +46,7 @@ class FiniteLineTest(BaseTestCase):
     def setUp(self) -> None:
         self.v = UNIT_VECTOR0 * 3
         interval = Interval(-1.0, +1.0)
+        domain = CartesianProduct1D(interval)
         inside = (0.0,)
         outside = (-2.0, 2.0, -math.inf, math.inf, math.nan)
         self.coords_inside = tuple(Coordinates1D((x,)) for x in inside)
@@ -53,7 +55,7 @@ class FiniteLineTest(BaseTestCase):
         )
         self.coords_outside = tuple(Coordinates1D((x,)) for x in outside)
         self.chart = Line(
-            self.v, interval=interval, offset=AbstractVector((0.0, 0.0, 5.0))
+            self.v, domain=domain, offset=AbstractVector((0.0, 0.0, 5.0))
         )
 
     def test_embed(self) -> None:
@@ -81,6 +83,7 @@ class SemifiniteLineTest(BaseTestCase):
     def setUp(self) -> None:
         self.v = UNIT_VECTOR0 * 3
         interval = Interval(-math.inf, +1.0)
+        domain = CartesianProduct1D(interval)
         inside = (-2.0, 0.0)
         outside = (2.0, -math.inf, math.inf, math.nan)
         self.coords_inside = tuple(Coordinates1D((x,)) for x in inside)
@@ -88,7 +91,7 @@ class SemifiniteLineTest(BaseTestCase):
             Coordinates3D((x * 3, 0, 0)) for x in inside
         )
         self.coords_outside = tuple(Coordinates1D((x,)) for x in outside)
-        self.chart = Line(self.v, interval=interval)
+        self.chart = Line(self.v, domain=domain)
 
     def test_embed(self) -> None:
         """Tests coordinate embedding."""

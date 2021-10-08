@@ -1,9 +1,6 @@
 """Module for representing parallelepipeds in cartesian coordinates."""
 
 from typing import Optional
-
-import math
-
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import (
     AbstractVector,
@@ -16,8 +13,7 @@ from nerte.values.util.convert import (
 from nerte.values.linalg import Metric
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_delta import TangentialVectorDelta
-from nerte.values.interval import Interval
-from nerte.values.domains import CartesianProduct3D
+from nerte.values.domains import Domain3D, R3
 from nerte.values.charts.chart_3_to_3 import Chart3DTo3D
 from nerte.values.charts.cartesian.base import metric, geodesic_equation
 
@@ -33,9 +29,7 @@ class Parallelepiped(Chart3DTo3D):
         direction0: AbstractVector,
         direction1: AbstractVector,
         direction2: AbstractVector,
-        interval0: Optional[Interval] = None,
-        interval1: Optional[Interval] = None,
-        interval2: Optional[Interval] = None,
+        domain: Domain3D = R3,
         offset: Optional[AbstractVector] = None,
     ):
         if are_linear_dependent((direction0, direction1, direction2)):
@@ -45,16 +39,7 @@ class Parallelepiped(Chart3DTo3D):
                 f" direction1={direction1}, direction2={direction2})."
             )
 
-        if interval0 is None:
-            interval0 = Interval(-math.inf, math.inf)
-        if interval1 is None:
-            interval1 = Interval(-math.inf, math.inf)
-        if interval2 is None:
-            interval2 = Interval(-math.inf, math.inf)
-
-        Chart3DTo3D.__init__(
-            self, CartesianProduct3D(interval0, interval1, interval2)
-        )
+        Chart3DTo3D.__init__(self, domain)
 
         self._direction0 = direction0
         self._direction1 = direction1

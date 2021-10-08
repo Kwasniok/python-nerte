@@ -13,7 +13,6 @@ from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates2D, Coordinates3D
 from nerte.values.coordinates_unittest import coordinates_3d_equiv
-from nerte.values.interval import Interval
 from nerte.values.linalg import (
     AbstractVector,
     ZERO_VECTOR,
@@ -22,13 +21,15 @@ from nerte.values.linalg import (
     UNIT_VECTOR2,
 )
 from nerte.values.linalg_unittest import vec_equiv
-from nerte.values.domains import OutOfDomainError
+from nerte.values.interval import Interval
+from nerte.values.domains import OutOfDomainError, CartesianProduct2D
 from nerte.values.charts.cartesian.plane import Plane
 
 
 class PlaneConstructorTest(BaseTestCase):
     def setUp(self) -> None:
-        self.interval = Interval(-math.inf, 4.0)
+        interval = Interval(-math.inf, 4.0)
+        self.domain = CartesianProduct2D(interval, interval)
         self.v0 = ZERO_VECTOR
         self.b0 = UNIT_VECTOR0
         self.b1 = UNIT_VECTOR1
@@ -37,15 +38,9 @@ class PlaneConstructorTest(BaseTestCase):
     def test_constructor(self) -> None:
         """Tests the constructor."""
         Plane(self.b0, self.b1)
-        Plane(self.b0, self.b1, interval0=self.interval)
-        Plane(
-            self.b0,
-            self.b1,
-            interval0=self.interval,
-            interval1=self.interval,
-        )
+        Plane(self.b0, self.b1, domain=self.domain)
         Plane(self.b0, self.b1, offset=self.offset)
-        Plane(self.b0, self.b1, interval0=self.interval, offset=self.offset)
+        Plane(self.b0, self.b1, domain=self.domain, offset=self.offset)
         with self.assertRaises(ValueError):
             Plane(self.v0, self.b1)
         with self.assertRaises(ValueError):
@@ -59,6 +54,7 @@ class FinitePlaneTest(BaseTestCase):
         self.v1 = UNIT_VECTOR0 * 3
         self.v2 = UNIT_VECTOR1 * 2
         interval = Interval(-1.0, +1.0)
+        domain = CartesianProduct2D(interval, interval)
         inside = (0.0,)
         outside = (-2.0, 2.0, -math.inf, math.inf, math.nan)
         values = tuple(itertools.chain(inside, outside))
@@ -77,8 +73,7 @@ class FinitePlaneTest(BaseTestCase):
         self.chart = Plane(
             self.v1,
             self.v2,
-            interval0=interval,
-            interval1=interval,
+            domain=domain,
             offset=AbstractVector((0.0, 0.0, 5.0)),
         )
 
@@ -116,6 +111,7 @@ class SemiFinitePlaneTest(BaseTestCase):
         self.v2 = UNIT_VECTOR1 * 2
         self.n = UNIT_VECTOR2
         interval = Interval(-math.inf, +1.0)
+        domain = CartesianProduct2D(interval, interval)
         inside = (0.0, -2.0)
         outside = (2.0, -math.inf, math.inf, math.nan)
         values = tuple(itertools.chain(inside, outside))
@@ -134,8 +130,7 @@ class SemiFinitePlaneTest(BaseTestCase):
         self.chart = Plane(
             self.v1,
             self.v2,
-            interval0=interval,
-            interval1=interval,
+            domain=domain,
             offset=AbstractVector((0.0, 0.0, 5.0)),
         )
 

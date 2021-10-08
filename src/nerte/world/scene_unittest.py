@@ -36,8 +36,6 @@ class SceneTest(BaseTestCase):
         manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
-            interval0=interval,
-            interval1=interval,
         )
         dim = 20
         self.camera = Camera(

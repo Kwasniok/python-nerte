@@ -13,7 +13,6 @@ from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.coordinates_unittest import coordinates_3d_equiv
-from nerte.values.interval import Interval
 from nerte.values.linalg import (
     AbstractVector,
     ZERO_VECTOR,
@@ -31,13 +30,15 @@ from nerte.values.util.convert import (
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_delta import delta_as_tangent
 from nerte.values.tangential_vector_unittest import tan_vec_equiv
-from nerte.values.domains import OutOfDomainError
+from nerte.values.interval import Interval
+from nerte.values.domains import OutOfDomainError, CartesianProduct3D
 from nerte.values.charts.cartesian.parallelepiped import Parallelepiped
 
 
 class ParallelepipedConstructorTest(BaseTestCase):
     def setUp(self) -> None:
-        self.interval = Interval(-math.inf, 4.0)
+        interval = Interval(-math.inf, 4.0)
+        self.domain = CartesianProduct3D(interval, interval, interval)
         self.v0 = ZERO_VECTOR
         self.b0 = UNIT_VECTOR0
         self.b1 = UNIT_VECTOR1
@@ -47,21 +48,10 @@ class ParallelepipedConstructorTest(BaseTestCase):
     def test_constructor(self) -> None:
         """Tests the constructor."""
         Parallelepiped(self.b0, self.b1, self.b2)
-        Parallelepiped(self.b0, self.b1, self.b2, interval0=self.interval)
-        Parallelepiped(
-            self.b0,
-            self.b1,
-            self.b2,
-            interval0=self.interval,
-            interval1=self.interval,
-        )
+        Parallelepiped(self.b0, self.b1, self.b2, domain=self.domain)
         Parallelepiped(self.b0, self.b1, self.b2, offset=self.offset)
         Parallelepiped(
-            self.b0,
-            self.b1,
-            self.b2,
-            interval0=self.interval,
-            offset=self.offset,
+            self.b0, self.b1, self.b2, domain=self.domain, offset=self.offset
         )
         with self.assertRaises(ValueError):
             Parallelepiped(self.v0, self.b1, self.b2)
@@ -82,6 +72,8 @@ class FiniteParallelepipedTest(BaseTestCase):
         self.v2 = UNIT_VECTOR1 * 2
         self.v3 = UNIT_VECTOR2
         interval = Interval(-1.0, +1.0)
+        domain = CartesianProduct3D(interval, interval, interval)
+        offset = AbstractVector((0.0, 0.0, 5.0))
         inside = (0.0,)
         outside = (-2.0, 2.0, -math.inf, math.inf, math.nan)
         values = tuple(itertools.chain(inside, outside))
@@ -105,13 +97,7 @@ class FiniteParallelepipedTest(BaseTestCase):
             if not (x in inside and y in inside and z in inside)
         )
         self.chart = Parallelepiped(
-            self.v1,
-            self.v2,
-            self.v3,
-            interval0=interval,
-            interval1=interval,
-            interval2=interval,
-            offset=AbstractVector((0.0, 0.0, 5.0)),
+            self.v1, self.v2, self.v3, domain=domain, offset=offset
         )
         self.tangents_inside = tuple(
             TangentialVector(c, UNIT_VECTOR0) for c in self.coords_inside

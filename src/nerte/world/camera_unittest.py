@@ -20,13 +20,13 @@ class CameraTest(BaseTestCase):
     def setUp(self) -> None:
         self.location = Coordinates3D((1.1, 2.2, 3.3))
         interval = Interval(-1.0, 1.0)
+        domain = CartesianProduct2D(interval, interval)
         self.detector_domain = CartesianProduct2D(interval, interval)
         self.detector_domain_filter = CartesianProduct2D(interval, interval)
         self.detector_manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
-            interval0=interval,
-            interval1=interval,
+            domain=domain,
         )
         self.dim = 100
 

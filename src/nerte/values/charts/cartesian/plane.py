@@ -2,8 +2,6 @@
 
 from typing import Optional
 
-import math
-
 from nerte.values.coordinates import Coordinates2D, Coordinates3D
 from nerte.values.linalg import (
     AbstractVector,
@@ -12,8 +10,7 @@ from nerte.values.linalg import (
     are_linear_dependent,
 )
 from nerte.values.util.convert import vector_as_coordinates
-from nerte.values.interval import Interval
-from nerte.values.domains import CartesianProduct2D
+from nerte.values.domains import Domain2D, R2
 from nerte.values.charts.chart_2_to_3 import Chart2DTo3D
 
 
@@ -27,8 +24,7 @@ class Plane(Chart2DTo3D):
         self,
         direction0: AbstractVector,
         direction1: AbstractVector,
-        interval0: Optional[Interval] = None,
-        interval1: Optional[Interval] = None,
+        domain: Domain2D = R2,
         offset: Optional[AbstractVector] = None,
     ):
         if are_linear_dependent((direction0, direction1)):
@@ -37,12 +33,7 @@ class Plane(Chart2DTo3D):
                 f" independent (not direction0={direction0} and direction1={direction1})."
             )
 
-        if interval0 is None:
-            interval0 = Interval(-math.inf, math.inf)
-        if interval1 is None:
-            interval1 = Interval(-math.inf, math.inf)
-
-        Chart2DTo3D.__init__(self, CartesianProduct2D(interval0, interval1))
+        Chart2DTo3D.__init__(self, domain)
 
         self._direction0 = direction0
         self._direction1 = direction1
