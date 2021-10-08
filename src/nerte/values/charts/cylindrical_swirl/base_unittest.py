@@ -29,6 +29,17 @@ from nerte.values.charts.cylindrical_swirl.base import (
 )
 
 
+class ConstructorTest(BaseTestCase):
+    def setUp(self) -> None:
+        self.invalid_swirls = (-math.inf, +math.inf, math.nan)
+
+    def test_constructor(self) -> None:
+        """Tests the constructor."""
+        for swirl in self.invalid_swirls:
+            with self.assertRaises(ValueError):
+                CylindricalSwirlDomain(swirl)
+
+
 class DomainTest(BaseTestCase):
     def setUp(self) -> None:
         swirl = 7

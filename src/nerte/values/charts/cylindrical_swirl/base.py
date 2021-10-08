@@ -17,6 +17,13 @@ class CylindricalSwirlDomain(Domain3D):
     """Domain of cylindrical swirl coordinates for fixed swirl value."""
 
     def __init__(self, swirl: float) -> None:
+
+        if not math.isfinite(swirl):
+            raise ValueError(
+                f"Cannot construct cylindrical swirl domain with swirl={swirl}."
+                f" Value must be finite."
+            )
+
         self.swirl = swirl
 
     def are_inside(self, coords: Coordinates3D) -> bool:
