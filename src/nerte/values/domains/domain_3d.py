@@ -74,7 +74,7 @@ class Empty(Domain3D):
 
 EMPTY3D = Empty()
 
-# TODO: test
+
 class CartesianProduct3D(Domain3D):
     """
     Domain describing the cartesian product of two intervals.
