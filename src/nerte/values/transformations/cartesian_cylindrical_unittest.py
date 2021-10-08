@@ -23,7 +23,7 @@ from nerte.values.linalg import (
 )
 from nerte.values.linalg_unittest import rank3tensor_equiv
 from nerte.values.transformations.cartesian_cylindrical import (
-    CARTESIAN_TO_CYLINDRIC,
+    CARTESIAN_TO_CYLINDRICAL,
 )
 
 
@@ -35,7 +35,7 @@ class CoordinateTransformationTest(BaseTestCase):
         )
         # r, phi, z
         self.cylin_coords = Coordinates3D((2.0, math.pi / 4, 3.0))
-        self.trafo = CARTESIAN_TO_CYLINDRIC
+        self.trafo = CARTESIAN_TO_CYLINDRICAL
 
     def test_transform_coords(self) -> None:
         """Tests cathesian to cylindrical coordinates conversion."""
@@ -88,7 +88,7 @@ class VectorTransfomrationTest(BaseTestCase):
         self.cart_tangents = tuple(
             TangentialVector(point=cart_coords, vector=v) for v in cart_vecs
         )
-        self.trafo = CARTESIAN_TO_CYLINDRIC
+        self.trafo = CARTESIAN_TO_CYLINDRICAL
 
     def test_transform_tangent(self) -> None:
         """Tests cartesian to cylindrical tangential vector conversion."""
@@ -115,7 +115,7 @@ class HesseTensorTest(BaseTestCase):
         self.cart_coords = Coordinates3D((2.0, 3.0, 5.0))
         # r, phi, z
         self.cylin_coords = Coordinates3D((2.0, math.pi / 4, 3.0))
-        self.trafo = CARTESIAN_TO_CYLINDRIC
+        self.trafo = CARTESIAN_TO_CYLINDRICAL
         self.cart_hesse = Rank3Tensor(
             AbstractMatrix(
                 AbstractVector((-18 / 169, -27 / 169, 0.0)),

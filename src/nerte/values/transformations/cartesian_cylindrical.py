@@ -105,6 +105,6 @@ class CartesianToCylindricalTransformation(Transformation3D):
         )
 
 
-CARTESIAN_TO_CYLINDRIC = CartesianToCylindricalTransformation(
+CARTESIAN_TO_CYLINDRICAL = CartesianToCylindricalTransformation(
     CARTESIAN_DOMAIN, CYLINDRICAL_DOMAIN
 )
