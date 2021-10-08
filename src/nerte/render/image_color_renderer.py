@@ -9,7 +9,7 @@ from nerte.values.color import Color, Colors
 from nerte.world.camera import Camera
 from nerte.world.object import Object
 from nerte.world.scene import Scene
-from nerte.geometry.geometry import Geometry
+from nerte.geometry import Geometry
 from nerte.render.image_renderer import ImageRenderer
 from nerte.render.projection import ProjectionMode
 

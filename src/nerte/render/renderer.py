@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 
 from nerte.world.scene import Scene
-from nerte.geometry.geometry import Geometry
+from nerte.geometry import Geometry
 
 
 # pylint: disable=R0903

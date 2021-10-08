@@ -15,7 +15,7 @@ from nerte.values.domains import CartesianProduct2D
 from nerte.values.charts.cartesian import Plane
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
-from nerte.geometry.geometry import StandardGeometry
+from nerte.geometry import StandardGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_renderer import ImageRenderer
 

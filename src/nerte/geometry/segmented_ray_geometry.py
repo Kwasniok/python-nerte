@@ -15,7 +15,7 @@ from nerte.values.ray_segment import RaySegment
 from nerte.values.intersection_info import IntersectionInfo, IntersectionInfos
 from nerte.values.extended_intersection_info import ExtendedIntersectionInfo
 from nerte.values.charts import Chart3DTo3D
-from nerte.geometry.geometry import Geometry, intersection_ray_depth
+from nerte.geometry.base import Geometry, intersection_ray_depth
 
 
 class SegmentedRayGeometry(Geometry):

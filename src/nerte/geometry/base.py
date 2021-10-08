@@ -1,4 +1,4 @@
-"""Module for representing a geometry."""
+"""Bse module for representing a geometry."""
 
 from abc import ABC, abstractmethod
 

@@ -23,7 +23,7 @@ from nerte.values.color import Color, Colors
 from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
-from nerte.geometry.geometry import StandardGeometry
+from nerte.geometry import StandardGeometry
 from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_filter_renderer import (

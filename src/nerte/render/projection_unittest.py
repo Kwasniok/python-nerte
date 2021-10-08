@@ -19,8 +19,8 @@ from nerte.values.interval import Interval
 from nerte.values.domains import CartesianProduct2D, EMPTY2D
 from nerte.values.charts.cartesian import Plane
 from nerte.world.camera import Camera
-from nerte.geometry.geometry import StandardGeometry
-from nerte.geometry.geometry_unittest import standard_ray_equiv
+from nerte.geometry import StandardGeometry
+from nerte.geometry.base_unittest import standard_ray_equiv
 from nerte.render.projection import (
     detector_manifold_coords,
     orthographic_ray_for_pixel,

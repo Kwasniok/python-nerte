@@ -18,7 +18,7 @@ from nerte.values.tangential_vector import TangentialVector
 from nerte.values.ray_segment import RaySegment
 from nerte.values.ray_segment_unittest import ray_segment_equiv
 from nerte.values.face import Face
-from nerte.geometry.geometry import intersection_ray_depth, StandardGeometry
+from nerte.geometry.base import intersection_ray_depth, StandardGeometry
 
 
 class IntersectionRayDepthTest(BaseTestCase):

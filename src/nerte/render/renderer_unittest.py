@@ -17,7 +17,7 @@ from nerte.values.face import Face
 from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
-from nerte.geometry.geometry import Geometry, StandardGeometry
+from nerte.geometry import Geometry, StandardGeometry
 from nerte.render.renderer import Renderer
 
 

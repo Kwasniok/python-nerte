@@ -5,7 +5,7 @@ from enum import Enum
 from nerte.values.coordinates import Coordinates2D
 from nerte.values.tangential_vector import TangentialVector
 from nerte.world.camera import Camera
-from nerte.geometry.geometry import Geometry
+from nerte.geometry import Geometry
 
 
 def detector_manifold_coords(
