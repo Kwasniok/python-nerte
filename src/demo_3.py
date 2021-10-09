@@ -7,19 +7,21 @@ import os
 import math
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.interval import Interval
 from nerte.values.linalg import AbstractVector
-from nerte.values.face import Face
-from nerte.values.manifolds.cylindrical_swirl import (
-    Plane as CartesianPlaneInCylindricalSwirl,
+from nerte.values.interval import Interval
+from nerte.values.domains import CartesianProduct2D
+from nerte.values.transformations.cartesian_cylindrical import (
+    CARTESIAN_TO_CYLINDRICAL,
 )
+from nerte.values.charts.cartesian import Plane
+from nerte.values.charts.cylindrical import Cylinder
+from nerte.values.charts import CodomainTransformedChart2DTo3D
+from nerte.values.face import Face
 from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
-from nerte.geometry.geometry import Geometry
-from nerte.geometry.cylindrical_swirl_geometry import (
-    SwirlCylindricalRungeKuttaGeometry,
-)
+from nerte.geometry import Geometry
+from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_filter_renderer import (
     ImageFilterRenderer,
@@ -34,20 +36,21 @@ from nerte.util.random_color_generator import RandomColorGenerator
 COLOR = RandomColorGenerator()
 
 
-def make_camera(swirl: float, canvas_dimension: int) -> Camera:
+def make_camera(canvas_dimension: int) -> Camera:
     """Creates a camera with preset values."""
 
     location = Coordinates3D((0.5, 0.0, 0.5))
-    manifold = CartesianPlaneInCylindricalSwirl(
-        swirl=swirl,
-        b0=AbstractVector((0.0, -1.0, 0.0)),
-        b1=AbstractVector((-0.4, 0.0, 0.4)),
-        x0_domain=Interval(-1.0, +1.0),
-        x1_domain=Interval(-1.0, +1.0),
+    interval = Interval(-1.0, +1.0)
+    domain = CartesianProduct2D(interval, interval)
+    plane = Plane(
+        direction0=AbstractVector((0.0, -1.0, 0.0)),
+        direction1=AbstractVector((-0.4, 0.0, 0.4)),
         offset=AbstractVector((1.5, 0.0, 1.5)),
     )
+    manifold = CodomainTransformedChart2DTo3D(CARTESIAN_TO_CYLINDRICAL, plane)
     camera = Camera(
         location=location,
+        detector_domain=domain,
         detector_manifold=manifold,
         canvas_dimensions=(canvas_dimension, canvas_dimension),
     )
@@ -108,12 +111,12 @@ def add_cylinder(scene: Scene, radius: float, height: float) -> None:
     scene.add_object(obj)
 
 
-def make_scene(swirl: float, canvas_dimension: int) -> Scene:
+def make_scene(canvas_dimension: int) -> Scene:
     """
     Creates a scene with a camera pointing towards an object.
     """
 
-    camera = make_camera(swirl=swirl, canvas_dimension=canvas_dimension)
+    camera = make_camera(canvas_dimension=canvas_dimension)
     scene = Scene(camera=camera)
     add_cylinder(scene, radius=1.0, height=1.0)
 
@@ -160,14 +163,13 @@ def main() -> None:
 
     # NOTE: Increase the canvas dimension to improve the image quality.
     #       This wil
-    swirl = 0.1
-    scene = make_scene(swirl=swirl, canvas_dimension=100)
+    scene = make_scene(canvas_dimension=100)
     max_steps = 25
-    geo = SwirlCylindricalRungeKuttaGeometry(
+    geo = RungeKuttaGeometry(
+        Cylinder(),
         max_ray_depth=math.inf,
         step_size=0.125,
         max_steps=max_steps,
-        swirl=swirl,
     )
 
     output_path = "../images"

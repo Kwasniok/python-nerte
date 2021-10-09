@@ -1,20 +1,21 @@
-"""This demo script renders a test scene in standard geometry."""
+"""This demo script renders a test scene in basic Runge-Kutta geometry."""
 
 import os
+import math
 
 from enum import IntEnum
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.linalg import AbstractVector
+from nerte.values.linalg import AbstractVector, STANDARD_BASIS
 from nerte.values.interval import Interval
 from nerte.values.domains import CartesianProduct2D
-from nerte.values.charts.cartesian import Plane
+from nerte.values.charts.cartesian import Plane, Parallelepiped
 from nerte.values.face import Face
 from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
 from nerte.geometry import Geometry
-from nerte.geometry import StandardGeometry
+from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_color_renderer import ImageColorRenderer
 from nerte.util.random_color_generator import RandomColorGenerator
@@ -175,13 +176,19 @@ def main() -> None:
     # NOTE: Increase the canvas dimension to improve the image quality.
     #       This will also increase rendering time!
     scene = make_scene(canvas_dimension=100)
-    geo = StandardGeometry()
+    chart = Parallelepiped(*STANDARD_BASIS)
+    geo = RungeKuttaGeometry(
+        chart=chart,
+        max_ray_depth=math.inf,
+        step_size=1.0,
+        max_steps=5,
+    )
 
     render(
         scene=scene,
         geometry=geo,
         output_path="../images",
-        file_prefix="demo_0",
+        file_prefix="demo_1",
         show=True,  # disable if images cannot be displayed
     )
 
