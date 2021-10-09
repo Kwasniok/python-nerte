@@ -1,6 +1,6 @@
 """
 Demonstartes the image filter renderer with an example scene in cylindrical
-coordinates an various filters.
+coordinates and various filters.
 """
 
 import os
