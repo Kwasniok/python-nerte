@@ -1,6 +1,6 @@
 """
-Demonstartes the image filter renderer with an example scene in cartesian
-swirl coordinates and various filters.
+Demonstartes the image filter renderer with an example scene in cartesian swirl
+coordinates and various filters.
 """
 
 import os
@@ -8,19 +8,18 @@ import math
 from enum import IntEnum
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.interval import Interval
 from nerte.values.linalg import AbstractVector
+from nerte.values.interval import Interval
+from nerte.values.domains import CartesianProduct2D
+from nerte.values.domains.cartesian_swirl import CartesianSwirlDomain
+from nerte.values.submanifolds import Plane
+from nerte.values.manifolds.swirl import CartesianSwirl
 from nerte.values.face import Face
-from nerte.values.manifolds.cartesian_swirl import (
-    Plane as CartesianPlaneInCartesianSwirl,
-)
 from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
-from nerte.geometry.geometry import Geometry
-from nerte.geometry.cartesian_swirl_geometry import (
-    SwirlCartesianRungeKuttaGeometry,
-)
+from nerte.geometry import Geometry
+from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_filter_renderer import (
     ImageFilterRenderer,
@@ -61,17 +60,18 @@ def make_camera(swirl: float, canvas_dimension: int) -> Camera:
     """Creates a camera with preset values."""
 
     location = Coordinates3D((0.0, 2.5, 2.5))
+    interval = Interval(-1.0, +1.0)
+    domain = CartesianProduct2D(interval, interval)
     alpha = 0 * math.pi / 4
-    manifold = CartesianPlaneInCartesianSwirl(
-        swirl=swirl,
-        b0=AbstractVector((1.0, 0.0, 0.0)),
-        b1=AbstractVector((0.0, math.cos(alpha), math.sin(alpha))),
-        x0_domain=Interval(-1.0, +1.0),
-        x1_domain=Interval(-1.0, +1.0),
+    plane = Plane(
+        direction0=AbstractVector((1.0, 0.0, 0.0)),
+        direction1=AbstractVector((0.0, math.cos(alpha), math.sin(alpha))),
         offset=AbstractVector((0.0, 2.0, 2.0)),
     )
+    manifold = plane  # TODO: should be swirl plane and not cartesian plane
     camera = Camera(
         location=location,
+        detector_domain=domain,
         detector_manifold=manifold,
         canvas_dimensions=(canvas_dimension, canvas_dimension),
     )
@@ -124,7 +124,7 @@ def make_scene(swirl: float, canvas_dimension: int) -> Scene:
     Creates a scene with a camera pointing towards an object.
     """
 
-    camera = make_camera(swirl=swirl, canvas_dimension=canvas_dimension)
+    camera = make_camera(swirl, canvas_dimension=canvas_dimension)
     scene = Scene(camera=camera)
     add_box(scene, size=1.0)
 
@@ -174,11 +174,11 @@ def main() -> None:
     swirl = 0.05
     scene = make_scene(swirl=swirl, canvas_dimension=100)
     max_steps = 50
-    geo = SwirlCartesianRungeKuttaGeometry(
+    geo = RungeKuttaGeometry(
+        CartesianSwirl(swirl),
         max_ray_depth=8.0,
-        step_size=0.25,
+        step_size=0.125,
         max_steps=max_steps,
-        swirl=swirl,
     )
 
     output_path = "../images"

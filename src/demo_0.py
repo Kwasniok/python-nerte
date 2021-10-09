@@ -1,19 +1,20 @@
-"""This demo script renders a test scene in euclidean geometry."""
+"""This demo script renders a test scene in standard geometry."""
 
 import os
 
 from enum import IntEnum
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.interval import Interval
 from nerte.values.linalg import AbstractVector
-from nerte.values.manifolds.cartesian import Plane
+from nerte.values.interval import Interval
+from nerte.values.domains import CartesianProduct2D
+from nerte.values.submanifolds import Plane
 from nerte.values.face import Face
 from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
-from nerte.geometry.geometry import Geometry
-from nerte.geometry.cartesian_geometry import CartesianGeometry
+from nerte.geometry import Geometry
+from nerte.geometry import StandardGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_color_renderer import ImageColorRenderer
 from nerte.util.random_color_generator import RandomColorGenerator
@@ -49,15 +50,15 @@ def make_camera(canvas_dimension: int) -> Camera:
     """Creates a camera with preset values."""
 
     location = Coordinates3D((0.0, 0.0, -2.0))
-    manifold_param_domain = Interval(-1.0, 1.0)
+    interval = Interval(-1.0, 1.0)
+    domain = CartesianProduct2D(interval, interval)
     manifold = Plane(
         AbstractVector((1.0, 0.0, 0.0)),
         AbstractVector((0.0, 1.0, 0.0)),
-        x0_domain=manifold_param_domain,
-        x1_domain=manifold_param_domain,
     )
     camera = Camera(
         location=location,
+        detector_domain=domain,
         detector_manifold=manifold,
         canvas_dimensions=(canvas_dimension, canvas_dimension),
     )
@@ -174,7 +175,7 @@ def main() -> None:
     # NOTE: Increase the canvas dimension to improve the image quality.
     #       This will also increase rendering time!
     scene = make_scene(canvas_dimension=100)
-    geo = CartesianGeometry()
+    geo = StandardGeometry()
 
     render(
         scene=scene,

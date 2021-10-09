@@ -17,7 +17,7 @@ from nerte.values.linalg import AbstractVector
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.interval import Interval
 from nerte.values.domains import CartesianProduct2D, EMPTY2D
-from nerte.values.charts.cartesian import Plane
+from nerte.values.submanifolds import Plane
 from nerte.world.camera import Camera
 from nerte.geometry import StandardGeometry
 from nerte.geometry.base_unittest import standard_ray_equiv

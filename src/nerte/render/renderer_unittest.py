@@ -12,7 +12,7 @@ from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector
 from nerte.values.interval import Interval
 from nerte.values.domains import CartesianProduct2D
-from nerte.values.charts.cartesian import Plane
+from nerte.values.submanifolds import Plane
 from nerte.values.face import Face
 from nerte.world.object import Object
 from nerte.world.camera import Camera

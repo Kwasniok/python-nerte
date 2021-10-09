@@ -22,13 +22,13 @@ from nerte.values.intersection_info import IntersectionInfo
 from nerte.values.extended_intersection_info import ExtendedIntersectionInfo
 from nerte.values.interval import Interval, REALS
 from nerte.values.domains import CartesianProduct3D
-from nerte.values.charts import IdentityChart3D
+from nerte.values.manifolds.manifold_3d_unittest import DummyManifold3D
 from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 
 
 class ConstructorTest(BaseTestCase):
     def setUp(self) -> None:
-        self.chart = IdentityChart3D(
+        self.manifold = DummyManifold3D(
             CartesianProduct3D(Interval(-1, +1), REALS, REALS)
         )
 
@@ -36,59 +36,68 @@ class ConstructorTest(BaseTestCase):
         """Test the constructor."""
 
         RungeKuttaGeometry(
-            self.chart, max_ray_depth=1.0, step_size=0.1, max_steps=1
+            self.manifold, max_ray_depth=1.0, step_size=0.1, max_steps=1
         )
         # invalid max_ray_depth
         with self.assertRaises(ValueError):
             RungeKuttaGeometry(
-                self.chart, max_ray_depth=-1.0, step_size=0.1, max_steps=1
+                self.manifold, max_ray_depth=-1.0, step_size=0.1, max_steps=1
             )
         with self.assertRaises(ValueError):
             RungeKuttaGeometry(
-                self.chart, max_ray_depth=0.0, step_size=0.1, max_steps=1
+                self.manifold, max_ray_depth=0.0, step_size=0.1, max_steps=1
             )
         with self.assertRaises(ValueError):
             RungeKuttaGeometry(
-                self.chart, max_ray_depth=math.nan, step_size=0.1, max_steps=1
+                self.manifold,
+                max_ray_depth=math.nan,
+                step_size=0.1,
+                max_steps=1,
             )
         # invalid step_size
         with self.assertRaises(ValueError):
             RungeKuttaGeometry(
-                self.chart, max_ray_depth=1.0, step_size=0.0, max_steps=1
+                self.manifold, max_ray_depth=1.0, step_size=0.0, max_steps=1
             )
         with self.assertRaises(ValueError):
             RungeKuttaGeometry(
-                self.chart, max_ray_depth=1.0, step_size=-1.0, max_steps=1
+                self.manifold, max_ray_depth=1.0, step_size=-1.0, max_steps=1
             )
         with self.assertRaises(ValueError):
             RungeKuttaGeometry(
-                self.chart, max_ray_depth=1.0, step_size=math.inf, max_steps=1
+                self.manifold,
+                max_ray_depth=1.0,
+                step_size=math.inf,
+                max_steps=1,
             )
         with self.assertRaises(ValueError):
             RungeKuttaGeometry(
-                self.chart, max_ray_depth=1.0, step_size=math.nan, max_steps=1
+                self.manifold,
+                max_ray_depth=1.0,
+                step_size=math.nan,
+                max_steps=1,
             )
         # invalid max_steps
         with self.assertRaises(ValueError):
             RungeKuttaGeometry(
-                self.chart, max_ray_depth=1.0, step_size=1.0, max_steps=-1
+                self.manifold, max_ray_depth=1.0, step_size=1.0, max_steps=-1
             )
         with self.assertRaises(ValueError):
             RungeKuttaGeometry(
-                self.chart, max_ray_depth=1.0, step_size=0.1, max_steps=0
+                self.manifold, max_ray_depth=1.0, step_size=0.1, max_steps=0
             )
 
 
 class PropertiesTest(BaseTestCase):
     def setUp(self) -> None:
-        self.chart = IdentityChart3D(
+        self.manifold = DummyManifold3D(
             CartesianProduct3D(Interval(-1, +1), REALS, REALS)
         )
         self.max_ray_depth = 1.0
         self.step_size = 0.1
         self.max_steps = 1
         self.geometry = RungeKuttaGeometry(
-            chart=self.chart,
+            manifold=self.manifold,
             max_ray_depth=self.max_ray_depth,
             step_size=self.step_size,
             max_steps=self.max_steps,
@@ -96,7 +105,7 @@ class PropertiesTest(BaseTestCase):
 
     def test_properties(self) -> None:
         """Tests the properties."""
-        self.assertTrue(self.geometry.chart() is self.chart)
+        self.assertTrue(self.geometry.manifold() is self.manifold)
         self.assertTrue(self.geometry.max_ray_depth() == self.max_ray_depth)
         self.assertTrue(self.geometry.step_size() == self.step_size)
         self.assertTrue(self.geometry.max_steps() == self.max_steps)
@@ -104,11 +113,11 @@ class PropertiesTest(BaseTestCase):
 
 class AreValidCoordinatesTest(BaseTestCase):
     def setUp(self) -> None:
-        chart = IdentityChart3D(
+        manifold = DummyManifold3D(
             CartesianProduct3D(Interval(-1, +1), REALS, REALS)
         )
         self.geo = RungeKuttaGeometry(
-            chart, max_ray_depth=1.0, step_size=0.1, max_steps=10
+            manifold, max_ray_depth=1.0, step_size=0.1, max_steps=10
         )
         self.valid_coords = (Coordinates3D((0.0, 0.0, 0.0)),)
         self.invalid_coords = (
@@ -129,11 +138,11 @@ class AreValidCoordinatesTest(BaseTestCase):
 
 class RayConstructorTest(BaseTestCase):
     def setUp(self) -> None:
-        chart = IdentityChart3D(
+        manifold = DummyManifold3D(
             CartesianProduct3D(Interval(-1, +1), REALS, REALS)
         )
         self.geo = RungeKuttaGeometry(
-            chart,
+            manifold,
             max_ray_depth=1.0,
             step_size=0.1,  # enforce multiple steps until hit
             max_steps=10,
@@ -141,7 +150,7 @@ class RayConstructorTest(BaseTestCase):
         self.coords = Coordinates3D((0.0, 0.0, 0.0))
         self.vector = AbstractVector((0.0, 1.0, 2.0))
         self.tangent = TangentialVector(point=self.coords, vector=self.vector)
-        self.initial_tangent = chart.normalized(self.tangent)
+        self.initial_tangent = manifold.normalized(self.tangent)
 
     def test_constructor(self) -> None:
         """Tests the constructor."""
@@ -152,11 +161,11 @@ class RayConstructorTest(BaseTestCase):
 
 class RayPropertiesTest(BaseTestCase):
     def setUp(self) -> None:
-        chart = IdentityChart3D(
+        manifold = DummyManifold3D(
             CartesianProduct3D(Interval(-1, +1), REALS, REALS)
         )
         self.geo = RungeKuttaGeometry(
-            chart,
+            manifold,
             max_ray_depth=1.0,
             step_size=0.1,  # enforce multiple steps until hit
             max_steps=10,
@@ -168,7 +177,7 @@ class RayPropertiesTest(BaseTestCase):
             geometry=self.geo,
             initial_tangent=tangent,
         )
-        self.initial_tangent = chart.normalized(tangent)
+        self.initial_tangent = manifold.normalized(tangent)
 
     def test_properties(self) -> None:
         """Tests the properties."""
@@ -188,11 +197,11 @@ class RayIntersectsTest(BaseTestCase):
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry (cartesian & euclidean)
-        chart = IdentityChart3D(
+        manifold = DummyManifold3D(
             CartesianProduct3D(Interval(-1, +1), REALS, REALS)
         )
         self.geo = RungeKuttaGeometry(
-            chart,
+            manifold,
             max_ray_depth=1.0,
             step_size=0.1,  # enforce multiple steps until hit
             max_steps=10,
@@ -266,11 +275,11 @@ class RayIntersectsRayLeftManifoldEventuallyTest(BaseTestCase):
         p3 = Coordinates3D((2.0, 1.0, 1.0))
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry (cartesian & euclidean)
-        chart = IdentityChart3D(
+        manifold = DummyManifold3D(
             CartesianProduct3D(Interval(-1, +1), REALS, REALS)
         )
         self.geo = RungeKuttaGeometry(
-            chart,
+            manifold,
             max_ray_depth=10.0,
             step_size=0.1,  # enforce multiple steps until hit
             max_steps=15,
@@ -305,11 +314,11 @@ class RayIntersectsRayLeftManifoldImmediatelyTest(BaseTestCase):
         p3 = Coordinates3D((2.0, 1.0, 1.0))
         self.faces = list(Face(*ps) for ps in permutations((p1, p2, p3)))
         # geometry (cartesian & euclidean)
-        chart = IdentityChart3D(
+        manifold = DummyManifold3D(
             CartesianProduct3D(Interval(-1, +1), REALS, REALS)
         )
         self.geo = RungeKuttaGeometry(
-            chart,
+            manifold,
             max_ray_depth=10.0,
             step_size=0.1,  # enforce multiple steps until hit
             max_steps=15,
@@ -344,18 +353,18 @@ class RayIntersectsMetaDataTest(BaseTestCase):
         p3 = Coordinates3D((0.0, 0.0, 1.0))
         self.face = Face(p1, p2, p3)
         # geometry (cartesian & euclidean)
-        chart = IdentityChart3D(
+        manifold = DummyManifold3D(
             CartesianProduct3D(Interval(-1, +1), REALS, REALS)
         )
         geos = (
             RungeKuttaGeometry(
-                chart,
+                manifold,
                 max_ray_depth=1000.0,
                 step_size=1,  # direct hit
                 max_steps=100,
             ),
             RungeKuttaGeometry(
-                chart,
+                manifold,
                 max_ray_depth=1000.0,
                 step_size=0.1,  # 6 steps until hit (1/sqrt(3) ~ 0.577...)
                 max_steps=100,
@@ -390,11 +399,11 @@ class RayIntersectsMetaDataTest(BaseTestCase):
 
 class RayFromTest(BaseTestCase):
     def setUp(self) -> None:
-        chart = IdentityChart3D(
+        manifold = DummyManifold3D(
             CartesianProduct3D(Interval(-1, +1), REALS, REALS)
         )
         self.geo = RungeKuttaGeometry(
-            chart, max_ray_depth=1.0, step_size=0.1, max_steps=10
+            manifold, max_ray_depth=1.0, step_size=0.1, max_steps=10
         )
         self.coords1 = Coordinates3D((0.0, 0.0, 0.0))
         self.coords2 = Coordinates3D((0.0, 1.0, 2.0))
@@ -404,7 +413,7 @@ class RayFromTest(BaseTestCase):
         self.invalid_tangent = TangentialVector(
             point=self.invalid_coords, vector=vector
         )
-        self.initial_tangent = chart.normalized(self.tangent)
+        self.initial_tangent = manifold.normalized(self.tangent)
 
     def test_ray_from_coords(self) -> None:
         """Tests ray from coordinates."""

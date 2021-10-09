@@ -15,8 +15,8 @@ from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector
 from nerte.values.interval import Interval
 from nerte.values.domains import CartesianProduct2D, EMPTY3D
-from nerte.values.charts import IdentityChart3D
-from nerte.values.charts.cartesian import Plane
+from nerte.values.manifolds.manifold_3d_unittest import DummyManifold3D
+from nerte.values.submanifolds import Plane
 from nerte.values.face import Face
 from nerte.values.intersection_info import IntersectionInfo, IntersectionInfos
 from nerte.values.color import Color, Colors
@@ -488,7 +488,7 @@ class ImageFilterRendererProjectionFailureTest(BaseTestCase):
         interval = Interval(-1.0, 1.0)
         domain = CartesianProduct2D(interval, interval)
         # manifold with invalid coordinates for pixel (0,0)
-        manifold = Plane(
+        detector_manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
         )
@@ -496,16 +496,16 @@ class ImageFilterRendererProjectionFailureTest(BaseTestCase):
         cam = Camera(
             location=loc,
             detector_domain=domain,
-            detector_manifold=manifold,
+            detector_manifold=detector_manifold,
             canvas_dimensions=(self.dim, self.dim),
         )
         # scene
         self.scene = Scene(camera=cam)
-        # chart
-        chart = IdentityChart3D(EMPTY3D)
+        # manifold
+        manifold = DummyManifold3D(EMPTY3D)
         # geometry
         self.geometry = RungeKuttaGeometry(
-            chart=chart,
+            manifold=manifold,
             max_ray_depth=math.inf,
             step_size=0.1,
             max_steps=2,

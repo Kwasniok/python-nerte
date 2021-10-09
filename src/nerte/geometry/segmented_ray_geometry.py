@@ -14,7 +14,7 @@ from nerte.values.tangential_vector_delta import add_tangential_vector_delta
 from nerte.values.ray_segment import RaySegment
 from nerte.values.intersection_info import IntersectionInfo, IntersectionInfos
 from nerte.values.extended_intersection_info import ExtendedIntersectionInfo
-from nerte.values.charts import Chart3DTo3D
+from nerte.values.manifolds import Manifold3D
 from nerte.geometry.base import Geometry, intersection_ray_depth
 
 
@@ -131,7 +131,7 @@ class SegmentedRayGeometry(Geometry):
             return IntersectionInfos.NO_INTERSECTION
 
     def __init__(
-        self, chart: Chart3DTo3D, max_steps: int, max_ray_depth: float
+        self, manifold: Manifold3D, max_steps: int, max_ray_depth: float
     ):
 
         if not max_steps > 0:
@@ -145,16 +145,16 @@ class SegmentedRayGeometry(Geometry):
                 + f" positive and finite (given value is {max_ray_depth})"
             )
 
-        self._chart = chart
+        self._manifold = manifold
         self._max_steps = max_steps
         self._max_ray_depth = max_ray_depth
         self._ray_segment_length = max_ray_depth / max_steps
 
-    def chart(self) -> Chart3DTo3D:
+    def manifold(self) -> Manifold3D:
         """
-        Returns the chart used to represent the manifold.
+        Returns the representation of the manifold.
         """
-        return self._chart
+        return self._manifold
 
     def max_steps(self) -> int:
         """Returns limit for amount of ray segments to be generated."""
@@ -173,14 +173,16 @@ class SegmentedRayGeometry(Geometry):
         return self._ray_segment_length
 
     def are_valid_coords(self, coords: Coordinates3D) -> bool:
-        return self._chart.domain.are_inside(coords)
+        return self._manifold.domain.are_inside(coords)
 
     def ray_from_coords(
         self, start: Coordinates3D, target: Coordinates3D
     ) -> "SegmentedRayGeometry.Ray":
         try:
-            initial_tangent = self._chart.initial_geodesic_tangent_from_coords(
-                start, target
+            initial_tangent = (
+                self._manifold.initial_geodesic_tangent_from_coords(
+                    start, target
+                )
             )
         except ValueError as ex:
             raise ValueError(
@@ -198,7 +200,7 @@ class SegmentedRayGeometry(Geometry):
     def ray_from_tangent(
         self, initial_tangent: TangentialVector
     ) -> "SegmentedRayGeometry.Ray":
-        domain = self._chart.domain
+        domain = self._manifold.domain
         if not domain.are_inside(initial_tangent.point):
             raise ValueError(
                 f"Cannot create segmented ray from tangential vector"
@@ -219,7 +221,7 @@ class SegmentedRayGeometry(Geometry):
         segment) based on a given ray.
         """
         return RaySegment(
-            self._chart.normalized(segment.tangential_vector)
+            self._manifold.normalized(segment.tangential_vector)
             * self._ray_segment_length,
             is_finite=True,
         )
@@ -234,9 +236,9 @@ class SegmentedRayGeometry(Geometry):
               geometry. If this happens further extending the ray might be
               infeasable.
         """
-        domain = self._chart.domain
+        domain = self._manifold.domain
         tangent = segment.tangential_vector
-        delta = self._chart.geodesics_equation(tangent)
+        delta = self._manifold.geodesics_equation(tangent)
         tangent = add_tangential_vector_delta(tangent, delta)
         if not domain.are_inside(tangent.point):
             return None

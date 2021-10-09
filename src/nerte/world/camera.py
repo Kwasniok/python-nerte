@@ -4,7 +4,7 @@ from typing import Optional
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.domains import Domain2D, CartesianProduct2D
-from nerte.values.charts import Chart2DTo3D
+from nerte.values.submanifolds import Submanifold2DIn3D
 
 
 class Camera:
@@ -21,7 +21,7 @@ class Camera:
         self,
         location: Coordinates3D,
         detector_domain: CartesianProduct2D,
-        detector_manifold: Chart2DTo3D,
+        detector_manifold: Submanifold2DIn3D,
         canvas_dimensions: tuple[int, int],
         detector_domain_filter: Optional[Domain2D] = None,
     ) -> None:
