@@ -172,48 +172,39 @@ class Rank3Tensor:
     def __init__(
         self, mat0: AbstractMatrix, mat1: AbstractMatrix, mat2: AbstractMatrix
     ) -> None:
-        self._data = (mat0, mat1, mat2)
+        self._data = np.array((mat0._m, mat1._m, mat2._m))
 
     def __repr__(self) -> str:
-        return "T3(" + (",".join(repr(x) for x in self._data)) + ")"
+        return f"T3({self._data})"
 
     def __add__(self, other: "Rank3Tensor") -> "Rank3Tensor":
-        return Rank3Tensor(
-            self._data[0] + other._data[0],
-            self._data[1] + other._data[1],
-            self._data[2] + other._data[2],
-        )
+        return _rank_3_tensor_from_numpy(self._data + other._data)
 
     def __neg__(self) -> "Rank3Tensor":
-        return Rank3Tensor(
-            -self._data[0],
-            -self._data[1],
-            -self._data[2],
-        )
+        return _rank_3_tensor_from_numpy(-self._data)
 
     def __sub__(self, other: "Rank3Tensor") -> "Rank3Tensor":
-        return Rank3Tensor(
-            self._data[0] - other._data[0],
-            self._data[1] - other._data[1],
-            self._data[2] - other._data[2],
-        )
+        return _rank_3_tensor_from_numpy(self._data - other._data)
 
     def __mul__(self, fac: float) -> "Rank3Tensor":
-        return Rank3Tensor(
-            self._data[0] * fac,
-            self._data[1] * fac,
-            self._data[2] * fac,
-        )
+        return _rank_3_tensor_from_numpy(self._data * fac)
 
     def __truediv__(self, fac: float) -> "Rank3Tensor":
-        return Rank3Tensor(
-            self._data[0] / fac,
-            self._data[1] / fac,
-            self._data[2] / fac,
-        )
+        return _rank_3_tensor_from_numpy(self._data / fac)
 
     def __getitem__(self, i: int) -> AbstractMatrix:
-        return self._data[i]
+        return _abstract_matrix_from_numpy(self._data[i])
+
+
+def _rank_3_tensor_from_numpy(np_array: np.ndarray) -> Rank3Tensor:
+    """
+    Auxiliar function to wrap an np.array into a rank 3 tensor.
+    Note: For internal usage only! The input is trusted to be valid and no
+          checks are applied.
+    """
+    ten = Rank3Tensor.__new__(Rank3Tensor)
+    ten._data = np_array
+    return ten
 
 
 ZERO_RANK3TENSOR = Rank3Tensor(ZERO_MATRIX, ZERO_MATRIX, ZERO_MATRIX)
@@ -267,6 +258,59 @@ def mat_mult(
     """Return the product m3 = m1.m2 of the matrices m1 and m2."""
     return _abstract_matrix_from_numpy(
         np.dot(matrix1._m, matrix2._m)  # type: ignore[no-untyped-call]
+    )
+
+
+def tensor_3_vec_contract(
+    tensor: Rank3Tensor, vector: AbstractVector, tensor_index: int
+) -> AbstractMatrix:
+    """
+    Returns contracted matrix from tansor of rank 3 and vector.
+
+    :param tensor_index: Index of tesnor to contract (starts with 0)
+
+    Example:
+            M_{ijk} = T_{ilj} V^{l}
+        for tensor T with index 1 and vector V.
+    """
+    if not 0 <= tensor_index <= 2:
+        raise ValueError(
+            f"Cannot contract rank 3 tensor with matrix for"
+            f" tensor_index={tensor_index}. Index must be either 0, 1 or 2."
+        )
+    return _abstract_matrix_from_numpy(
+        np.tensordot(tensor._data, vector._v, axes=(tensor_index, 0))
+    )
+
+
+def tensor_3_mat_contract(
+    tensor: Rank3Tensor,
+    matrix: AbstractMatrix,
+    tensor_index: int,
+    matrix_index: int,
+) -> Rank3Tensor:
+    """
+    Returns contracted tensor of rank 3 from tansor of rank 3 and matrix.
+
+    :param tensor_index: Index of tesnor to contract (starts with 0)
+    :param matrix_index: Index of matrix to contract (starts with 0)
+
+    Example:
+            R_{ijk} = T_{ilj} M^{l}_{k}
+        for tensor T with index 1 and matrix M with index 0.
+    """
+    if not 0 <= tensor_index <= 2:
+        raise ValueError(
+            f"Cannot contract rank 3 tensor with matrix for"
+            f" tensor_index={tensor_index}. Index must be either 0, 1 or 2."
+        )
+    if not 0 <= matrix_index <= 2:
+        raise ValueError(
+            f"Cannot contract rank 3 tensor with matrix for"
+            f" matrix_index={matrix_index}. Index must be either 0 or 1."
+        )
+    return _rank_3_tensor_from_numpy(
+        np.tensordot(tensor._data, matrix._m, axes=(tensor_index, matrix_index))
     )
 
 

@@ -3,6 +3,7 @@
 # pylint: disable=C0114
 # pylint: disable=C0115
 # pylint: disable=C0144
+# pylint: disable=C0302
 
 import unittest
 
@@ -22,6 +23,8 @@ from nerte.values.linalg import (
     is_zero_vector,
     mat_vec_mult,
     mat_mult,
+    tensor_3_vec_contract,
+    tensor_3_mat_contract,
     dot,
     cross,
     length,
@@ -404,6 +407,240 @@ class MatMultTest(BaseTestCase):
         )
         self.assertPredicate2(
             mat_equiv, mat_mult(self.mat1, self.mat2), self.mat3
+        )
+
+
+class Rank3TensorVectorContractionTest(BaseTestCase):
+    # pylint: disable=R0902
+    def setUp(self) -> None:
+        self.v0 = AbstractVector((0, 0, 0))
+        self.mat0 = AbstractMatrix(self.v0, self.v0, self.v0)
+        self.ten0 = Rank3Tensor(self.mat0, self.mat0, self.mat0)
+        self.ten = Rank3Tensor(
+            AbstractMatrix(
+                AbstractVector((2, 3, 5)),
+                AbstractVector((7, 11, 13)),
+                AbstractVector((17, 19, 23)),
+            ),
+            AbstractMatrix(
+                AbstractVector((29, 31, 37)),
+                AbstractVector((41, 43, 47)),
+                AbstractVector((53, 59, 61)),
+            ),
+            AbstractMatrix(
+                AbstractVector((67, 71, 73)),
+                AbstractVector((79, 83, 89)),
+                AbstractVector((97, 101, 103)),
+            ),
+        )
+        self.vec = AbstractVector((107, 109, 113))
+        self.mat00 = AbstractMatrix(
+            AbstractVector((10946, 11723, 12817)),
+            AbstractVector((14145, 15243, 16571)),
+            AbstractVector((18557, 19877, 20749)),
+        )
+        self.mat10 = AbstractMatrix(
+            AbstractVector((2898, 3667, 4551)),
+            AbstractVector((13561, 14671, 15975)),
+            AbstractVector((26741, 28057, 29151)),
+        )
+        self.mat20 = AbstractMatrix(
+            AbstractVector((1106, 3417, 6489)),
+            AbstractVector((10663, 14385, 18995)),
+            AbstractVector((23157, 27557, 33027)),
+        )
+
+    def test_mat_mult(self) -> None:
+        """Tests the contraction of a rank 3 tensor and a vector."""
+        self.assertPredicate2(
+            mat_equiv, tensor_3_vec_contract(self.ten0, self.v0, 0), self.mat0
+        )
+        self.assertPredicate2(
+            mat_equiv, tensor_3_vec_contract(self.ten0, self.v0, 1), self.mat0
+        )
+        self.assertPredicate2(
+            mat_equiv, tensor_3_vec_contract(self.ten0, self.v0, 2), self.mat0
+        )
+        self.assertPredicate2(
+            mat_equiv, tensor_3_vec_contract(self.ten, self.vec, 0), self.mat00
+        )
+        self.assertPredicate2(
+            mat_equiv, tensor_3_vec_contract(self.ten, self.vec, 1), self.mat10
+        )
+        self.assertPredicate2(
+            mat_equiv, tensor_3_vec_contract(self.ten, self.vec, 2), self.mat20
+        )
+
+
+class Rank3TensorMatrixContractionTest(BaseTestCase):
+    # pylint: disable=R0902
+    def setUp(self) -> None:
+        v0 = AbstractVector((0, 0, 0))
+        self.mat0 = AbstractMatrix(v0, v0, v0)
+        self.ten0 = Rank3Tensor(self.mat0, self.mat0, self.mat0)
+        self.ten = Rank3Tensor(
+            AbstractMatrix(
+                AbstractVector((2, 3, 5)),
+                AbstractVector((7, 11, 13)),
+                AbstractVector((17, 19, 23)),
+            ),
+            AbstractMatrix(
+                AbstractVector((29, 31, 37)),
+                AbstractVector((41, 43, 47)),
+                AbstractVector((53, 59, 61)),
+            ),
+            AbstractMatrix(
+                AbstractVector((67, 71, 73)),
+                AbstractVector((79, 83, 89)),
+                AbstractVector((97, 101, 103)),
+            ),
+        )
+        self.mat = AbstractMatrix(
+            AbstractVector((107, 109, 113)),
+            AbstractVector((127, 131, 137)),
+            AbstractVector((139, 149, 151)),
+        )
+        self.ten00 = Rank3Tensor(
+            AbstractMatrix(
+                AbstractVector((13210, 14000, 14316)),
+                AbstractVector((14127, 14967, 15307)),
+                AbstractVector((15381, 16269, 16657)),
+            ),
+            AbstractMatrix(
+                AbstractVector((16937, 17905, 18337)),
+                AbstractVector((18175, 19199, 19667)),
+                AbstractVector((19731, 20835, 21347)),
+            ),
+            AbstractMatrix(
+                AbstractVector((22033, 23249, 23829)),
+                AbstractVector((23565, 24849, 25481)),
+                AbstractVector((24525, 25845, 26509)),
+            ),
+        )
+        self.ten01 = Rank3Tensor(
+            AbstractMatrix(
+                AbstractVector((10946, 13232, 14716)),
+                AbstractVector((11723, 14169, 15757)),
+                AbstractVector((12817, 15483, 17231)),
+            ),
+            AbstractMatrix(
+                AbstractVector((14145, 17083, 19011)),
+                AbstractVector((15243, 18401, 20469)),
+                AbstractVector((16571, 20001, 22249)),
+            ),
+            AbstractMatrix(
+                AbstractVector((18557, 22391, 24907)),
+                AbstractVector((19877, 23979, 26683)),
+                AbstractVector((20749, 25023, 27839)),
+            ),
+        )
+        self.ten10 = Rank3Tensor(
+            AbstractMatrix(
+                AbstractVector((3466, 3668, 3752)),
+                AbstractVector((4359, 4599, 4715)),
+                AbstractVector((5383, 5675, 5819)),
+            ),
+            AbstractMatrix(
+                AbstractVector((15677, 16429, 16897)),
+                AbstractVector((16979, 17803, 18303)),
+                AbstractVector((18407, 19279, 19831)),
+            ),
+            AbstractMatrix(
+                AbstractVector((30685, 32105, 33041)),
+                AbstractVector((32177, 33661, 34645)),
+                AbstractVector((33431, 34963, 35995)),
+            ),
+        )
+        self.ten11 = Rank3Tensor(
+            AbstractMatrix(
+                AbstractVector((2898, 3500, 3888)),
+                AbstractVector((3667, 4425, 4925)),
+                AbstractVector((4551, 5489, 6105)),
+            ),
+            AbstractMatrix(
+                AbstractVector((13561, 16315, 18143)),
+                AbstractVector((14671, 17653, 19625)),
+                AbstractVector((15975, 19213, 21357)),
+            ),
+            AbstractMatrix(
+                AbstractVector((26741, 32147, 35731)),
+                AbstractVector((28057, 33727, 37487)),
+                AbstractVector((29151, 35041, 38961)),
+            ),
+        )
+        self.ten20 = Rank3Tensor(
+            AbstractMatrix(
+                AbstractVector((1290, 1356, 1392)),
+                AbstractVector((3953, 4141, 4261)),
+                AbstractVector((7429, 7769, 7997)),
+            ),
+            AbstractMatrix(
+                AbstractVector((12183, 12735, 13111)),
+                AbstractVector((16381, 17105, 17621)),
+                AbstractVector((21643, 22595, 23283)),
+            ),
+            AbstractMatrix(
+                AbstractVector((26333, 27481, 28321)),
+                AbstractVector((31365, 32745, 33737)),
+                AbstractVector((37523, 39151, 40351)),
+            ),
+        )
+        self.ten21 = Rank3Tensor(
+            AbstractMatrix(
+                AbstractVector((1106, 1332, 1480)),
+                AbstractVector((3417, 4111, 4575)),
+                AbstractVector((6489, 7799, 8667)),
+            ),
+            AbstractMatrix(
+                AbstractVector((10663, 12813, 14237)),
+                AbstractVector((14385, 17279, 19203)),
+                AbstractVector((18995, 22817, 25369)),
+            ),
+            AbstractMatrix(
+                AbstractVector((23157, 27811, 30915)),
+                AbstractVector((27557, 33099, 36787)),
+                AbstractVector((33027, 39661, 44085)),
+            ),
+        )
+
+    def test_tensor_3_mat_contract(self) -> None:
+        """Tests the contraction of a rank 3 tensor and a matrix."""
+        for i in range(3):
+            for j in range(2):
+                self.assertPredicate2(
+                    rank3tensor_equiv,
+                    tensor_3_mat_contract(self.ten0, self.mat0, i, j),
+                    self.ten0,
+                )
+        self.assertPredicate2(
+            rank3tensor_equiv,
+            tensor_3_mat_contract(self.ten, self.mat, 0, 0),
+            self.ten00,
+        )
+        self.assertPredicate2(
+            rank3tensor_equiv,
+            tensor_3_mat_contract(self.ten, self.mat, 0, 1),
+            self.ten01,
+        )
+        self.assertPredicate2(
+            rank3tensor_equiv,
+            tensor_3_mat_contract(self.ten, self.mat, 1, 0),
+            self.ten10,
+        )
+        self.assertPredicate2(
+            rank3tensor_equiv,
+            tensor_3_mat_contract(self.ten, self.mat, 1, 1),
+            self.ten11,
+        )
+        self.assertPredicate2(
+            rank3tensor_equiv,
+            tensor_3_mat_contract(self.ten, self.mat, 2, 0),
+            self.ten20,
+        )
+        self.assertPredicate2(
+            rank3tensor_equiv,
+            tensor_3_mat_contract(self.ten, self.mat, 2, 1),
+            self.ten21,
         )
 
 
