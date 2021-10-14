@@ -87,6 +87,9 @@ class CartesianProduct3D(Domain3D):
     ) -> None:
         self.intervals = (interval0, interval1, interval2)
 
+    def __repr__(self) -> str:
+        return f"{self.intervals[0]}x{self.intervals[1]}x{self.intervals[2]}"
+
     def are_inside(self, coords: Coordinates3D) -> bool:
         return (
             coords[0] in self.intervals[0]

@@ -85,6 +85,9 @@ class CartesianProduct1D(Domain1D):
     def __init__(self, interval: Interval) -> None:
         self.interval = interval
 
+    def __repr__(self) -> str:
+        return f"{self.interval}"
+
     def are_inside(self, coords: Coordinates1D) -> bool:
         return coords[0] in self.interval
 

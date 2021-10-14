@@ -85,6 +85,9 @@ class CartesianProduct2D(Domain2D):
     def __init__(self, interval0: Interval, interval1: Interval) -> None:
         self.intervals = (interval0, interval1)
 
+    def __repr__(self) -> str:
+        return f"{self.intervals[0]}x{self.intervals[1]}"
+
     def are_inside(self, coords: Coordinates2D) -> bool:
         return coords[0] in self.intervals[0] and coords[1] in self.intervals[1]
 
