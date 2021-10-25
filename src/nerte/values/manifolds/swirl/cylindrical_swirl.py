@@ -77,7 +77,7 @@ class CylindricalSwirl(Manifold3D):
             AbstractMatrix(
                 AbstractVector((-a2 * r * z2, -a * r * z, -a2 * r2 * z)),
                 AbstractVector((-a * r * z, -r, -a * r2)),
-                AbstractVector((a2 * r2 * z, -a * r2, -a2 * r3)),
+                AbstractVector((-a2 * r2 * z, -a * r2, -a2 * r3)),
             ),
             AbstractMatrix(
                 AbstractVector(

@@ -19,8 +19,13 @@ from nerte.values.tangential_vector_unittest import (
 from nerte.values.tangential_vector_delta import (
     delta_as_tangent,
 )
-from nerte.values.linalg import AbstractVector, AbstractMatrix
-from nerte.values.linalg_unittest import mat_equiv
+from nerte.values.linalg import (
+    AbstractVector,
+    AbstractMatrix,
+    ZERO_MATRIX,
+    Rank3Tensor,
+)
+from nerte.values.linalg_unittest import mat_equiv, rank3tensor_equiv
 from nerte.values.manifolds.swirl.cylindrical_swirl import CylindricalSwirl
 
 
@@ -64,6 +69,38 @@ class CylindricSwirlMetricTest(BaseTestCase):
                 mat_equiv,
                 self.manifold.metric(coords),
                 met,
+            )
+
+
+class Christoffel2Test(BaseTestCase):
+    def setUp(self) -> None:
+        self.swirl = 1 / 17
+        self.manifold = CylindricalSwirl(self.swirl)
+        self.coords = (Coordinates3D((2.0, math.pi / 3, 5.0)),)
+        self.christoffel_2s = tuple(
+            Rank3Tensor(
+                AbstractMatrix(
+                    AbstractVector((-(50 / 289), -(10 / 17), -(20 / 289))),
+                    AbstractVector((-(10 / 17), -2, -(4 / 17))),
+                    AbstractVector((-(20 / 289), -(4 / 17), -(8 / 289))),
+                ),
+                AbstractMatrix(
+                    AbstractVector((1695 / 4913, 389 / 578, 678 / 4913)),
+                    AbstractVector((389 / 578, 10 / 17, 20 / 289)),
+                    AbstractVector((678 / 4913, 20 / 289, 40 / 4913)),
+                ),
+                ZERO_MATRIX,
+            )
+            for r, _, _ in self.coords
+        )
+
+    def test_fixed_values(self) -> None:
+        """Tests the Christoffel symbols of the second kind for fixed values."""
+        for coords, christoffel_2 in zip(self.coords, self.christoffel_2s):
+            self.assertPredicate2(
+                rank3tensor_equiv,
+                self.manifold.christoffel_2(coords),
+                christoffel_2,
             )
 
 

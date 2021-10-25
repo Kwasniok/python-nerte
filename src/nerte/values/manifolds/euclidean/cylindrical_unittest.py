@@ -24,9 +24,12 @@ from nerte.values.tangential_vector_delta import (
 )
 from nerte.values.linalg import (
     AbstractVector,
+    ZERO_VECTOR,
     AbstractMatrix,
+    ZERO_MATRIX,
+    Rank3Tensor,
 )
-from nerte.values.linalg_unittest import mat_equiv
+from nerte.values.linalg_unittest import mat_equiv, rank3tensor_equiv
 from nerte.values.interval import Interval
 from nerte.values.domains import CartesianProduct3D
 from nerte.values.manifolds.euclidean.cylindrical import Cylindrical
@@ -73,6 +76,37 @@ class CylindricalMetricTest(BaseTestCase):
         """Tests the cylindrical metric for fixed values."""
         for coords, met in zip(self.coords, self.metrics):
             self.assertPredicate2(mat_equiv, self.manifold.metric(coords), met)
+
+
+class Christoffel2Test(BaseTestCase):
+    def setUp(self) -> None:
+        self.manifold = Cylindrical()
+        self.coords = (Coordinates3D((2.0, 3.0, 5.0)),)
+        self.christoffel_2s = tuple(
+            Rank3Tensor(
+                AbstractMatrix(
+                    ZERO_VECTOR,
+                    AbstractVector((0, r, 0)),
+                    ZERO_VECTOR,
+                ),
+                AbstractMatrix(
+                    AbstractVector((0, r, 0)),
+                    AbstractVector((-r, 0, 0)),
+                    ZERO_VECTOR,
+                ),
+                ZERO_MATRIX,
+            )
+            for r, _, _ in self.coords
+        )
+
+    def test_fixed_values(self) -> None:
+        """Tests the Christoffel symbols of the second kind for fixed values."""
+        for coords, christoffel_2 in zip(self.coords, self.christoffel_2s):
+            self.assertPredicate2(
+                rank3tensor_equiv,
+                self.manifold.christoffel_2(coords),
+                christoffel_2,
+            )
 
 
 class CylindricalGeodesicEquationFixedValuesTest(BaseTestCase):

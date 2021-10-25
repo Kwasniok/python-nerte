@@ -35,7 +35,6 @@ class Cylindrical(Manifold3D):
             AbstractVector((0, 0, 1)),
         )
 
-    # TODO: test
     def internal_hook_christoffel_2(self, coords: Coordinates3D) -> Rank3Tensor:
         # pylint: disable=C0103
         r, _, _ = coords

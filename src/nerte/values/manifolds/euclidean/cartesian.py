@@ -29,7 +29,6 @@ class Cartesian(Manifold3D):
     def internal_hook_metric(self, coords: Coordinates3D) -> AbstractMatrix:
         return IDENTITY_MATRIX
 
-    # TODO: test
     def internal_hook_christoffel_2(self, coords: Coordinates3D) -> Rank3Tensor:
         return ZERO_RANK3TENSOR
 

@@ -19,8 +19,13 @@ from nerte.values.tangential_vector_unittest import (
 from nerte.values.tangential_vector_delta import (
     delta_as_tangent,
 )
-from nerte.values.linalg import AbstractVector, AbstractMatrix
-from nerte.values.linalg_unittest import mat_equiv
+from nerte.values.linalg import (
+    AbstractVector,
+    ZERO_MATRIX,
+    AbstractMatrix,
+    Rank3Tensor,
+)
+from nerte.values.linalg_unittest import mat_equiv, rank3tensor_equiv
 from nerte.values.manifolds.swirl.cartesian_swirl import CartesianSwirl
 
 
@@ -82,6 +87,83 @@ class CartesianSwirlMetricTest(BaseTestCase):
                 mat_equiv,
                 self.manifold.metric(coords),
                 met,
+            )
+
+
+class Christoffel2Test(BaseTestCase):
+    def setUp(self) -> None:
+        self.swirl = 1 / 17
+        self.manifold = CartesianSwirl(self.swirl)
+        self.coords = (Coordinates3D((1 / 2, 1 / 3, 1 / 5)),)
+        self.christoffel_2s = tuple(
+            Rank3Tensor(
+                AbstractMatrix(
+                    AbstractVector(
+                        (
+                            (-1105 - 115613 * math.sqrt(13)) / 207574250,
+                            -(
+                                (2 * (7735 + 292619 * math.sqrt(13)))
+                                / 311361375
+                            ),
+                            (-5525 - 260113 * math.sqrt(13)) / 57482100,
+                        )
+                    ),
+                    AbstractVector(
+                        (
+                            -(
+                                (2 * (7735 + 292619 * math.sqrt(13)))
+                                / 311361375
+                            ),
+                            -(
+                                (2 * (29835 + 2275888 * math.sqrt(13)))
+                                / 934084125
+                            ),
+                            (-9945 - 552719 * math.sqrt(13)) / 43111575,
+                        )
+                    ),
+                    AbstractVector(
+                        (
+                            (-5525 - 260113 * math.sqrt(13)) / 57482100,
+                            (-9945 - 552719 * math.sqrt(13)) / 43111575,
+                            -((13 * (765 + math.sqrt(13))) / 15918120),
+                        )
+                    ),
+                ),
+                AbstractMatrix(
+                    AbstractVector(
+                        (
+                            (3 * (-13260 + 867013 * math.sqrt(13))) / 415148500,
+                            (1105 + 115613 * math.sqrt(13)) / 207574250,
+                            (-8840 + 635813 * math.sqrt(13)) / 38321400,
+                        )
+                    ),
+                    AbstractVector(
+                        (
+                            (1105 + 115613 * math.sqrt(13)) / 207574250,
+                            (2 * (7735 + 292619 * math.sqrt(13))) / 311361375,
+                            (5525 + 260113 * math.sqrt(13)) / 57482100,
+                        )
+                    ),
+                    AbstractVector(
+                        (
+                            (-8840 + 635813 * math.sqrt(13)) / 38321400,
+                            (5525 + 260113 * math.sqrt(13)) / 57482100,
+                            (13 * (-340 + math.sqrt(13))) / 10612080,
+                        )
+                    ),
+                ),
+                ZERO_MATRIX,
+            )
+            for r, _, _ in self.coords
+        )
+
+    def test_fixed_values(self) -> None:
+        """Tests the Christoffel symbols of the second kind for fixed values."""
+        for coords, christoffel_2 in zip(self.coords, self.christoffel_2s):
+            self.assertPredicate2(
+                rank3tensor_equiv,
+                self.manifold.christoffel_2(coords),
+                christoffel_2,
             )
 
 
