@@ -11,7 +11,7 @@ from nerte.values.linalg import (
     ZERO_RANK3TENSOR,
 )
 from nerte.values.tangential_vector import TangentialVector
-from nerte.values.domains import OutOfDomainError, Domain3D
+from nerte.values.domains import OutOfDomainError, Domain3D, R3
 
 
 class Transition3D(ABC):
@@ -197,7 +197,7 @@ class Transition3D(ABC):
             self.domain.assert_inside(coords)
         except OutOfDomainError as ex:
             raise OutOfDomainError(
-                f"Cannot create second level Jacobian for"
+                f"Cannot create Hesse tensor for"
                 f" coordinates={coords}. "
                 + self.domain.not_inside_reason(coords)
             ) from ex
@@ -222,7 +222,7 @@ class Transition3D(ABC):
             self.codomain.assert_inside(coords)
         except OutOfDomainError as ex:
             raise OutOfDomainError(
-                f"Cannot create (inverse) second level Jacobian for"
+                f"Cannot create (inverse) Hesse tensor for"
                 f" coordinates={coords}. "
                 + self.codomain.not_inside_reason(coords)
             ) from ex
@@ -241,8 +241,11 @@ class Transition3D(ABC):
         """
 
 
-class Identity(Transition3D):
+class IdentityTransition3D(Transition3D):
     """Identity transformation for three-dimensional domains."""
+
+    def __init__(self, domain: Domain3D = R3):
+        Transition3D.__init__(self, domain, domain)
 
     def internal_hook_transform_coords(
         self, coords: Coordinates3D
