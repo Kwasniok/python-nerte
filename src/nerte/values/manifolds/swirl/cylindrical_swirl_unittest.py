@@ -19,12 +19,8 @@ from nerte.values.tangential_vector_unittest import (
 from nerte.values.tangential_vector_delta import (
     delta_as_tangent,
 )
-from nerte.values.linalg import (
-    AbstractVector,
-    AbstractMatrix,
-    Metric,
-)
-from nerte.values.linalg_unittest import metric_equiv
+from nerte.values.linalg import AbstractVector, AbstractMatrix
+from nerte.values.linalg_unittest import mat_equiv
 from nerte.values.manifolds.swirl.cylindrical_swirl import CylindricalSwirl
 
 
@@ -49,19 +45,15 @@ class CylindricSwirlMetricTest(BaseTestCase):
             Coordinates3D((2.0, math.pi / 3, 5.0)),
         )
         self.metrics = (
-            Metric(
-                AbstractMatrix(
-                    AbstractVector((1.0, 0.0, 0.0)),
-                    AbstractVector((0.0, 4.0, 8 * a)),
-                    AbstractVector((0.0, 8 * a, 1.0 + 16.0 * a ** 2)),
-                )
+            AbstractMatrix(
+                AbstractVector((1.0, 0.0, 0.0)),
+                AbstractVector((0.0, 4.0, 8 * a)),
+                AbstractVector((0.0, 8 * a, 1.0 + 16.0 * a ** 2)),
             ),
-            Metric(
-                AbstractMatrix(
-                    AbstractVector((1 + 100 * a ** 2, 20 * a, 40 * a ** 2)),
-                    AbstractVector((20 * a, 4, 8 * a)),
-                    AbstractVector((40 * a ** 2, 8 * a, 1 + 16 * a ** 2)),
-                )
+            AbstractMatrix(
+                AbstractVector((1 + 100 * a ** 2, 20 * a, 40 * a ** 2)),
+                AbstractVector((20 * a, 4, 8 * a)),
+                AbstractVector((40 * a ** 2, 8 * a, 1 + 16 * a ** 2)),
             ),
         )
 
@@ -69,7 +61,7 @@ class CylindricSwirlMetricTest(BaseTestCase):
         """Tests the cylindrical swirl metric for fixed values."""
         for coords, met in zip(self.coords, self.metrics):
             self.assertPredicate2(
-                metric_equiv,
+                mat_equiv,
                 self.manifold.metric(coords),
                 met,
             )

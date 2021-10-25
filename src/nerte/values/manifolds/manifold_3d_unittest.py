@@ -19,12 +19,12 @@ from nerte.values.linalg import (
     UNIT_VECTOR0,
     UNIT_VECTOR1,
     STANDARD_BASIS,
-    Metric,
-    IDENTITY_METRIC,
+    AbstractMatrix,
+    IDENTITY_MATRIX,
     Rank3Tensor,
     ZERO_RANK3TENSOR,
 )
-from nerte.values.linalg_unittest import scalar_equiv, vec_equiv, metric_equiv
+from nerte.values.linalg_unittest import scalar_equiv, vec_equiv, mat_equiv
 from nerte.values.util.convert import vector_as_coordinates
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_unittest import tan_vec_equiv
@@ -49,8 +49,8 @@ class DummyManifold3D(Manifold3D):
     def __init__(self, domain: Domain3D = R3) -> None:
         Manifold3D.__init__(self, domain)
 
-    def internal_hook_metric(self, coords: Coordinates3D) -> Metric:
-        return IDENTITY_METRIC
+    def internal_hook_metric(self, coords: Coordinates3D) -> AbstractMatrix:
+        return IDENTITY_MATRIX
 
     def internal_hook_christoffel_2(self, coords: Coordinates3D) -> Rank3Tensor:
         return ZERO_RANK3TENSOR
@@ -120,7 +120,7 @@ class DummyManifold3DTest(BaseTestCase):
         """Tests metric."""
         for coords in self.coords_inside:
             metric = self.manifold.metric(coords)
-            self.assertPredicate2(metric_equiv, metric, IDENTITY_METRIC)
+            self.assertPredicate2(mat_equiv, metric, IDENTITY_MATRIX)
 
     def test_metric_raises(self) -> None:
         """Tests metric raise."""

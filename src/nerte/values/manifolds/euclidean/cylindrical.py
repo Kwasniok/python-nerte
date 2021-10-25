@@ -10,7 +10,6 @@ from nerte.values.linalg import (
     ZERO_VECTOR,
     AbstractMatrix,
     ZERO_MATRIX,
-    Metric,
     Rank3Tensor,
 )
 from nerte.values.domains import Domain3D
@@ -27,15 +26,13 @@ class Cylindrical(Manifold3D):
     def __init__(self, domain: Domain3D = CYLINDRICAL_DOMAIN) -> None:
         Manifold3D.__init__(self, domain)
 
-    def internal_hook_metric(self, coords: Coordinates3D) -> Metric:
+    def internal_hook_metric(self, coords: Coordinates3D) -> AbstractMatrix:
         # pylint: disable=C0103
         r, _, _ = coords
-        return Metric(
-            AbstractMatrix(
-                AbstractVector((1, 0, 0)),
-                AbstractVector((0, r ** 2, 0)),
-                AbstractVector((0, 0, 1)),
-            )
+        return AbstractMatrix(
+            AbstractVector((1, 0, 0)),
+            AbstractVector((0, r ** 2, 0)),
+            AbstractVector((0, 0, 1)),
         )
 
     # TODO: test

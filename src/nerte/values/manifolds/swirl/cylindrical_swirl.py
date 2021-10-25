@@ -11,7 +11,6 @@ from nerte.values.linalg import (
     AbstractVector,
     AbstractMatrix,
     ZERO_MATRIX,
-    Metric,
     Rank3Tensor,
 )
 from nerte.values.domains import Domain3D
@@ -40,7 +39,7 @@ class CylindricalSwirl(Manifold3D):
 
         self.swirl = swirl
 
-    def internal_hook_metric(self, coords: Coordinates3D) -> Metric:
+    def internal_hook_metric(self, coords: Coordinates3D) -> AbstractMatrix:
         """
         Returns the metric for the cylindrical swirl coordiantes (r, 𝛼, z).
 
@@ -52,16 +51,14 @@ class CylindricalSwirl(Manifold3D):
         # pylint: disable=C0103
         a = self.swirl
         r, _, z = coords
-        return Metric(
-            AbstractMatrix(
-                AbstractVector(
-                    (1 + (a * r * z) ** 2, a * r ** 2 * z, a ** 2 * r ** 3 * z)
-                ),
-                AbstractVector((a * r ** 2 * z, r ** 2, a * r ** 3)),
-                AbstractVector(
-                    (a ** 2 * r ** 3 * z, a * r ** 3, 1 + a ** 2 * r ** 4)
-                ),
-            )
+        return AbstractMatrix(
+            AbstractVector(
+                (1 + (a * r * z) ** 2, a * r ** 2 * z, a ** 2 * r ** 3 * z)
+            ),
+            AbstractVector((a * r ** 2 * z, r ** 2, a * r ** 3)),
+            AbstractVector(
+                (a ** 2 * r ** 3 * z, a * r ** 3, 1 + a ** 2 * r ** 4)
+            ),
         )
 
     # TODO: test

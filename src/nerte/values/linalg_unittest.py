@@ -16,7 +16,6 @@ from nerte.base_test_case import BaseTestCase, float_almost_equal
 from nerte.values.linalg import (
     AbstractVector,
     AbstractMatrix,
-    Metric,
     Rank3Tensor,
     covariant,
     contravariant,
@@ -89,26 +88,6 @@ def mat_almost_equal(
         return pred(x[0], y[0]) and pred(x[1], y[1]) and pred(x[2], y[2])
 
     return mat_almost_equal
-
-
-def metric_equiv(x: Metric, y: Metric) -> bool:
-    """Returns true iff both metrics are considered equivalent."""
-    return mat_equiv(x.matrix(), y.matrix())
-
-
-def metric_almost_equal(
-    places: Optional[int] = None, delta: Optional[float] = None
-) -> Callable[[Metric, Metric], bool]:
-    """
-    Returns a function which true iff both metrics are considered almost equal.
-    """
-
-    # pylint: disable=W0621
-    def metric_almost_equal(x: Metric, y: Metric) -> bool:
-        pred = mat_almost_equal(places=places, delta=delta)
-        return pred(x.matrix(), y.matrix())
-
-    return metric_almost_equal
 
 
 def rank3tensor_equiv(x: Rank3Tensor, y: Rank3Tensor) -> bool:
@@ -244,30 +223,6 @@ class AbstractMatrixMathTest(BaseTestCase):
         self.assertPredicate2(mat_equiv, self.m4 * 3.3, self.m5)
         self.assertPredicate2(mat_equiv, self.m2 - self.m1, self.m5)
         self.assertPredicate2(mat_equiv, self.m5 / 3.3, self.m4)
-
-
-class MetricTest(BaseTestCase):
-    def setUp(self) -> None:
-        v0 = AbstractVector((0.0, 0.0, 0.0))
-        self.m0 = AbstractMatrix(v0, v0, v0)
-        self.m = AbstractMatrix(
-            AbstractVector((2.0, 3.0, 5.0)),
-            AbstractVector((3.0, 11.0, 13.0)),
-            AbstractVector((5.0, 13.0, 23.0)),
-        )
-        self.m_inv = inverted(self.m)
-
-    def test_metric_constructor(self) -> None:
-        """Tests metric constructor."""
-        Metric(self.m)
-        with self.assertRaises(ValueError):
-            Metric(self.m0)
-
-    def test_metric_matrix_getters(self) -> None:
-        """Tests metric matrix getters."""
-        g = Metric(self.m)
-        self.assertPredicate2(mat_equiv, g.matrix(), self.m)
-        self.assertPredicate2(mat_equiv, g.inverse_matrix(), self.m_inv)
 
 
 class Rank3TensorTest(BaseTestCase):
@@ -649,12 +604,10 @@ class LengthTest(BaseTestCase):
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
         self.v1 = AbstractVector((1.0, 2.0, -3.0))
         # metric
-        self.metric = Metric(
-            AbstractMatrix(
-                AbstractVector((5.0, 0.0, 0.0)),
-                AbstractVector((0.0, 7.0, 0.0)),
-                AbstractVector((0.0, 0.0, 11.0)),
-            )
+        self.metric = AbstractMatrix(
+            AbstractVector((5.0, 0.0, 0.0)),
+            AbstractVector((0.0, 7.0, 0.0)),
+            AbstractVector((0.0, 0.0, 11.0)),
         )
 
     def test_length(self) -> None:
@@ -683,13 +636,12 @@ class NormalizedTest(BaseTestCase):
         self.n = AbstractVector((1.0, 1.0, 1.0)) / math.sqrt(3)
         self.w = AbstractVector((7.0, 7.0, 7.0))
         # metric
-        self.metric = Metric(
-            AbstractMatrix(
-                AbstractVector((1.0, 0.0, 0.0)),
-                AbstractVector((0.0, 2.0, 0.0)),
-                AbstractVector((0.0, 0.0, 3.0)),
-            )
+        self.metric = AbstractMatrix(
+            AbstractVector((1.0, 0.0, 0.0)),
+            AbstractVector((0.0, 2.0, 0.0)),
+            AbstractVector((0.0, 0.0, 3.0)),
         )
+
         self.n_metric = AbstractVector((1.0, 1.0, 1.0)) / math.sqrt(6)
 
     def test_normalized(self) -> None:
@@ -716,12 +668,10 @@ class DotTest(BaseTestCase):
         # arbitrary factors
         self.scalar_factors = (0.0, 1.2345, -0.98765)
         # metric
-        self.metric = Metric(
-            AbstractMatrix(
-                AbstractVector((1.0, 0.0, 0.0)),
-                AbstractVector((0.0, 2.0, 0.0)),
-                AbstractVector((0.0, 0.0, 3.0)),
-            )
+        self.metric = AbstractMatrix(
+            AbstractVector((1.0, 0.0, 0.0)),
+            AbstractVector((0.0, 2.0, 0.0)),
+            AbstractVector((0.0, 0.0, 3.0)),
         )
 
     def test_math_dot_orthonormality(self) -> None:
@@ -766,7 +716,7 @@ class DotTest(BaseTestCase):
                 self.assertPredicate2(
                     scalar_equiv,
                     dot(v, w, metric=self.metric),
-                    self.metric.matrix()[i][j],
+                    self.metric[i][j],
                 )
 
 
@@ -956,19 +906,16 @@ class CoAndCoraviantTest(BaseTestCase):
         self.v0 = AbstractVector((0.0, 0.0, 0.0))
         self.v1_con = AbstractVector((1.0, 2.0, 3.0))
 
-        mI = AbstractMatrix(*orth_norm_basis)
-        self.gI = Metric(mI)
+        self.gI = AbstractMatrix(*orth_norm_basis)
 
-        m1 = AbstractMatrix(e0 * 2.0, e1 * 5.0, e2 * 7.0)
-        self.g1 = Metric(m1)
+        self.g1 = AbstractMatrix(e0 * 2.0, e1 * 5.0, e2 * 7.0)
         self.v11_co = AbstractVector((2.0, 10.0, 21.0))
 
-        m2 = AbstractMatrix(
+        self.g2 = AbstractMatrix(
             AbstractVector((2, 3, 5)),
             AbstractVector((3, 11, 13)),
             AbstractVector((5, 13, 23)),
         )
-        self.g2 = Metric(m2)
         self.v12_co = AbstractVector((23, 64, 100))
 
         self.gs = (self.gI, self.g1, self.g2)

@@ -25,9 +25,8 @@ from nerte.values.tangential_vector_delta import (
 from nerte.values.linalg import (
     AbstractVector,
     AbstractMatrix,
-    Metric,
 )
-from nerte.values.linalg_unittest import metric_equiv
+from nerte.values.linalg_unittest import mat_equiv
 from nerte.values.interval import Interval
 from nerte.values.domains import CartesianProduct3D
 from nerte.values.manifolds.euclidean.cylindrical import Cylindrical
@@ -62,12 +61,10 @@ class CylindricalMetricTest(BaseTestCase):
         )
         # pylint: disable=E1136
         self.metrics = tuple(
-            Metric(
-                AbstractMatrix(
-                    AbstractVector((1.0, 0.0, 0.0)),
-                    AbstractVector((0.0, c[0] ** 2, 0.0)),
-                    AbstractVector((0.0, 0.0, 1.0)),
-                )
+            AbstractMatrix(
+                AbstractVector((1.0, 0.0, 0.0)),
+                AbstractVector((0.0, c[0] ** 2, 0.0)),
+                AbstractVector((0.0, 0.0, 1.0)),
             )
             for c in self.coords
         )
@@ -75,9 +72,7 @@ class CylindricalMetricTest(BaseTestCase):
     def test_fixed_values(self) -> None:
         """Tests the cylindrical metric for fixed values."""
         for coords, met in zip(self.coords, self.metrics):
-            self.assertPredicate2(
-                metric_equiv, self.manifold.metric(coords), met
-            )
+            self.assertPredicate2(mat_equiv, self.manifold.metric(coords), met)
 
 
 class CylindricalGeodesicEquationFixedValuesTest(BaseTestCase):

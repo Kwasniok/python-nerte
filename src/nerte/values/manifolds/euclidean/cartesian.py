@@ -3,9 +3,9 @@
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import (
     ZERO_VECTOR,
-    Metric,
+    AbstractMatrix,
+    IDENTITY_MATRIX,
     Rank3Tensor,
-    IDENTITY_METRIC,
     ZERO_RANK3TENSOR,
 )
 from nerte.values.util.convert import coordinates_as_vector
@@ -26,8 +26,8 @@ class Cartesian(Manifold3D):
     def __init__(self, domain: Domain3D = R3) -> None:
         Manifold3D.__init__(self, domain)
 
-    def internal_hook_metric(self, coords: Coordinates3D) -> Metric:
-        return IDENTITY_METRIC
+    def internal_hook_metric(self, coords: Coordinates3D) -> AbstractMatrix:
+        return IDENTITY_MATRIX
 
     # TODO: test
     def internal_hook_christoffel_2(self, coords: Coordinates3D) -> Rank3Tensor:

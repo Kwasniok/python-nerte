@@ -22,8 +22,8 @@ from nerte.values.tangential_vector_delta import (
     tangent_as_delta,
     delta_as_tangent,
 )
-from nerte.values.linalg import AbstractVector, IDENTITY_METRIC
-from nerte.values.linalg_unittest import metric_equiv
+from nerte.values.linalg import AbstractVector, IDENTITY_MATRIX
+from nerte.values.linalg_unittest import mat_equiv
 from nerte.values.interval import Interval
 from nerte.values.domains import CartesianProduct3D
 from nerte.values.manifolds.euclidean.cartesian import Cartesian
@@ -55,13 +55,13 @@ class MetricTest(BaseTestCase):
             Coordinates3D((0.0, 0.0, 0.0)),
             Coordinates3D((2.0, 3.0, 5.0)),
         )
-        self.metric = IDENTITY_METRIC
+        self.metric = IDENTITY_MATRIX
 
     def test_fixed_values(self) -> None:
         """Tests the metric for fixed values."""
         for coords in self.coords:
             self.assertPredicate2(
-                metric_equiv, self.manifold.metric(coords), self.metric
+                mat_equiv, self.manifold.metric(coords), self.metric
             )
 
 

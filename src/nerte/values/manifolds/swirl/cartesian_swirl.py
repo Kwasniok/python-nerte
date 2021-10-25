@@ -9,7 +9,6 @@ from nerte.values.linalg import (
     AbstractVector,
     AbstractMatrix,
     ZERO_MATRIX,
-    Metric,
     Rank3Tensor,
     mat_vec_mult,
     dot,
@@ -44,7 +43,7 @@ class CartesianSwirl(Manifold3D):
 
         self.swirl = swirl
 
-    def internal_hook_metric(self, coords: Coordinates3D) -> Metric:
+    def internal_hook_metric(self, coords: Coordinates3D) -> AbstractMatrix:
         # pylint: disable=C0103
         a = self.swirl
         u, v, z = coords
@@ -54,30 +53,28 @@ class CartesianSwirl(Manifold3D):
         auz = a * u * z
         avz = a * v * z
         auvrz = a * u * v * r * z
-        return Metric(
-            AbstractMatrix(
-                AbstractVector(
-                    (
-                        1 + auz * ((-2 * v) / r + auz),
-                        (a * z * (s + auvrz)) / r,
-                        a * (-(v * r) + auz * (r ** 2)),
-                    )
-                ),
-                AbstractVector(
-                    (
-                        (a * z * (s + auvrz)) / r,
-                        1 + avz * ((2 * u) / r + avz),
-                        a * (u * r + avz * (r ** 2)),
-                    )
-                ),
-                AbstractVector(
-                    (
-                        a * (-(v * r) + auz * (r ** 2)),
-                        a * (u * r + avz * (r ** 2)),
-                        1 + a ** 2 * (r ** 2) ** 2,
-                    )
-                ),
-            )
+        return AbstractMatrix(
+            AbstractVector(
+                (
+                    1 + auz * ((-2 * v) / r + auz),
+                    (a * z * (s + auvrz)) / r,
+                    a * (-(v * r) + auz * (r ** 2)),
+                )
+            ),
+            AbstractVector(
+                (
+                    (a * z * (s + auvrz)) / r,
+                    1 + avz * ((2 * u) / r + avz),
+                    a * (u * r + avz * (r ** 2)),
+                )
+            ),
+            AbstractVector(
+                (
+                    a * (-(v * r) + auz * (r ** 2)),
+                    a * (u * r + avz * (r ** 2)),
+                    1 + a ** 2 * (r ** 2) ** 2,
+                )
+            ),
         )
 
     def internal_hook_christoffel_2(self, coords: Coordinates3D) -> Rank3Tensor:

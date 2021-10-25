@@ -70,6 +70,7 @@ class AbstractMatrix:
     ) -> None:
         self._m = np.array((vec0._v, vec1._v, vec2._v))
         self._is_invertible: Optional[bool] = None  # cache
+        self._inverse: Optional["AbstractMatrix"] = None  # cache
 
     def __repr__(self) -> str:
         return "M(" + (",".join(repr(x) for x in self._m)) + ")"
@@ -104,6 +105,30 @@ class AbstractMatrix:
             )
         return self._is_invertible
 
+    # test
+    def inverted(self) -> "AbstractMatrix":
+        """
+        Returns the inverse of a matrix.
+        :precon: self.is_invertible()
+        :raises: ArithmeticError, if not invertible
+        """
+        if not self.is_invertible():
+            raise ArithmeticError(
+                f"Cannot invert non-invertible matrix {self}."
+            )
+        if self._inverse is None:
+            try:
+                mat = np.linalg.inv(self._m)  # type: ignore[no-untyped-call]
+            except ArithmeticError as ex:
+                raise ArithmeticError(
+                    f"Matrix {self} with non-zero determinat could not be"
+                    f" inverted."
+                ) from ex
+            self._inverse = _abstract_matrix_from_numpy(mat)
+            # chache self as inverse of inverse
+            self._inverse._inverse = self
+        return self._inverse
+
 
 def _abstract_matrix_from_numpy(np_array: np.ndarray) -> AbstractMatrix:
     """
@@ -119,46 +144,6 @@ def _abstract_matrix_from_numpy(np_array: np.ndarray) -> AbstractMatrix:
 
 ZERO_MATRIX = AbstractMatrix(ZERO_VECTOR, ZERO_VECTOR, ZERO_VECTOR)
 IDENTITY_MATRIX = AbstractMatrix(UNIT_VECTOR0, UNIT_VECTOR1, UNIT_VECTOR2)
-
-# TODO: remove dedicated class
-class Metric:
-    """
-    Represents a metric as a matrix acting on contravariant representations of
-    vectors and returning covariant representations of them.
-    Note: A metric must be invertible.
-    """
-
-    def __init__(self, matrix: AbstractMatrix) -> None:
-
-        if not matrix.is_invertible():
-            raise ValueError(
-                f"Cannot construct metric form non-invertible symmetric matrix"
-                f" {matrix}."
-            )
-
-        self._g = matrix
-        self._g_inv: Optional[AbstractMatrix] = None  # cache
-
-    def __repr__(self) -> str:
-        return repr(self._g)
-
-    def matrix(self) -> AbstractMatrix:
-        """Returns the metric as a matrix."""
-        return self._g
-
-    def inverse_matrix(self) -> AbstractMatrix:
-        """Returns the inverse of the metric as a matrix."""
-        if self._g_inv is None:
-            try:
-                self._g_inv = inverted(self._g)
-            except ArithmeticError as ex:
-                raise ValueError(
-                    "Cannot construct a metric from non-invertible matrix."
-                ) from ex
-        return self._g_inv
-
-
-IDENTITY_METRIC = Metric(IDENTITY_MATRIX)
 
 
 class Rank3Tensor:
@@ -213,7 +198,9 @@ IDENTITY_RANK3TENSOR = Rank3Tensor(
 )
 
 
-def covariant(metric: Metric, contra_vec: AbstractVector) -> AbstractVector:
+def covariant(
+    metric: AbstractMatrix, contra_vec: AbstractVector
+) -> AbstractVector:
     """
     Returns the co-variant vector.
 
@@ -222,11 +209,13 @@ def covariant(metric: Metric, contra_vec: AbstractVector) -> AbstractVector:
     """
 
     return _abstract_vector_from_numpy(
-        np.dot(metric.matrix()._m, contra_vec._v)  # type: ignore[no-untyped-call]
+        np.dot(metric._m, contra_vec._v)  # type: ignore[no-untyped-call]
     )
 
 
-def contravariant(metric: Metric, co_vec: AbstractVector) -> AbstractVector:
+def contravariant(
+    metric: AbstractMatrix, co_vec: AbstractVector
+) -> AbstractVector:
     """
     Returns the contra-variant vector.
 
@@ -234,7 +223,7 @@ def contravariant(metric: Metric, co_vec: AbstractVector) -> AbstractVector:
     :param contra_vec: co-variant vector of the tangential vetor space
     """
     return _abstract_vector_from_numpy(
-        np.dot(metric.inverse_matrix()._m, co_vec._v)  # type: ignore[no-untyped-call]
+        np.dot(inverted(metric)._m, co_vec._v)  # type: ignore[no-untyped-call]
     )
 
 
@@ -317,7 +306,7 @@ def tensor_3_mat_contract(
 def dot(
     vec1: AbstractVector,
     vec2: AbstractVector,
-    metric: Optional[Metric] = None,
+    metric: Optional[AbstractMatrix] = None,
 ) -> float:
     """Returns the (orthonormal) dot product of both vectors."""
     if metric is None:
@@ -331,7 +320,7 @@ def dot(
         # return np.dot(vec1._v, vec2._v)
     return np.dot(
         vec1._v,
-        np.dot(metric.matrix()._m, vec2._v),  # type: ignore[no-untyped-call]
+        np.dot(metric._m, vec2._v),  # type: ignore[no-untyped-call]
     )  # POSSIBLE-OPTIMIZATION: hard code
 
 
@@ -363,7 +352,9 @@ def cross(
     return mat_vec_mult(inverted(jacobian), vec_res)
 
 
-def length(vec: AbstractVector, metric: Optional[Metric] = None) -> float:
+def length(
+    vec: AbstractVector, metric: Optional[AbstractMatrix] = None
+) -> float:
     """
     Returns the length of the vector (with respect to an orthonormal basis).
     """
@@ -374,7 +365,7 @@ def length(vec: AbstractVector, metric: Optional[Metric] = None) -> float:
 
 
 def normalized(
-    vec: AbstractVector, metric: Optional[Metric] = None
+    vec: AbstractVector, metric: Optional[AbstractMatrix] = None
 ) -> AbstractVector:
     """
     Returns the normalized vector (with respect to an orthonormal basis).
@@ -413,13 +404,7 @@ def transposed(mat: AbstractMatrix) -> AbstractMatrix:
 def inverted(mat: AbstractMatrix) -> AbstractMatrix:
     """
     Returns the inverse of a matrix.
-    :raises: ArithmeticError
+    :precon: self.is_invertible()
+    :raises: ArithmeticError, if not invertible
     """
-    try:
-        mat = _abstract_matrix_from_numpy(
-            np.linalg.inv(mat._m)  # type: ignore[no-untyped-call]
-        )
-    except np.linalg.LinAlgError as ex:
-        raise ArithmeticError from ex
-    else:
-        return mat
+    return mat.inverted()

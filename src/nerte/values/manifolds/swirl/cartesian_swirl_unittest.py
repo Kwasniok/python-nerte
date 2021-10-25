@@ -19,12 +19,8 @@ from nerte.values.tangential_vector_unittest import (
 from nerte.values.tangential_vector_delta import (
     delta_as_tangent,
 )
-from nerte.values.linalg import (
-    AbstractVector,
-    AbstractMatrix,
-    Metric,
-)
-from nerte.values.linalg_unittest import metric_equiv
+from nerte.values.linalg import AbstractVector, AbstractMatrix
+from nerte.values.linalg_unittest import mat_equiv
 from nerte.values.manifolds.swirl.cartesian_swirl import CartesianSwirl
 
 
@@ -49,37 +45,33 @@ class CartesianSwirlMetricTest(BaseTestCase):
             Coordinates3D((1 / 2, 1 / 3, 1 / 5)),
         )
         self.metrics = (
-            Metric(
-                AbstractMatrix(
-                    AbstractVector((1.0, 0.0, 0.0)),
-                    AbstractVector((0.0, 1.0, 4 * a)),
-                    AbstractVector((0.0, 4 * a, 1.0 + 16.0 * a ** 2)),
-                )
+            AbstractMatrix(
+                AbstractVector((1.0, 0.0, 0.0)),
+                AbstractVector((0.0, 1.0, 4 * a)),
+                AbstractVector((0.0, 4 * a, 1.0 + 16.0 * a ** 2)),
             ),
-            Metric(
-                AbstractMatrix(
-                    AbstractVector(
-                        (
-                            28901 / 28900 - 2 / (85 * math.sqrt(13)),
-                            1 / 43350 + 1 / (102 * math.sqrt(13)),
-                            (13 - 340 * math.sqrt(13)) / 104040,
-                        )
-                    ),
-                    AbstractVector(
-                        (
-                            1 / 43350 + 1 / (102 * math.sqrt(13)),
-                            65026 / 65025 + 2 / (85 * math.sqrt(13)),
-                            (13 + 765 * math.sqrt(13)) / 156060,
-                        )
-                    ),
-                    AbstractVector(
-                        (
-                            (13 - 340 * math.sqrt(13)) / 104040,
-                            (13 + 765 * math.sqrt(13)) / 156060,
-                            374713 / 374544,
-                        )
-                    ),
-                )
+            AbstractMatrix(
+                AbstractVector(
+                    (
+                        28901 / 28900 - 2 / (85 * math.sqrt(13)),
+                        1 / 43350 + 1 / (102 * math.sqrt(13)),
+                        (13 - 340 * math.sqrt(13)) / 104040,
+                    )
+                ),
+                AbstractVector(
+                    (
+                        1 / 43350 + 1 / (102 * math.sqrt(13)),
+                        65026 / 65025 + 2 / (85 * math.sqrt(13)),
+                        (13 + 765 * math.sqrt(13)) / 156060,
+                    )
+                ),
+                AbstractVector(
+                    (
+                        (13 - 340 * math.sqrt(13)) / 104040,
+                        (13 + 765 * math.sqrt(13)) / 156060,
+                        374713 / 374544,
+                    )
+                ),
             ),
         )
 
@@ -87,7 +79,7 @@ class CartesianSwirlMetricTest(BaseTestCase):
         """Tests the cylindrical swirl metric for fixed values."""
         for coords, met in zip(self.coords, self.metrics):
             self.assertPredicate2(
-                metric_equiv,
+                mat_equiv,
                 self.manifold.metric(coords),
                 met,
             )

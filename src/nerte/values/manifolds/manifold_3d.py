@@ -9,7 +9,7 @@ from nerte.values.domains import OutOfDomainError, Domain3D
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import (
     AbstractVector,
-    Metric,
+    AbstractMatrix,
     Rank3Tensor,
     mat_vec_mult,
     tensor_3_vec_contract,
@@ -28,7 +28,7 @@ class Manifold3D(ABC):
     def __init__(self, domain: Domain3D) -> None:
         self.domain = domain
 
-    def metric(self, coords: Coordinates3D) -> Metric:
+    def metric(self, coords: Coordinates3D) -> AbstractMatrix:
         """
         Returns the (local) metric for the given coordinates.
 
@@ -46,7 +46,7 @@ class Manifold3D(ABC):
         return self.internal_hook_metric(coords)
 
     @abstractmethod
-    def internal_hook_metric(self, coords: Coordinates3D) -> Metric:
+    def internal_hook_metric(self, coords: Coordinates3D) -> AbstractMatrix:
         """
         Hook for metric method.
         Returns the (local) metric for the given coordinates.
