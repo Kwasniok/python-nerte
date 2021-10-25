@@ -78,7 +78,7 @@ class CartesianSwirl(Manifold3D):
         )
 
     def internal_hook_christoffel_2(self, coords: Coordinates3D) -> Rank3Tensor:
-        # pylint: disable=C0103
+        # pylint: disable=C0103,R0914
         a = self.swirl
         u, v, z = coords
         # frequent factors
