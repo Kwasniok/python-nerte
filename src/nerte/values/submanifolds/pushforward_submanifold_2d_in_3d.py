@@ -1,6 +1,6 @@
 """
 Module for two-dimensional submanifolds in three-dimensional manifolds where
-the representation is pushed forwards.
+the representation is pushed forward.
 
 """
 
@@ -16,7 +16,7 @@ from nerte.values.tangential_vector import TangentialVector
 from nerte.values.submanifolds.submanifold_2d_in_3d import Submanifold2DIn3D
 from nerte.values.transitions.transition_3d import Transition3D
 
-# TODO: test
+
 class PushforwardSubmanifold2DIn3D(Submanifold2DIn3D):
     """
     Representation of a two-dimensional submanifold in a three-dimensional
