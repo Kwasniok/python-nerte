@@ -42,26 +42,26 @@ class CanonicalImmersionChart2DTo3DTest(BaseTestCase):
             for y in values
             if not (x in inside and y in inside)
         )
-        self.chart = CanonicalImmersion2DIn3D(domain)
+        self.submanifold = CanonicalImmersion2DIn3D(domain)
 
     def test_embed(self) -> None:
         """Tests coordinate embedding."""
         for coords, coords_embedded in zip(
             self.coords_inside, self.coords_inside_embedded
         ):
-            c = self.chart.embed(coords)
+            c = self.submanifold.embed(coords)
             self.assertPredicate2(coordinates_3d_equiv, c, coords_embedded)
 
     def test_embed_raises(self) -> None:
         """Tests coordinate embedding raise."""
         for coords in self.coords_outside:
             with self.assertRaises(OutOfDomainError):
-                self.chart.embed(coords)
+                self.submanifold.embed(coords)
 
     def test_tangential_space(self) -> None:
         """Tests tangential space."""
         for coords in self.coords_inside:
-            v0, v1 = self.chart.tangential_space(coords)
+            v0, v1 = self.submanifold.tangential_space(coords)
             self.assertPredicate2(vec_equiv, v0, UNIT_VECTOR0)
             self.assertPredicate2(vec_equiv, v1, UNIT_VECTOR1)
 
@@ -69,19 +69,19 @@ class CanonicalImmersionChart2DTo3DTest(BaseTestCase):
         """Tests tangential space raise."""
         for coords in self.coords_outside:
             with self.assertRaises(OutOfDomainError):
-                self.chart.tangential_space(coords)
+                self.submanifold.tangential_space(coords)
 
     def test_surface_normal(self) -> None:
         """Tests surface normal."""
         for coords in self.coords_inside:
-            v = self.chart.surface_normal(coords)
+            v = self.submanifold.surface_normal(coords)
             self.assertPredicate2(vec_equiv, v, UNIT_VECTOR2)
 
     def test_surface_normal_raises(self) -> None:
         """Tests surface normal raise."""
         for coords in self.coords_outside:
             with self.assertRaises(OutOfDomainError):
-                self.chart.surface_normal(coords)
+                self.submanifold.surface_normal(coords)
 
 
 if __name__ == "__main__":
