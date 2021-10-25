@@ -10,7 +10,9 @@ from nerte.values.tangential_vector_delta import TangentialVectorDelta
 from nerte.values.linalg import (
     AbstractVector,
     AbstractMatrix,
+    ZERO_MATRIX,
     Metric,
+    Rank3Tensor,
 )
 from nerte.values.domains import Domain3D
 from nerte.values.domains.cylindrical_swirl import CylindricalSwirlDomain
@@ -60,6 +62,40 @@ class CylindricalSwirl(Manifold3D):
                     (a ** 2 * r ** 3 * z, a * r ** 3, 1 + a ** 2 * r ** 4)
                 ),
             )
+        )
+
+    # TODO: test
+    def internal_hook_christoffel_2(self, coords: Coordinates3D) -> Rank3Tensor:
+        # pylint: disable=C0103
+        a = self.swirl
+        r, _, z = coords
+        a2 = a ** 2
+        a3 = a ** 3
+        z2 = z ** 2
+        z3 = z ** 3
+        r2 = r ** 2
+        r3 = r ** 3
+        R = 1 / r
+        return Rank3Tensor(
+            AbstractMatrix(
+                AbstractVector((-a2 * r * z2, -a * r * z, -a2 * r2 * z)),
+                AbstractVector((-a * r * z, -r, -a * r2)),
+                AbstractVector((a2 * r2 * z, -a * r2, -a2 * r3)),
+            ),
+            AbstractMatrix(
+                AbstractVector(
+                    (
+                        (2 * a * z) * R + a3 * r * z3,
+                        R + a2 * r * z2,
+                        a * (2 + a2 * r2 * z2),
+                    )
+                ),
+                AbstractVector((R + a2 * r * z2, a * r * z, a2 * r2 * z)),
+                AbstractVector(
+                    (a * (2 + a2 * r2 * z2), a2 * r2 * z, a3 * r3 * z)
+                ),
+            ),
+            ZERO_MATRIX,
         )
 
     def internal_hook_geodesics_equation(

@@ -7,7 +7,15 @@ import math
 
 from nerte.values.domains import OutOfDomainError, Domain3D
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.linalg import AbstractVector, Metric, dot, is_zero_vector
+from nerte.values.linalg import (
+    AbstractVector,
+    Metric,
+    Rank3Tensor,
+    mat_vec_mult,
+    tensor_3_vec_contract,
+    dot,
+    is_zero_vector,
+)
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_delta import TangentialVectorDelta
 
@@ -21,7 +29,6 @@ class Manifold3D(ABC):
         self.domain = domain
 
     def metric(self, coords: Coordinates3D) -> Metric:
-
         """
         Returns the (local) metric for the given coordinates.
 
@@ -43,6 +50,34 @@ class Manifold3D(ABC):
         """
         Hook for metric method.
         Returns the (local) metric for the given coordinates.
+        IMPORTANT: It is trusted that self.domain.assert_inside(coords) is True.
+        """
+        # pylint: disable=W0107
+        pass
+
+    def christoffel_2(self, coords: Coordinates3D) -> Rank3Tensor:
+        """
+        Returns the (local) Christoffel symbols of the second kind.
+
+        :raises: OutOfDomainError if the given coordinates are outside of the
+                 domain.
+        """
+        try:
+            self.domain.assert_inside(coords)
+        except OutOfDomainError as ex:
+            raise OutOfDomainError(
+                f"Cannot create Christoffel symbols of second kind at"
+                f" coordinates {coords}."
+                f" Coordinates out of domain. "
+                + self.domain.not_inside_reason(coords)
+            ) from ex
+        return self.internal_hook_christoffel_2(coords)
+
+    @abstractmethod
+    def internal_hook_christoffel_2(self, coords: Coordinates3D) -> Rank3Tensor:
+        """
+        Hook for christoffel_2 method.
+        Returns the (local) Christoffel symbols of the second kind.
         IMPORTANT: It is trusted that self.domain.assert_inside(coords) is True.
         """
         # pylint: disable=W0107
@@ -134,7 +169,6 @@ class Manifold3D(ABC):
             ) from ex
         return self.internal_hook_geodesics_equation(tangent)
 
-    @abstractmethod
     def internal_hook_geodesics_equation(
         self, tangent: TangentialVector
     ) -> TangentialVectorDelta:
@@ -143,8 +177,12 @@ class Manifold3D(ABC):
         Returns the local change in coordiantes and their velocities.
         IMPORTANT: It is trusted that self.domain.assert_inside(coords) is True.
         """
-        # pylint: disable=W0107
-        pass
+        christoffel_2 = self.internal_hook_christoffel_2(tangent.point)
+        acceleration = -mat_vec_mult(
+            tensor_3_vec_contract(christoffel_2, tangent.vector, 2),
+            tangent.vector,
+        )
+        return TangentialVectorDelta(tangent.vector, acceleration)
 
     def initial_geodesic_tangent_from_coords(
         self, start: Coordinates3D, target: Coordinates3D

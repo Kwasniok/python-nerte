@@ -7,8 +7,11 @@ from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_delta import TangentialVectorDelta
 from nerte.values.linalg import (
     AbstractVector,
+    ZERO_VECTOR,
     AbstractMatrix,
+    ZERO_MATRIX,
     Metric,
+    Rank3Tensor,
 )
 from nerte.values.domains import Domain3D
 from nerte.values.domains.cylindrical import CYLINDRICAL_DOMAIN
@@ -33,6 +36,24 @@ class Cylindrical(Manifold3D):
                 AbstractVector((0, r ** 2, 0)),
                 AbstractVector((0, 0, 1)),
             )
+        )
+
+    # TODO: test
+    def internal_hook_christoffel_2(self, coords: Coordinates3D) -> Rank3Tensor:
+        # pylint: disable=C0103
+        r, _, _ = coords
+        return Rank3Tensor(
+            AbstractMatrix(
+                ZERO_VECTOR,
+                AbstractVector((0, r, 0)),
+                ZERO_VECTOR,
+            ),
+            AbstractMatrix(
+                AbstractVector((0, r, 0)),
+                AbstractVector((-r, 0, 0)),
+                ZERO_VECTOR,
+            ),
+            ZERO_MATRIX,
         )
 
     def internal_hook_geodesics_equation(

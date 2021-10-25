@@ -8,7 +8,9 @@ from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import (
     AbstractVector,
     AbstractMatrix,
+    ZERO_MATRIX,
     Metric,
+    Rank3Tensor,
     mat_vec_mult,
     dot,
 )
@@ -76,6 +78,79 @@ class CartesianSwirl(Manifold3D):
                     )
                 ),
             )
+        )
+
+    def internal_hook_christoffel_2(self, coords: Coordinates3D) -> Rank3Tensor:
+        # pylint: disable=C0103
+        a = self.swirl
+        u, v, z = coords
+        # frequent factors
+        r = math.sqrt(u ** 2 + v ** 2)
+        arz = a * r * z
+        arz2 = arz ** 2
+        ar = a * r
+        az = a * z
+        alpha = math.atan2(v, u)
+        c_alpha = math.cos(alpha)
+        s_alpha = math.sin(alpha)
+        c_2alpha = math.cos(2 * alpha)
+        s_2alpha = math.sin(2 * alpha)
+        c_3alpha = math.cos(3 * alpha)
+        s_3alpha = math.sin(3 * alpha)
+        fac1 = (
+            az
+            * (
+                (3 + arz2) * c_alpha
+                + c_3alpha
+                - arz * (arz * c_3alpha + s_alpha - 3 * s_3alpha)
+            )
+        ) / 4
+        fac2 = (ar * (s_2alpha + arz * (2 * c_2alpha + arz * s_2alpha))) / 2
+        fac3 = (
+            ar * (-3 - arz2 + (1 + arz2) * c_2alpha - 2 * arz * s_2alpha)
+        ) / 2
+        fac4 = (
+            az
+            * (
+                2 * s_alpha ** 3
+                + arz * c_alpha * (-1 + 3 * c_2alpha + arz * s_2alpha)
+            )
+        ) / 2
+        fac5 = (
+            ar * (3 + arz2 + (1 + arz2) * c_2alpha - 2 * arz * s_2alpha)
+        ) / 2
+        fac6 = (
+            az
+            * (
+                -(arz * (c_alpha + 3 * c_3alpha))
+                - 2 * (1 + arz2 + (-1 + arz2) * c_2alpha) * s_alpha
+            )
+            / 4
+        )
+        fac7 = (
+            az
+            * s_alpha
+            * (-5 - arz2 + (-1 + arz2) * c_2alpha - 3 * arz * s_2alpha)
+        ) / 2
+        fac8 = -(a ** 2 * r ** 3 * (c_alpha + arz * s_alpha))
+        fac9 = (
+            az
+            * c_alpha
+            * (5 + arz2 + (-1 + arz2) * c_2alpha - 3 * arz * s_2alpha)
+        ) / 2
+        fac10 = a ** 2 * r ** 3 * (arz * c_alpha - s_alpha)
+        return Rank3Tensor(
+            AbstractMatrix(
+                AbstractVector((fac6, -fac1, -fac2)),
+                AbstractVector((-fac1, fac7, fac3)),
+                AbstractVector((-fac2, fac3, fac8)),
+            ),
+            AbstractMatrix(
+                AbstractVector((fac9, fac4, fac5)),
+                AbstractVector((fac4, fac1, fac2)),
+                AbstractVector((fac5, fac2, fac10)),
+            ),
+            ZERO_MATRIX,
         )
 
     def _metric_inverted(self, coords: Coordinates3D) -> AbstractMatrix:

@@ -21,6 +21,8 @@ from nerte.values.linalg import (
     STANDARD_BASIS,
     Metric,
     IDENTITY_METRIC,
+    Rank3Tensor,
+    ZERO_RANK3TENSOR,
 )
 from nerte.values.linalg_unittest import scalar_equiv, vec_equiv, metric_equiv
 from nerte.values.util.convert import vector_as_coordinates
@@ -49,6 +51,9 @@ class DummyManifold3D(Manifold3D):
 
     def internal_hook_metric(self, coords: Coordinates3D) -> Metric:
         return IDENTITY_METRIC
+
+    def internal_hook_christoffel_2(self, coords: Coordinates3D) -> Rank3Tensor:
+        return ZERO_RANK3TENSOR
 
     def internal_hook_geodesics_equation(
         self, tangent: TangentialVector

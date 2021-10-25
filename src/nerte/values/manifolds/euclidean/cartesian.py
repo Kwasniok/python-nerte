@@ -1,7 +1,13 @@
 """Base module for representing manifolds in cartesian coordinates."""
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.linalg import ZERO_VECTOR, Metric, IDENTITY_METRIC
+from nerte.values.linalg import (
+    ZERO_VECTOR,
+    Metric,
+    Rank3Tensor,
+    IDENTITY_METRIC,
+    ZERO_RANK3TENSOR,
+)
 from nerte.values.util.convert import coordinates_as_vector
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_delta import TangentialVectorDelta
@@ -22,6 +28,10 @@ class Cartesian(Manifold3D):
 
     def internal_hook_metric(self, coords: Coordinates3D) -> Metric:
         return IDENTITY_METRIC
+
+    # TODO: test
+    def internal_hook_christoffel_2(self, coords: Coordinates3D) -> Rank3Tensor:
+        return ZERO_RANK3TENSOR
 
     def internal_hook_geodesics_equation(
         self, tangent: TangentialVector
