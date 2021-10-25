@@ -12,8 +12,11 @@ from nerte.values.linalg import AbstractVector
 from nerte.values.interval import Interval
 from nerte.values.domains import CartesianProduct2D
 from nerte.values.domains.cartesian_swirl import CartesianSwirlDomain
-from nerte.values.submanifolds import Plane
+from nerte.values.submanifolds import Plane, PushforwardSubmanifold2DIn3D
 from nerte.values.manifolds.swirl import CartesianSwirl
+from nerte.values.transitions.cartesian_cartesian_swirl import (
+    CartesianToCartesianSwirlTransition,
+)
 from nerte.values.face import Face
 from nerte.world.object import Object
 from nerte.world.camera import Camera
@@ -63,16 +66,23 @@ def make_camera(swirl: float, canvas_dimension: int) -> Camera:
     interval = Interval(-1.0, +1.0)
     domain = CartesianProduct2D(interval, interval)
     alpha = 0 * math.pi / 4
-    plane = Plane(
+    cartesian_plane = Plane(
         direction0=AbstractVector((1.0, 0.0, 0.0)),
         direction1=AbstractVector((0.0, math.cos(alpha), math.sin(alpha))),
         offset=AbstractVector((0.0, 2.0, 2.0)),
     )
-    manifold = plane  # TODO: should be swirl plane and not cartesian plane
+    cartesian_to_cartesian_swirl = CartesianToCartesianSwirlTransition(
+        domain=CartesianSwirlDomain(swirl=0),
+        codomain=CartesianSwirlDomain(swirl=swirl),
+        swirl=swirl,
+    )
+    swirl_plane = PushforwardSubmanifold2DIn3D(
+        cartesian_plane, cartesian_to_cartesian_swirl
+    )
     camera = Camera(
         location=location,
         detector_domain=domain,
-        detector_manifold=manifold,
+        detector_manifold=swirl_plane,
         canvas_dimensions=(canvas_dimension, canvas_dimension),
     )
     return camera
