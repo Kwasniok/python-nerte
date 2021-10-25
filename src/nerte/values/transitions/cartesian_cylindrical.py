@@ -5,6 +5,8 @@ coordinates.
 
 import math
 
+from typing import Optional
+
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import (
     AbstractVector,
@@ -13,7 +15,7 @@ from nerte.values.linalg import (
     ZERO_MATRIX,
     Rank3Tensor,
 )
-from nerte.values.domains import Domain3D, R3
+from nerte.values.domains import Domain3D
 from nerte.values.domains.cylindrical import CYLINDRICAL_DOMAIN
 from nerte.values.transitions.transition_3d import Transition3D
 
@@ -27,9 +29,37 @@ class CartesianToCylindricalTransition(Transition3D):
         𝜑 = arctan(y / x)
     """
 
+    class Domain(Domain3D):
+        """
+        Repressents domain of the transition from cartesian to cylindrical
+        coordinates.
+        """
+
+        def are_inside(self, coords: Coordinates3D) -> bool:
+            # pylint: disable=C0103
+            x, y, z = coords
+            return (
+                math.isfinite(x)
+                and math.isfinite(y)
+                and math.isfinite(z)
+                and abs(x) + abs(y) > 0
+            )
+
+        def not_inside_reason(self, coords: Coordinates3D) -> str:
+            return (
+                f"Coordinates (x, y, z)={coords} violate the restrictions:"
+                f" -inf < x, y, z < inf and abs(x) + abs(y) > 0"
+            )
+
     def __init__(
-        self, domain: Domain3D = R3, codomain: Domain3D = CYLINDRICAL_DOMAIN
+        self,
+        domain: Optional[Domain3D] = None,
+        codomain: Domain3D = CYLINDRICAL_DOMAIN,
     ) -> None:
+
+        if domain is None:
+            domain = CartesianToCylindricalTransition.Domain()
+
         Transition3D.__init__(self, domain, codomain)
 
     def internal_hook_transform_coords(

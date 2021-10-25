@@ -27,6 +27,39 @@ from nerte.values.transitions.cartesian_cylindrical import (
 )
 
 
+class DomainTest(BaseTestCase):
+    def setUp(self) -> None:
+        self.coords_inside = (
+            Coordinates3D((1.0, 2.0, 3.0)),
+            Coordinates3D((1e-8, 1e-8, 0.0)),
+        )
+        self.coords_outside = (
+            Coordinates3D((0.0, 0.0, -1.0)),
+            Coordinates3D((0.0, 0.0, 0.0)),
+            Coordinates3D((0.0, 0.0, 1.0)),
+            Coordinates3D((math.inf, 1.0, 0.0)),
+            Coordinates3D((-math.inf, 1.0, 0.0)),
+            Coordinates3D((math.nan, 1.0, 0.0)),
+            Coordinates3D((1.0, math.inf, 0.0)),
+            Coordinates3D((1.0, -math.inf, 0.0)),
+            Coordinates3D((1.0, math.nan, 0.0)),
+            Coordinates3D((1.0, 1.0, math.inf)),
+            Coordinates3D((1.0, 1.0, -math.inf)),
+            Coordinates3D((1.0, 1.0, math.nan)),
+        )
+        self.domain = CartesianToCylindricalTransition.Domain()
+
+    def test_inside_domain(self) -> None:
+        """Test coordinates inside."""
+        for coords in self.coords_inside:
+            self.assertTrue(self.domain.are_inside(coords))
+
+    def test_outside_domain(self) -> None:
+        """Test coordinates outside."""
+        for coords in self.coords_outside:
+            self.assertFalse(self.domain.are_inside(coords))
+
+
 class CoordinateTransitionTest(BaseTestCase):
     def setUp(self) -> None:
         self.transition = CartesianToCylindricalTransition()
