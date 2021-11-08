@@ -11,13 +11,12 @@ import math
 from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.domains.cartesian_swirl import CartesianSwirlDomain
+from nerte.values.domains.cartesian_swirl import CARTESIAN_SWIRL_DOMAIN
 
 
 class DomainTest(BaseTestCase):
     def setUp(self) -> None:
-        swirl = 7
-        self.domain = CartesianSwirlDomain(swirl)
+        self.domain = CARTESIAN_SWIRL_DOMAIN
         self.coords_inside = (
             Coordinates3D((1e-8, 0, 0)),
             Coordinates3D((0, 1e-8, 0)),

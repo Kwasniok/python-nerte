@@ -72,8 +72,6 @@ def make_camera(swirl: float, canvas_dimension: int) -> Camera:
         offset=AbstractVector((0.0, 2.0, 2.0)),
     )
     cartesian_to_cartesian_swirl = CartesianToCartesianSwirlTransition(
-        domain=CartesianSwirlDomain(swirl=0),
-        codomain=CartesianSwirlDomain(swirl=swirl),
         swirl=swirl,
     )
     swirl_plane = PushforwardSubmanifold2DIn3D(

@@ -11,6 +11,7 @@ from nerte.values.linalg import (
     Rank3Tensor,
 )
 from nerte.values.domains import Domain3D
+from nerte.values.domains.cartesian_swirl import CARTESIAN_SWIRL_DOMAIN
 from nerte.values.transitions.transition_3d import Transition3D
 
 # TODO: test
@@ -305,7 +306,10 @@ class CartesianToCartesianSwirlTransition(Transition3D):
     """
 
     def __init__(
-        self, domain: Domain3D, codomain: Domain3D, swirl: float
+        self,
+        swirl: float,
+        domain: Domain3D = CARTESIAN_SWIRL_DOMAIN,
+        codomain: Domain3D = CARTESIAN_SWIRL_DOMAIN,
     ) -> None:
         if not math.isfinite(swirl):
             raise ValueError(

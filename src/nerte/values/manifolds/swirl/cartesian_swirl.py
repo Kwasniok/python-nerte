@@ -1,7 +1,5 @@
 """Base module for representing manifolds in cartesian coordinates."""
 
-from typing import Optional
-
 import math
 
 from nerte.values.coordinates import Coordinates3D
@@ -16,7 +14,7 @@ from nerte.values.linalg import (
 from nerte.values.tangential_vector import TangentialVector
 from nerte.values.tangential_vector_delta import TangentialVectorDelta
 from nerte.values.domains import Domain3D
-from nerte.values.domains.cartesian_swirl import CartesianSwirlDomain
+from nerte.values.domains.cartesian_swirl import CARTESIAN_SWIRL_DOMAIN
 from nerte.values.manifolds.manifold_3d import Manifold3D
 
 
@@ -28,16 +26,15 @@ class CartesianSwirl(Manifold3D):
     Note: This representation is the standard representation.
     """
 
-    def __init__(self, swirl: float, domain: Optional[Domain3D] = None) -> None:
+    def __init__(
+        self, swirl: float, domain: Domain3D = CARTESIAN_SWIRL_DOMAIN
+    ) -> None:
 
         if not math.isfinite(swirl):
             raise ValueError(
                 f"Cannot construct cartesian swirl manifold with swirl={swirl}."
                 f" Value must be finite."
             )
-
-        if domain is None:
-            domain = CartesianSwirlDomain(swirl)
 
         Manifold3D.__init__(self, domain)
 
