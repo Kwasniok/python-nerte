@@ -11,7 +11,6 @@ from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractVector
 from nerte.values.interval import Interval
 from nerte.values.domains import CartesianProduct2D
-from nerte.values.domains.cartesian_swirl import CartesianSwirlDomain
 from nerte.values.submanifolds import Plane, PushforwardSubmanifold2DIn3D
 from nerte.values.manifolds.swirl import CartesianSwirl
 from nerte.values.transitions.cartesian_cartesian_swirl import (
