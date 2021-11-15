@@ -14,14 +14,14 @@ from nerte.values.domains import Domain3D
 from nerte.values.domains.cartesian_swirl import CARTESIAN_SWIRL_DOMAIN
 from nerte.values.transitions.transition_3d import Transition3D
 
-# TODO: test
+
 def _trafo(a: float, coords: Coordinates3D) -> Coordinates3D:
     # pylint: disable=C0103
     """
     Returns
-        (u, v, z) for (x, y, z) and a = -swirl
+        (u, v, z) for (x, y, z) and a = +swirl
     and
-        (x, y, z) for (u, v, z) and a = +swirl
+        (x, y, z) for (u, v, z) and a = -swirl
 
     Note: The symmetry of the transformation and its inverse is exploited here.
 
@@ -37,14 +37,13 @@ def _trafo(a: float, coords: Coordinates3D) -> Coordinates3D:
     return Coordinates3D((r * math.cos(alpha), r * math.sin(alpha), z))
 
 
-# TODO: test
 def _jacobian(a: float, coords: Coordinates3D) -> AbstractMatrix:
     # pylint: disable=C0103
     """
     Returns the Jacobian matrix for the contravariant transformation
-        (u, v, z) for (x, y, z) and a = -swirl
+        (u, v, z) for (x, y, z) and a = +swirl
     and
-        (x, y, z) for (u, v, z) and a = +swirl
+        (x, y, z) for (u, v, z) and a = -swirl
 
     Note: The symmetry of the transformation and its inverse is exploited here.
 
@@ -53,44 +52,38 @@ def _jacobian(a: float, coords: Coordinates3D) -> AbstractMatrix:
         0 < abs(x) + abs(y)
         0 < abs(u) + abs(v)
     """
-    u, v, z = coords
-    r = math.sqrt(u ** 2 + v ** 2)
-    alpha = math.atan2(v, u)
+    x, y, z = coords
+    r = math.sqrt(x ** 2 + y ** 2)
+    alpha = math.atan2(y, x)
     arz = a * r * z
     cos_alpha = math.cos(alpha)
     sin_alpha = math.sin(alpha)
-    psi = math.atan2(cos_alpha, sin_alpha)
     return AbstractMatrix(
         AbstractVector(
             (
-                math.cos(arz - alpha + psi)
-                + arz * math.cos(arz + psi) * sin_alpha,
-                arz * sin_alpha * math.sin(arz + psi)
-                + math.sin(arz - alpha + psi),
-                a * r ** 2 * sin_alpha,
+                -arz * sin_alpha * math.cos(arz - alpha) + math.cos(arz),
+                arz * sin_alpha * math.sin(arz - alpha) - math.sin(arz),
+                -a * r ** 2 * sin_alpha,
             )
         ),
         AbstractVector(
             (
-                -arz * cos_alpha * math.cos(arz + psi)
-                - math.sin(arz - alpha + psi),
-                math.cos(arz - alpha + psi)
-                - arz * cos_alpha * math.sin(arz + psi),
-                -a * r ** 2 * cos_alpha,
+                arz * cos_alpha * math.cos(arz - alpha) + math.sin(arz),
+                -arz * cos_alpha * math.sin(arz - alpha) + math.cos(arz),
+                +a * r ** 2 * cos_alpha,
             )
         ),
         UNIT_VECTOR2,
     )
 
 
-# TODO: test
 def _hesse_tensor(a: float, coords: Coordinates3D) -> Rank3Tensor:
-    # pylint: disable=C0103
+    # pylint: disable=C0103,R0914
     """
     Returns the Hesse Tensor for the transformation
-        (u, v, z) for (x, y, z) and a = -swirl
+        (u, v, z) for (x, y, z) and a = +swirl
     and
-        (x, y, z) for (u, v, z) and a = +swirl
+        (x, y, z) for (u, v, z) and a = -swirl
 
     Note: The symmetry of the transformation and its inverse is exploited here.
 
@@ -99,205 +92,93 @@ def _hesse_tensor(a: float, coords: Coordinates3D) -> Rank3Tensor:
         0 < abs(x) + abs(y)
         0 < abs(u) + abs(v)
     """
-    u, v, z = coords
-    r = math.sqrt(u ** 2 + v ** 2)
-    alpha = math.atan2(v, u)
+    x, y, z = coords
+    r = math.sqrt(x ** 2 + y ** 2)
     arz = a * r * z
-    a2r2z2 = arz ** 2
-    cos_alpha = math.cos(alpha)
-    cos_2alpha = math.cos(2 * alpha)
-    cos_3alpha = math.cos(3 * alpha)
-    sin_alpha = math.sin(alpha)
-    sin_2alpha = math.sin(2 * alpha)
-    sin_3alpha = math.sin(3 * alpha)
 
+    H000 = (
+        a
+        * z
+        * (
+            -arz * x ** 3
+            + 2 * arz * x * y ** 2
+            + a ** 2 * x ** 4 * y * z ** 2
+            + y ** 3 * (1 + (a * x * z) ** 2)
+        )
+    ) / (r ** 3)
+    H001 = (
+        a
+        * z
+        * (
+            -2 * arz * x ** 2 * y
+            + arz * y ** 3
+            + a ** 2 * x * y ** 4 * z ** 2
+            + x ** 3 * (1 + (a * y * z) ** 2)
+        )
+    ) / (r ** 3)
+    H002 = a * (-a * x ** 2 * z + a * y ** 2 * z + (y * (x + arz ** 2 * x)) / r)
+    H011 = (
+        a
+        * y
+        * z
+        * (
+            2 * y ** 2
+            - 3 * arz * x * y
+            + a ** 2 * y ** 4 * z ** 2
+            + x ** 2 * (3 + (a * y * z) ** 2)
+        )
+    ) / (r ** 3)
+    H012 = (a * (x ** 2 + 2 * y ** 2 - 2 * arz * x * y + arz ** 2 * y ** 2)) / r
+    H022 = a ** 2 * r ** 2 * (-x + arz * y)
+
+    H100 = -(
+        (a * x * z * (3 * y ** 2 + x * (3 * arz * y + x * (2 + arz ** 2))))
+        / (r ** 3)
+    )
+    H101 = -(
+        (
+            a
+            * z
+            * (
+                -arz * x ** 3
+                + 2 * arz * x * y ** 2
+                + a ** 2 * x ** 4 * y * z ** 2
+                + y ** 3 * (1 + (a * x * z) ** 2)
+            )
+        )
+        / (r ** 3)
+    )
+    H102 = -((a * (y ** 2 + x * (2 * arz * y + x * (2 + arz ** 2)))) / r)
+    H111 = -(
+        (
+            a
+            * z
+            * (
+                -2 * arz * x ** 2 * y
+                + arz * y ** 3
+                + a ** 2 * x * y ** 4 * z ** 2
+                + x ** 3 * (1 + (a * y * z) ** 2)
+            )
+        )
+        / (r ** 3)
+    )
+    H112 = a * (a * x ** 2 * z - a * y ** 2 * z - (x * y * (1 + arz ** 2)) / r)
+    H122 = -(a ** 2) * r ** 2 * (y + arz * x)
     return Rank3Tensor(
         AbstractMatrix(
-            AbstractVector(
-                (
-                    1
-                    / 4
-                    * a
-                    * z
-                    * (
-                        -alpha * (cos_alpha + 3 * cos_3alpha)
-                        - 2
-                        * (1 + a2r2z2 + (-1 + a2r2z2) * cos_2alpha)
-                        * sin_alpha
-                    ),
-                    -(1 / 4)
-                    * a
-                    * z
-                    * (
-                        (3 + a2r2z2) * cos_alpha
-                        + cos_3alpha
-                        - alpha
-                        * (alpha * cos_3alpha + sin_alpha - 3 * sin_3alpha)
-                    ),
-                    -(1 / 2)
-                    * a
-                    * r
-                    * (
-                        sin_2alpha
-                        + alpha * (2 * cos_2alpha + alpha * sin_2alpha)
-                    ),
-                )
-            ),
-            AbstractVector(
-                (
-                    -(1 / 4)
-                    * a
-                    * z
-                    * (
-                        (3 + a2r2z2) * cos_alpha
-                        + cos_3alpha
-                        - alpha
-                        * (alpha * cos_3alpha + sin_alpha - 3 * sin_3alpha)
-                    ),
-                    1
-                    / 2
-                    * a
-                    * z
-                    * sin_alpha
-                    * (
-                        -5
-                        - a2r2z2
-                        + (-1 + a2r2z2) * cos_2alpha
-                        - 3 * alpha * sin_2alpha
-                    ),
-                    1
-                    / 2
-                    * a
-                    * r
-                    * (
-                        -3
-                        - a2r2z2
-                        + (1 + a2r2z2) * cos_2alpha
-                        - 2 * alpha * sin_2alpha
-                    ),
-                )
-            ),
-            AbstractVector(
-                (
-                    -(1 / 2)
-                    * a
-                    * r
-                    * (
-                        sin_2alpha
-                        + alpha * (2 * cos_2alpha + alpha * sin_2alpha)
-                    ),
-                    1
-                    / 2
-                    * a
-                    * r
-                    * (
-                        -3
-                        - a2r2z2
-                        + (1 + a2r2z2) * cos_2alpha
-                        - 2 * alpha * sin_2alpha
-                    ),
-                    -(a ** 2) * r ** 3 * (cos_alpha + alpha * sin_alpha),
-                )
-            ),
+            AbstractVector((H000, H001, H002)),
+            AbstractVector((H001, H011, H012)),
+            AbstractVector((H002, H012, H022)),
         ),
         AbstractMatrix(
-            AbstractVector(
-                (
-                    1
-                    / 2
-                    * a
-                    * z
-                    * cos_alpha
-                    * (
-                        5
-                        + a2r2z2
-                        + (-1 + a2r2z2) * cos_2alpha
-                        - 3 * alpha * sin_2alpha
-                    ),
-                    1
-                    / 2
-                    * a
-                    * z
-                    * (
-                        2 * sin_alpha ** 3
-                        + alpha
-                        * cos_alpha
-                        * (-1 + 3 * cos_2alpha + alpha * sin_2alpha)
-                    ),
-                    1
-                    / 2
-                    * a
-                    * r
-                    * (
-                        3
-                        + a2r2z2
-                        + (1 + a2r2z2) * cos_2alpha
-                        - 2 * alpha * sin_2alpha
-                    ),
-                )
-            ),
-            AbstractVector(
-                (
-                    1
-                    / 2
-                    * a
-                    * z
-                    * (
-                        2 * sin_alpha ** 3
-                        + alpha
-                        * cos_alpha
-                        * (-1 + 3 * cos_2alpha + alpha * sin_2alpha)
-                    ),
-                    1
-                    / 4
-                    * a
-                    * z
-                    * (
-                        (3 + a2r2z2) * cos_alpha
-                        + cos_3alpha
-                        - alpha
-                        * (alpha * cos_3alpha + sin_alpha - 3 * sin_3alpha)
-                    ),
-                    1
-                    / 2
-                    * a
-                    * r
-                    * (
-                        sin_2alpha
-                        + alpha * (2 * cos_2alpha + alpha * sin_2alpha)
-                    ),
-                )
-            ),
-            AbstractVector(
-                (
-                    1
-                    / 2
-                    * a
-                    * r
-                    * (
-                        3
-                        + a2r2z2
-                        + (1 + a2r2z2) * cos_2alpha
-                        - 2 * alpha * sin_2alpha
-                    ),
-                    1
-                    / 2
-                    * a
-                    * r
-                    * (
-                        sin_2alpha
-                        + alpha * (2 * cos_2alpha + alpha * sin_2alpha)
-                    ),
-                    a ** 2 * r ** 3 * (alpha * cos_alpha - sin_alpha),
-                )
-            ),
+            AbstractVector((H100, H101, H102)),
+            AbstractVector((H101, H111, H112)),
+            AbstractVector((H102, H112, H122)),
         ),
         ZERO_MATRIX,
     )
 
 
-# TODO: adapt
-# TODO: test
 class CartesianToCartesianSwirlTransition(Transition3D):
     """
     Transforms cartesian to cartesian swirl coordinates according to:
@@ -324,25 +205,25 @@ class CartesianToCartesianSwirlTransition(Transition3D):
     def internal_hook_transform_coords(
         self, coords: Coordinates3D
     ) -> Coordinates3D:
-        return Coordinates3D(_trafo(-self.swirl, coords))
+        return Coordinates3D(_trafo(+self.swirl, coords))
 
     def internal_hook_inverse_transform_coords(
         self, coords: Coordinates3D
     ) -> Coordinates3D:
-        return Coordinates3D(_trafo(+self.swirl, coords))
+        return Coordinates3D(_trafo(-self.swirl, coords))
 
     def internal_hook_jacobian(self, coords: Coordinates3D) -> AbstractMatrix:
-        return _jacobian(-self.swirl, coords)
+        return _jacobian(+self.swirl, coords)
 
     def internal_hook_inverse_jacobian(
         self, coords: Coordinates3D
     ) -> AbstractMatrix:
-        return _jacobian(+self.swirl, coords)
+        return _jacobian(-self.swirl, coords)
 
     def internal_hook_hesse_tensor(self, coords: Coordinates3D) -> Rank3Tensor:
-        return _hesse_tensor(-self.swirl, coords)
+        return _hesse_tensor(+self.swirl, coords)
 
     def internal_hook_inverse_hesse_tensor(
         self, coords: Coordinates3D
     ) -> Rank3Tensor:
-        return _hesse_tensor(+self.swirl, coords)
+        return _hesse_tensor(-self.swirl, coords)
