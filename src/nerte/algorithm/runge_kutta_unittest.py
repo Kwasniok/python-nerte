@@ -28,7 +28,7 @@ def _iterate(f: Callable[[T], T], n: int, x0: T) -> T:
 class RungeKutta4DeltaFreeTest(BaseTestCase):
     def setUp(self) -> None:
         self.x0 = np.array((1.0, 1.0))
-        # force-free propagation (in carthesian coordinates)
+        # force-free propagation (in cartesian coordinates)
         self.f = lambda x: np.array((x[1], 0.0))
         self.time_step_size = 0.1
         self.total_time = 1.0
@@ -49,7 +49,7 @@ class RungeKutta4DeltaFreeTest(BaseTestCase):
 class RungeKutta4DeltaConstantForceTest(BaseTestCase):
     def setUp(self) -> None:
         self.x0 = np.array((0.0, 0.0))
-        # constant force propagation (in carthesian coordinates)
+        # constant force propagation (in cartesian coordinates)
         self.f = lambda x: np.array((x[1], 1.0))
         self.time_step_size = 0.1
         self.total_time = 1.0
@@ -70,7 +70,7 @@ class RungeKutta4DeltaConstantForceTest(BaseTestCase):
 class RungeKutta4DeltaHamonicOscillatorTest(BaseTestCase):
     def setUp(self) -> None:
         self.x0 = np.array((1.0, 0.0))
-        # harmonic oscillator (in carthesian coordinates)
+        # harmonic oscillator (in cartesian coordinates)
         self.f = lambda x: np.array((x[1], -x[0]))
         self.time_step_size = 0.001
         self.total_time = 2 * math.pi

@@ -12,18 +12,19 @@ from PIL import Image
 from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
-from nerte.values.manifolds.cartesian import Plane
-from nerte.values.manifolds.cylindrical import Plane as PlaneCylindrical
+from nerte.values.interval import Interval
+from nerte.values.domains import CartesianProduct2D, EMPTY3D
+from nerte.values.manifolds.manifold_3d_unittest import DummyManifold3D
+from nerte.values.submanifolds import Plane
 from nerte.values.face import Face
 from nerte.values.intersection_info import IntersectionInfo, IntersectionInfos
 from nerte.values.color import Color, Colors
 from nerte.world.object import Object
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
-from nerte.geometry.carthesian_geometry import CarthesianGeometry
-from nerte.geometry.cylindircal_geometry import CylindricRungeKuttaGeometry
+from nerte.geometry import StandardGeometry
+from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_filter_renderer import (
     Filter,
@@ -252,23 +253,23 @@ class ImageFilterRendererAutoApplyFilterTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, -1.0))
-        domain = Domain1D(-1.0, 1.0)
+        interval = Interval(-1.0, 1.0)
+        domain = CartesianProduct2D(interval, interval)
         manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
-            x0_domain=domain,
-            x1_domain=domain,
         )
         dim = 10
         cam = Camera(
             location=loc,
+            detector_domain=domain,
             detector_manifold=manifold,
             canvas_dimensions=(dim, dim),
         )
         # scene
         self.scene = Scene(camera=cam)
         # geometry
-        self.geometry = CarthesianGeometry()
+        self.geometry = StandardGeometry()
         # filters
         self.filter1 = HitFilter()
         self.filter2 = HitFilter()
@@ -327,16 +328,16 @@ class ImageFilterRendererRenderTest(BaseTestCase):
         obj.add_face(Face(p0, p1, p2))
         # camera
         loc = Coordinates3D((0.0, 0.0, -1.0))
-        domain = Domain1D(-1.0, 1.0)
+        interval = Interval(-1.0, 1.0)
+        domain = CartesianProduct2D(interval, interval)
         manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
-            x0_domain=domain,
-            x1_domain=domain,
         )
         dim = 10
         cam = Camera(
             location=loc,
+            detector_domain=domain,
             detector_manifold=manifold,
             canvas_dimensions=(dim, dim),
         )
@@ -344,7 +345,7 @@ class ImageFilterRendererRenderTest(BaseTestCase):
         self.scene = Scene(camera=cam)
         self.scene.add_object(obj)
         # geometry
-        self.geometry = CarthesianGeometry()
+        self.geometry = StandardGeometry()
         # filter
         self.filter = HitFilter()
         # renderer
@@ -377,16 +378,16 @@ class ImageFilterProjectionTest(BaseTestCase):
         obj.add_face(Face(p0, p2, p3))
         # camera
         loc = Coordinates3D((0.0, 0.0, -1.0))
-        domain = Domain1D(-2.0, 2.0)
+        interval = Interval(-2.0, 2.0)
+        domain = CartesianProduct2D(interval, interval)
         manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
-            x0_domain=domain,
-            x1_domain=domain,
         )
         dim = 25
         cam = Camera(
             location=loc,
+            detector_domain=domain,
             detector_manifold=manifold,
             canvas_dimensions=(dim, dim),
         )
@@ -394,7 +395,7 @@ class ImageFilterProjectionTest(BaseTestCase):
         self.scene = Scene(camera=cam)
         self.scene.add_object(obj)
         # geometry
-        self.geometry = CarthesianGeometry()
+        self.geometry = StandardGeometry()
         # filter
         self.filter = HitFilter()
         # renderers
@@ -480,28 +481,31 @@ class ImageFilterProjectionTest(BaseTestCase):
                 )
 
 
-class ImageFilterRendererProjectionFailureTest1(BaseTestCase):
+class ImageFilterRendererProjectionFailureTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, 0.0))
-        domain = Domain1D(-1.0, 1.0)
+        interval = Interval(-1.0, 1.0)
+        domain = CartesianProduct2D(interval, interval)
         # manifold with invalid coordinates for pixel (0,0)
-        manifold = PlaneCylindrical(
+        detector_manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
-            x0_domain=domain,
-            x1_domain=domain,
         )
         self.dim = 2  # tiny canvas
         cam = Camera(
             location=loc,
-            detector_manifold=manifold,
+            detector_domain=domain,
+            detector_manifold=detector_manifold,
             canvas_dimensions=(self.dim, self.dim),
         )
         # scene
         self.scene = Scene(camera=cam)
+        # manifold
+        manifold = DummyManifold3D(EMPTY3D)
         # geometry
-        self.geometry = CylindricRungeKuttaGeometry(
+        self.geometry = RungeKuttaGeometry(
+            manifold=manifold,
             max_ray_depth=math.inf,
             step_size=0.1,
             max_steps=2,
@@ -509,83 +513,34 @@ class ImageFilterRendererProjectionFailureTest1(BaseTestCase):
         # filter
         self.filter = HitFilter()
         # renderers
-        self.renderer = ImageFilterRenderer(
-            projection_mode=ProjectionMode.ORTHOGRAPHIC,
-            filtr=self.filter,
-            print_warings=False,
+        self.renderers = tuple(
+            ImageFilterRenderer(
+                projection_mode=mode,
+                filtr=self.filter,
+                print_warings=False,
+            )
+            for mode in ProjectionMode
         )
 
     def test_image_filter_renderer_orthographic_failure(self) -> None:
         """Tests orthographic projection failure."""
-        renderer = self.renderer
-        renderer.render(scene=self.scene, geometry=self.geometry)
-        renderer.apply_filter()
-        img = renderer.last_image()
-        self.assertTrue(img is not None)
-        if img is not None:
-            found_failure_pixel = False
-            for x in range(self.dim):
-                for y in range(self.dim):
-                    if (
-                        img.getpixel((x, y))
-                        == color_for_miss_reason(
-                            IntersectionInfos.RAY_INITIALIZED_OUTSIDE_MANIFOLD
-                        ).rgb
-                    ):
-                        found_failure_pixel = True
-            self.assertTrue(found_failure_pixel)
-
-
-class ImageFilterRendererProjectionFailureTest2(BaseTestCase):
-    def setUp(self) -> None:
-        # camera
-        loc = Coordinates3D((0.0, 0.0, 0.0))
-        domain = Domain1D(-1.0, 1.0)
-        # manifold with invalid coordinates for pixel (0,0)
-        manifold = PlaneCylindrical(
-            AbstractVector((1.0, 0.0, 0.0)),
-            AbstractVector((0.0, 1.0, 0.0)),
-            x0_domain=domain,
-            x1_domain=domain,
-            offset=AbstractVector((0.0, 0.0, 1.0)),
-        )
-        dim = 1  # single pixel corresponding to (0.0, 0.0, 0.0)
-        cam = Camera(
-            location=loc,
-            detector_manifold=manifold,
-            canvas_dimensions=(dim, dim),
-        )
-        # scene
-        self.scene = Scene(camera=cam)
-        # geometry
-        self.geometry = CylindricRungeKuttaGeometry(
-            max_ray_depth=math.inf,
-            step_size=0.1,
-            max_steps=2,
-        )
-        # filter
-        self.filter = HitFilter()
-        # renderers
-        self.renderer = ImageFilterRenderer(
-            projection_mode=ProjectionMode.PERSPECTIVE,
-            filtr=self.filter,
-            print_warings=False,
-        )
-
-    def test_image_filter_renderer_perspective_failure(self) -> None:
-        """Tests perspective projection failrue."""
-        renderer = self.renderer
-        renderer.render(scene=self.scene, geometry=self.geometry)
-        renderer.apply_filter()
-        img = renderer.last_image()
-        self.assertTrue(img is not None)
-        if img is not None:
-            self.assertTrue(
-                img.getpixel((0, 0))
-                == color_for_miss_reason(
-                    IntersectionInfos.RAY_INITIALIZED_OUTSIDE_MANIFOLD
-                ).rgb
-            )
+        for renderer in self.renderers:
+            renderer.render(scene=self.scene, geometry=self.geometry)
+            renderer.apply_filter()
+            img = renderer.last_image()
+            self.assertTrue(img is not None)
+            if img is not None:
+                found_failure_pixel = False
+                for x in range(self.dim):
+                    for y in range(self.dim):
+                        if (
+                            img.getpixel((x, y))
+                            == color_for_miss_reason(
+                                IntersectionInfos.RAY_INITIALIZED_OUTSIDE_MANIFOLD
+                            ).rgb
+                        ):
+                            found_failure_pixel = True
+                self.assertTrue(found_failure_pixel)
 
 
 if __name__ == "__main__":

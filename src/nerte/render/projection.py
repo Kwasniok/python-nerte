@@ -5,7 +5,7 @@ from enum import Enum
 from nerte.values.coordinates import Coordinates2D
 from nerte.values.tangential_vector import TangentialVector
 from nerte.world.camera import Camera
-from nerte.geometry.geometry import Geometry
+from nerte.geometry import Geometry
 
 
 def detector_manifold_coords(
@@ -23,13 +23,23 @@ def detector_manifold_coords(
             f" pixel_location={pixel_location} must be inside the canvas"
             f" dimensions {camera.canvas_dimensions}."
         )
-    x0_min, x0_max = camera.detector_manifold.domain[0].as_tuple()
-    x1_min, x1_max = camera.detector_manifold.domain[1].as_tuple()
+    x0_min, x0_max = camera.detector_domain.intervals[0].as_tuple()
+    x1_min, x1_max = camera.detector_domain.intervals[0].as_tuple()
     # x goes from left to right
     x0 = x0_min + (x0_max - x0_min) * (pixel_x / width)
     # y goes from top to bottom
     x1 = x1_max - (x1_max - x1_min) * (pixel_y / height)
-    return Coordinates2D((x0, x1))
+    coords = Coordinates2D((x0, x1))
+    if camera.detector_domain_filter is not None:
+        if not camera.detector_domain_filter.are_inside(coords):
+            raise ValueError(
+                f"Cannot create camera detector manifold coordinates for"
+                f" pixel_location={pixel_location}. Associated domain"
+                f" coordinates={coords} do not lie inside the filter domain."
+                f" The filter domain requires: "
+                + camera.detector_domain_filter.not_inside_reason(coords)
+            )
+    return coords
 
 
 def orthographic_ray_for_pixel(

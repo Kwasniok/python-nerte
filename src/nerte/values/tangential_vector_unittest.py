@@ -76,5 +76,36 @@ class TangentialVectorPropertiesTest(BaseTestCase):
             self.assertPredicate2(vec_equiv, tan_vec.vector, self.vector)
 
 
+class TangentialVectorMathTest(BaseTestCase):
+    def setUp(self) -> None:
+        self.point = Coordinates3D((0.0, 0.0, 0.0))
+        self.vector1 = AbstractVector((1.0, 2.0, 3.0))
+        self.vector2 = AbstractVector((4.0, 8.0, 12.0))
+        self.tangential_vector1 = TangentialVector(
+            point=self.point, vector=self.vector1
+        )
+        self.tangential_vector2 = TangentialVector(
+            point=self.point, vector=self.vector2
+        )
+
+    def test_mul(self) -> None:
+        """Tests multiplication."""
+
+        self.assertPredicate2(
+            tan_vec_equiv,
+            self.tangential_vector1 * 4.0,
+            self.tangential_vector2,
+        )
+
+    def test_truediv(self) -> None:
+        """Tests division."""
+
+        self.assertPredicate2(
+            tan_vec_equiv,
+            self.tangential_vector2 / 4.0,
+            self.tangential_vector1,
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

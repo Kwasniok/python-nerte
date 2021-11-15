@@ -9,7 +9,7 @@ from PIL import Image
 from nerte.values.color import Color
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
-from nerte.geometry.geometry import Geometry
+from nerte.geometry import Geometry
 from nerte.render.renderer import Renderer
 from nerte.render.projection import ProjectionMode, ray_for_pixel
 

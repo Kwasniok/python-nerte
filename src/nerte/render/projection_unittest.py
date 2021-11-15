@@ -13,14 +13,14 @@ from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D, Coordinates2D
 from nerte.values.coordinates_unittest import coordinates_2d_equiv
-from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
 from nerte.values.tangential_vector import TangentialVector
-from nerte.values.manifolds.cartesian import Plane as PlaneCartesian
-from nerte.values.manifolds.cylindrical import Plane as PlaneCylindric
+from nerte.values.interval import Interval
+from nerte.values.domains import CartesianProduct2D, EMPTY2D
+from nerte.values.submanifolds import Plane
 from nerte.world.camera import Camera
-from nerte.geometry.carthesian_geometry import CarthesianGeometry
-from nerte.geometry.carthesian_geometry_unittest import carthesian_ray_equiv
+from nerte.geometry import StandardGeometry
+from nerte.geometry.base_unittest import standard_ray_equiv
 from nerte.render.projection import (
     detector_manifold_coords,
     orthographic_ray_for_pixel,
@@ -35,17 +35,17 @@ class DetectorManifoldCoordsTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, 0.0))
-        domain = Domain1D(-1.0, 1.0)
-        manifold = PlaneCartesian(
+        interval = Interval(-1.0, 1.0)
+        domain = CartesianProduct2D(interval, interval)
+        manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
-            x0_domain=domain,
-            x1_domain=domain,
             offset=AbstractVector((0.0, 0.0, 1.0)),
         )
         dim = 10
         self.camera = Camera(
             location=loc,
+            detector_domain=domain,
             detector_manifold=manifold,
             canvas_dimensions=(dim, dim),
         )
@@ -98,26 +98,76 @@ class DetectorManifoldCoordsTest(BaseTestCase):
                 )
 
 
+class DetectorManifoldCoordsWithFilterTest(BaseTestCase):
+    def setUp(self) -> None:
+        # camera
+        loc = Coordinates3D((0.0, 0.0, 0.0))
+        interval = Interval(-1.0, 1.0)
+        domain = CartesianProduct2D(interval, interval)
+        manifold = Plane(
+            AbstractVector((1.0, 0.0, 0.0)),
+            AbstractVector((0.0, 1.0, 0.0)),
+            offset=AbstractVector((0.0, 0.0, 1.0)),
+        )
+        dim = 10
+        self.camera = Camera(
+            location=loc,
+            detector_domain=domain,
+            detector_domain_filter=EMPTY2D,  # must be EMPTY!!
+            detector_manifold=manifold,
+            canvas_dimensions=(dim, dim),
+        )
+        # pixels
+        self.invalid_pixel_locations = (
+            (5, 5),
+            (0, 0),
+            (0, dim),
+            (dim, 0),
+            (dim, dim),
+            (-1, 1),
+            (1, -1),
+            (1, dim + 1),
+            (dim + 1, 1),
+        )
+        # y coordinate must be flipped
+        self.coords2ds = (
+            Coordinates2D((0.0, 0.0)),
+            Coordinates2D((-1.0, +1.0)),
+            Coordinates2D((-1.0, -1.0)),
+            Coordinates2D((+1.0, +1.0)),
+            Coordinates2D((+1.0, -1.0)),
+        )
+
+    def test_domain_filter(self) -> None:
+        """Tests detector domain filter."""
+        # all attempts must fail since the filter is the empty set
+        for pix_loc in self.invalid_pixel_locations:
+            with self.assertRaises(ValueError):
+                detector_manifold_coords(
+                    camera=self.camera, pixel_location=pix_loc
+                )
+
+
 class OrthographicProjectionTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, 0.0))
-        domain = Domain1D(-1.0, 1.0)
-        manifold = PlaneCylindric(
+        interval = Interval(-1.0, 1.0)
+        domain = CartesianProduct2D(interval, interval)
+        manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
-            x0_domain=domain,
-            x1_domain=domain,
             offset=AbstractVector((0.0, 0.0, 1.0)),
         )
         dim = 100
         self.camera = Camera(
             location=loc,
+            detector_domain=domain,
             detector_manifold=manifold,
             canvas_dimensions=(dim, dim),
         )
         # geometry
-        self.geometry = CarthesianGeometry()
+        self.geometry = StandardGeometry()
         # pixels and rays
         self.pixel_locations = (
             (0, 0),
@@ -134,7 +184,7 @@ class OrthographicProjectionTest(BaseTestCase):
             (dim + 1, 1),
         )
         # orthographic ray from detecor manifold coordinates
-        def make_ray(coords2d: Coordinates2D) -> CarthesianGeometry.Ray:
+        def make_ray(coords2d: Coordinates2D) -> StandardGeometry.Ray:
             return self.geometry.ray_from_tangent(
                 TangentialVector(
                     point=manifold.embed(coords2d),
@@ -160,9 +210,9 @@ class OrthographicProjectionTest(BaseTestCase):
                 geometry=self.geometry,
                 pixel_location=pix_loc,
             )
-            self.assertIsInstance(ray, CarthesianGeometry.Ray)
-            cart_ray = cast(CarthesianGeometry.Ray, ray)
-            self.assertPredicate2(carthesian_ray_equiv, cart_ray, pix_ray)
+            self.assertIsInstance(ray, StandardGeometry.Ray)
+            cart_ray = cast(StandardGeometry.Ray, ray)
+            self.assertPredicate2(standard_ray_equiv, cart_ray, pix_ray)
 
     def test_orthographic_ray_for_pixel_invalid_values(self) -> None:
         """Tests orthographic projection for pixel's invalid values."""
@@ -183,22 +233,22 @@ class PerspectiveProjectionTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, 0.0))
-        domain = Domain1D(-1.0, 1.0)
-        manifold = PlaneCartesian(
+        interval = Interval(-1.0, 1.0)
+        domain = CartesianProduct2D(interval, interval)
+        manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
-            x0_domain=domain,
-            x1_domain=domain,
             offset=AbstractVector((0.0, 0.0, 1.0)),
         )
         dim = 100
         self.camera = Camera(
             location=loc,
+            detector_domain=domain,
             detector_manifold=manifold,
             canvas_dimensions=(dim, dim),
         )
         # geometry
-        self.geometry = CarthesianGeometry()
+        self.geometry = StandardGeometry()
         # pixels and rays
         self.pixel_locations = (
             (0, 0),
@@ -217,7 +267,7 @@ class PerspectiveProjectionTest(BaseTestCase):
         # perspective ray from detecor manifold coordinates
         def make_ray(
             coords2d: Coordinates2D,
-        ) -> CarthesianGeometry.Ray:
+        ) -> StandardGeometry.Ray:
             return self.geometry.ray_from_coords(
                 start=self.camera.location,
                 target=self.camera.detector_manifold.embed(coords2d),
@@ -241,9 +291,9 @@ class PerspectiveProjectionTest(BaseTestCase):
                 geometry=self.geometry,
                 pixel_location=pix_loc,
             )
-            self.assertIsInstance(ray, CarthesianGeometry.Ray)
-            cart_ray = cast(CarthesianGeometry.Ray, ray)
-            self.assertPredicate2(carthesian_ray_equiv, cart_ray, pix_ray)
+            self.assertIsInstance(ray, StandardGeometry.Ray)
+            cart_ray = cast(StandardGeometry.Ray, ray)
+            self.assertPredicate2(standard_ray_equiv, cart_ray, pix_ray)
 
     def test_perspective_ray_for_pixel_invalid_values(self) -> None:
         """Tests perspective projection for pixel's invalid values."""
@@ -264,22 +314,22 @@ class ObscuraProjectionTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, 1.0))
-        domain = Domain1D(-1.0, 1.0)
-        manifold = PlaneCartesian(
+        interval = Interval(-1.0, 1.0)
+        domain = CartesianProduct2D(interval, interval)
+        manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
-            x0_domain=domain,
-            x1_domain=domain,
             offset=AbstractVector((0.0, 0.0, 0.0)),
         )
         dim = 100
         self.camera = Camera(
             location=loc,
+            detector_domain=domain,
             detector_manifold=manifold,
             canvas_dimensions=(dim, dim),
         )
         # geometry
-        self.geometry = CarthesianGeometry()
+        self.geometry = StandardGeometry()
         # pixels and rays
         self.pixel_locations = (
             (0, 0),
@@ -298,7 +348,7 @@ class ObscuraProjectionTest(BaseTestCase):
         # perspective ray from detecor manifold coordinates
         def make_ray(
             coords2d: Coordinates2D,
-        ) -> CarthesianGeometry.Ray:
+        ) -> StandardGeometry.Ray:
             return self.geometry.ray_from_coords(
                 start=self.camera.detector_manifold.embed(coords2d),
                 target=self.camera.location,
@@ -322,9 +372,9 @@ class ObscuraProjectionTest(BaseTestCase):
                 geometry=self.geometry,
                 pixel_location=pix_loc,
             )
-            self.assertIsInstance(ray, CarthesianGeometry.Ray)
-            cart_ray = cast(CarthesianGeometry.Ray, ray)
-            self.assertPredicate2(carthesian_ray_equiv, cart_ray, pix_ray)
+            self.assertIsInstance(ray, StandardGeometry.Ray)
+            cart_ray = cast(StandardGeometry.Ray, ray)
+            self.assertPredicate2(standard_ray_equiv, cart_ray, pix_ray)
 
     def test_perspective_ray_for_pixel_invalid_values(self) -> None:
         """Tests perspective projection for pixel's invalid values."""

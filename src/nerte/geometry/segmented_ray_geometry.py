@@ -5,23 +5,23 @@ Module for representing a geometry where rays are represented by a list of
 
 from typing import Optional
 
-from abc import abstractmethod
-
 import math
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.face import Face
 from nerte.values.tangential_vector import TangentialVector
+from nerte.values.tangential_vector_delta import add_tangential_vector_delta
 from nerte.values.ray_segment import RaySegment
 from nerte.values.intersection_info import IntersectionInfo, IntersectionInfos
 from nerte.values.extended_intersection_info import ExtendedIntersectionInfo
-from nerte.geometry.geometry import Geometry, intersection_ray_depth
+from nerte.values.manifolds import Manifold3D
+from nerte.geometry.base import Geometry, intersection_ray_depth
 
 
 class SegmentedRayGeometry(Geometry):
     """
     Crude represenation of a non-euclidean geometry where rays are bend in a
-    Carthesian space.
+    Cartesian space.
 
     Note: This geometry exists as an intermdeiate level towards more
           sophisticated models of non-euclidean geometries.
@@ -75,6 +75,7 @@ class SegmentedRayGeometry(Geometry):
 
             :raises: RuntimeError if next segment cannot be created.
             """
+
             if self._cached_ray_left_manifold:
                 return
             if self._steps_cached >= self._geometry.max_steps():
@@ -91,7 +92,7 @@ class SegmentedRayGeometry(Geometry):
                     f" initial segment {self._segments[0]} at step"
                     f" {self._steps_cached}."
                 )
-            if not self._geometry.is_valid_coordinate(segment.start()):
+            if not self._geometry.are_valid_coords(segment.start()):
                 raise RuntimeError(
                     f"Cannot generate next ray segment for ray starting with"
                     f" initial segment {self._segments[0]}."
@@ -129,7 +130,9 @@ class SegmentedRayGeometry(Geometry):
 
             return IntersectionInfos.NO_INTERSECTION
 
-    def __init__(self, max_steps: int, max_ray_depth: float):
+    def __init__(
+        self, manifold: Manifold3D, max_steps: int, max_ray_depth: float
+    ):
 
         if not max_steps > 0:
             raise ValueError(
@@ -142,9 +145,16 @@ class SegmentedRayGeometry(Geometry):
                 + f" positive and finite (given value is {max_ray_depth})"
             )
 
+        self._manifold = manifold
         self._max_steps = max_steps
         self._max_ray_depth = max_ray_depth
         self._ray_segment_length = max_ray_depth / max_steps
+
+    def manifold(self) -> Manifold3D:
+        """
+        Returns the representation of the manifold.
+        """
+        return self._manifold
 
     def max_steps(self) -> int:
         """Returns limit for amount of ray segments to be generated."""
@@ -162,36 +172,60 @@ class SegmentedRayGeometry(Geometry):
         """Returns the length of each ray segment."""
         return self._ray_segment_length
 
-    @abstractmethod
+    def are_valid_coords(self, coords: Coordinates3D) -> bool:
+        return self._manifold.domain.are_inside(coords)
+
     def ray_from_coords(
         self, start: Coordinates3D, target: Coordinates3D
     ) -> "SegmentedRayGeometry.Ray":
-        pass
+        try:
+            initial_tangent = (
+                self._manifold.initial_geodesic_tangent_from_coords(
+                    start, target
+                )
+            )
+        except ValueError as ex:
+            raise ValueError(
+                f"Cannot create segmented ray from coordinates start={start}"
+                f" and target={target}."
+            ) from ex
+
+        return SegmentedRayGeometry.Ray(
+            geometry=self,
+            initial_segment=RaySegment(
+                tangential_vector=initial_tangent, is_finite=True
+            ),
+        )
 
     def ray_from_tangent(
-        self, tangential_vector: TangentialVector
+        self, initial_tangent: TangentialVector
     ) -> "SegmentedRayGeometry.Ray":
-        if not self.is_valid_coordinate(tangential_vector.point):
+        domain = self._manifold.domain
+        if not domain.are_inside(initial_tangent.point):
             raise ValueError(
                 f"Cannot create segmented ray from tangential vector"
-                f" {tangential_vector}."
-                f" It is illdefined with coordinated outside the manifold."
+                f" {initial_tangent}. "
+                + domain.not_inside_reason(initial_tangent.point)
             )
         return SegmentedRayGeometry.Ray(
             geometry=self,
-            initial_segment=RaySegment(tangential_vector=tangential_vector),
+            initial_segment=RaySegment(
+                tangential_vector=initial_tangent, is_finite=True
+            ),
         )
 
-    @abstractmethod
     def normalize_initial_ray_segment(self, segment: RaySegment) -> RaySegment:
         # pylint: disable=W0107
         """
         Returns the first ray segment (straight approximation of the geodesic
         segment) based on a given ray.
         """
-        pass
+        return RaySegment(
+            self._manifold.normalized(segment.tangential_vector)
+            * self._ray_segment_length,
+            is_finite=True,
+        )
 
-    @abstractmethod
     def next_ray_segment(self, segment: RaySegment) -> Optional[RaySegment]:
         # pylint: disable=W0107
         """
@@ -202,4 +236,10 @@ class SegmentedRayGeometry(Geometry):
               geometry. If this happens further extending the ray might be
               infeasable.
         """
-        pass
+        domain = self._manifold.domain
+        tangent = segment.tangential_vector
+        delta = self._manifold.geodesics_equation(tangent)
+        tangent = add_tangential_vector_delta(tangent, delta)
+        if not domain.are_inside(tangent.point):
+            return None
+        return RaySegment(tangent, is_finite=True)

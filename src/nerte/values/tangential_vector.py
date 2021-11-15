@@ -22,3 +22,9 @@ class TangentialVector:
 
     def __repr__(self) -> str:
         return f"{self.vector} @ {self.point}"
+
+    def __mul__(self, fac: float) -> "TangentialVector":
+        return TangentialVector(self.point, self.vector * fac)
+
+    def __truediv__(self, fac: float) -> "TangentialVector":
+        return TangentialVector(self.point, self.vector / fac)

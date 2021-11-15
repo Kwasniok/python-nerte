@@ -4,7 +4,6 @@
 
 from typing import Optional
 
-import math
 import numpy as np
 
 
@@ -51,6 +50,13 @@ def _abstract_vector_from_numpy(np_array: np.ndarray) -> AbstractVector:
     return vec
 
 
+ZERO_VECTOR = AbstractVector((0.0, 0.0, 0.0))
+UNIT_VECTOR0 = AbstractVector((1.0, 0.0, 0.0))
+UNIT_VECTOR1 = AbstractVector((0.0, 1.0, 0.0))
+UNIT_VECTOR2 = AbstractVector((0.0, 0.0, 1.0))
+STANDARD_BASIS = (UNIT_VECTOR0, UNIT_VECTOR1, UNIT_VECTOR2)
+
+
 class AbstractMatrix:
     """
     Represents an abstract matrix via three vectors.
@@ -63,8 +69,8 @@ class AbstractMatrix:
         self, vec0: AbstractVector, vec1: AbstractVector, vec2: AbstractVector
     ) -> None:
         self._m = np.array((vec0._v, vec1._v, vec2._v))
-        self._is_symmetric: Optional[bool] = None  # cache
         self._is_invertible: Optional[bool] = None  # cache
+        self._inverse: Optional["AbstractMatrix"] = None  # cache
 
     def __repr__(self) -> str:
         return "M(" + (",".join(repr(x) for x in self._m)) + ")"
@@ -87,21 +93,6 @@ class AbstractMatrix:
     def __getitem__(self, i: int) -> AbstractVector:
         return _abstract_vector_from_numpy(self._m[i])
 
-    def is_symmetric(self) -> bool:
-        """
-        Returns True, iff matrix is symmetric.
-
-        Note: Small numerical deviations of the coefficients are allowed.
-        """
-        if self._is_symmetric is None:
-            # NOTE: np.isclose is significantly slower
-            self._is_symmetric = (
-                math.isclose(self._m[0][1], self._m[1][0])
-                and math.isclose(self._m[0][2], self._m[2][0])
-                and math.isclose(self._m[1][2], self._m[2][1])
-            )
-        return self._is_symmetric
-
     def is_invertible(self) -> bool:
         """
         Returns True, iff matrix is invertible.
@@ -114,6 +105,30 @@ class AbstractMatrix:
             )
         return self._is_invertible
 
+    # test
+    def inverted(self) -> "AbstractMatrix":
+        """
+        Returns the inverse of a matrix.
+        :precon: self.is_invertible()
+        :raises: ArithmeticError, if not invertible
+        """
+        if not self.is_invertible():
+            raise ArithmeticError(
+                f"Cannot invert non-invertible matrix {self}."
+            )
+        if self._inverse is None:
+            try:
+                mat = np.linalg.inv(self._m)  # type: ignore[no-untyped-call]
+            except ArithmeticError as ex:
+                raise ArithmeticError(
+                    f"Matrix {self} with non-zero determinat could not be"
+                    f" inverted."
+                ) from ex
+            self._inverse = _abstract_matrix_from_numpy(mat)
+            # chache self as inverse of inverse
+            self._inverse._inverse = self
+        return self._inverse
+
 
 def _abstract_matrix_from_numpy(np_array: np.ndarray) -> AbstractMatrix:
     """
@@ -123,52 +138,69 @@ def _abstract_matrix_from_numpy(np_array: np.ndarray) -> AbstractMatrix:
     """
     mat = AbstractMatrix.__new__(AbstractMatrix)
     mat._m = np_array
+    mat._is_invertible = None
     return mat
 
 
-class Metric:
+ZERO_MATRIX = AbstractMatrix(ZERO_VECTOR, ZERO_VECTOR, ZERO_VECTOR)
+IDENTITY_MATRIX = AbstractMatrix(UNIT_VECTOR0, UNIT_VECTOR1, UNIT_VECTOR2)
+
+
+class Rank3Tensor:
     """
-    Represents a metric as a matrix acting on contravariant representations of
-    vectors and returning covariant representations of them.
-    Note: A metric must be invertible.
+    Represents an abstract rank three tensor.
+    Note: The basis of the vector space and the kindness (co- or contra-variant)
+          of each rank must be implicitly given by the context the vector is
+          used in.
     """
 
-    def __init__(self, matrix: AbstractMatrix) -> None:
-        if not matrix.is_symmetric():
-            raise ValueError(
-                f"Cannot construct metric form non-symmetric matrix"
-                f" {matrix}."
-            )
-
-        if not matrix.is_invertible():
-            raise ValueError(
-                f"Cannot construct metric form non-invertible symmetric matrix"
-                f" {matrix}."
-            )
-
-        self._g = matrix
-        self._g_inv: Optional[AbstractMatrix] = None  # cache
+    def __init__(
+        self, mat0: AbstractMatrix, mat1: AbstractMatrix, mat2: AbstractMatrix
+    ) -> None:
+        self._data = np.array((mat0._m, mat1._m, mat2._m))
 
     def __repr__(self) -> str:
-        return repr(self._g)
+        return f"T3({self._data})"
 
-    def matrix(self) -> AbstractMatrix:
-        """Returns the metric as a matrix."""
-        return self._g
+    def __add__(self, other: "Rank3Tensor") -> "Rank3Tensor":
+        return _rank_3_tensor_from_numpy(self._data + other._data)
 
-    def inverse_matrix(self) -> AbstractMatrix:
-        """Returns the inverse of the metric as a matrix."""
-        if self._g_inv is None:
-            try:
-                self._g_inv = inverted(self._g)
-            except ArithmeticError as ex:
-                raise ValueError(
-                    "Cannot construct a metric from non-invertible matrix."
-                ) from ex
-        return self._g_inv
+    def __neg__(self) -> "Rank3Tensor":
+        return _rank_3_tensor_from_numpy(-self._data)
+
+    def __sub__(self, other: "Rank3Tensor") -> "Rank3Tensor":
+        return _rank_3_tensor_from_numpy(self._data - other._data)
+
+    def __mul__(self, fac: float) -> "Rank3Tensor":
+        return _rank_3_tensor_from_numpy(self._data * fac)
+
+    def __truediv__(self, fac: float) -> "Rank3Tensor":
+        return _rank_3_tensor_from_numpy(self._data / fac)
+
+    def __getitem__(self, i: int) -> AbstractMatrix:
+        return _abstract_matrix_from_numpy(self._data[i])
 
 
-def covariant(metric: Metric, contra_vec: AbstractVector) -> AbstractVector:
+def _rank_3_tensor_from_numpy(np_array: np.ndarray) -> Rank3Tensor:
+    """
+    Auxiliar function to wrap an np.array into a rank 3 tensor.
+    Note: For internal usage only! The input is trusted to be valid and no
+          checks are applied.
+    """
+    ten = Rank3Tensor.__new__(Rank3Tensor)
+    ten._data = np_array
+    return ten
+
+
+ZERO_RANK3TENSOR = Rank3Tensor(ZERO_MATRIX, ZERO_MATRIX, ZERO_MATRIX)
+IDENTITY_RANK3TENSOR = Rank3Tensor(
+    IDENTITY_MATRIX, IDENTITY_MATRIX, IDENTITY_MATRIX
+)
+
+
+def covariant(
+    metric: AbstractMatrix, contra_vec: AbstractVector
+) -> AbstractVector:
     """
     Returns the co-variant vector.
 
@@ -177,11 +209,13 @@ def covariant(metric: Metric, contra_vec: AbstractVector) -> AbstractVector:
     """
 
     return _abstract_vector_from_numpy(
-        np.dot(metric.matrix()._m, contra_vec._v)  # type: ignore[no-untyped-call]
+        np.dot(metric._m, contra_vec._v)  # type: ignore[no-untyped-call]
     )
 
 
-def contravariant(metric: Metric, co_vec: AbstractVector) -> AbstractVector:
+def contravariant(
+    metric: AbstractMatrix, co_vec: AbstractVector
+) -> AbstractVector:
     """
     Returns the contra-variant vector.
 
@@ -189,7 +223,7 @@ def contravariant(metric: Metric, co_vec: AbstractVector) -> AbstractVector:
     :param contra_vec: co-variant vector of the tangential vetor space
     """
     return _abstract_vector_from_numpy(
-        np.dot(metric.inverse_matrix()._m, co_vec._v)  # type: ignore[no-untyped-call]
+        np.dot(inverted(metric)._m, co_vec._v)  # type: ignore[no-untyped-call]
     )
 
 
@@ -216,10 +250,63 @@ def mat_mult(
     )
 
 
+def tensor_3_vec_contract(
+    tensor: Rank3Tensor, vector: AbstractVector, tensor_index: int
+) -> AbstractMatrix:
+    """
+    Returns contracted matrix from tansor of rank 3 and vector.
+
+    :param tensor_index: Index of tesnor to contract (starts with 0)
+
+    Example:
+            M_{ijk} = T_{ilj} V^{l}
+        for tensor T with index 1 and vector V.
+    """
+    if not 0 <= tensor_index <= 2:
+        raise ValueError(
+            f"Cannot contract rank 3 tensor with matrix for"
+            f" tensor_index={tensor_index}. Index must be either 0, 1 or 2."
+        )
+    return _abstract_matrix_from_numpy(
+        np.tensordot(tensor._data, vector._v, axes=(tensor_index, 0))
+    )
+
+
+def tensor_3_mat_contract(
+    tensor: Rank3Tensor,
+    matrix: AbstractMatrix,
+    tensor_index: int,
+    matrix_index: int,
+) -> Rank3Tensor:
+    """
+    Returns contracted tensor of rank 3 from tansor of rank 3 and matrix.
+
+    :param tensor_index: Index of tesnor to contract (starts with 0)
+    :param matrix_index: Index of matrix to contract (starts with 0)
+
+    Example:
+            R_{ijk} = T_{ilj} M^{l}_{k}
+        for tensor T with index 1 and matrix M with index 0.
+    """
+    if not 0 <= tensor_index <= 2:
+        raise ValueError(
+            f"Cannot contract rank 3 tensor with matrix for"
+            f" tensor_index={tensor_index}. Index must be either 0, 1 or 2."
+        )
+    if not 0 <= matrix_index <= 2:
+        raise ValueError(
+            f"Cannot contract rank 3 tensor with matrix for"
+            f" matrix_index={matrix_index}. Index must be either 0 or 1."
+        )
+    return _rank_3_tensor_from_numpy(
+        np.tensordot(tensor._data, matrix._m, axes=(tensor_index, matrix_index))
+    )
+
+
 def dot(
     vec1: AbstractVector,
     vec2: AbstractVector,
-    metric: Optional[Metric] = None,
+    metric: Optional[AbstractMatrix] = None,
 ) -> float:
     """Returns the (orthonormal) dot product of both vectors."""
     if metric is None:
@@ -233,7 +320,7 @@ def dot(
         # return np.dot(vec1._v, vec2._v)
     return np.dot(
         vec1._v,
-        np.dot(metric.matrix()._m, vec2._v),  # type: ignore[no-untyped-call]
+        np.dot(metric._m, vec2._v),  # type: ignore[no-untyped-call]
     )  # POSSIBLE-OPTIMIZATION: hard code
 
 
@@ -265,7 +352,9 @@ def cross(
     return mat_vec_mult(inverted(jacobian), vec_res)
 
 
-def length(vec: AbstractVector, metric: Optional[Metric] = None) -> float:
+def length(
+    vec: AbstractVector, metric: Optional[AbstractMatrix] = None
+) -> float:
     """
     Returns the length of the vector (with respect to an orthonormal basis).
     """
@@ -276,7 +365,7 @@ def length(vec: AbstractVector, metric: Optional[Metric] = None) -> float:
 
 
 def normalized(
-    vec: AbstractVector, metric: Optional[Metric] = None
+    vec: AbstractVector, metric: Optional[AbstractMatrix] = None
 ) -> AbstractVector:
     """
     Returns the normalized vector (with respect to an orthonormal basis).
@@ -301,16 +390,21 @@ def are_linear_dependent(vectors: tuple[AbstractVector, ...]) -> bool:
     return True
 
 
+def transposed(mat: AbstractMatrix) -> AbstractMatrix:
+    """
+    Returns the transposed of a matrix.
+    """
+    return AbstractMatrix(
+        AbstractVector((mat[0][0], mat[1][0], mat[2][0])),
+        AbstractVector((mat[0][1], mat[1][1], mat[2][1])),
+        AbstractVector((mat[0][2], mat[1][2], mat[2][2])),
+    )
+
+
 def inverted(mat: AbstractMatrix) -> AbstractMatrix:
     """
     Returns the inverse of a matrix.
-    :raises: ArithmeticError
+    :precon: self.is_invertible()
+    :raises: ArithmeticError, if not invertible
     """
-    try:
-        mat = _abstract_matrix_from_numpy(
-            np.linalg.inv(mat._m)  # type: ignore[no-untyped-call]
-        )
-    except np.linalg.LinAlgError as ex:
-        raise ArithmeticError from ex
-    else:
-        return mat
+    return mat.inverted()

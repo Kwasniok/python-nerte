@@ -9,12 +9,13 @@ import unittest
 from nerte.base_test_case import BaseTestCase
 
 from nerte.values.coordinates import Coordinates3D
-from nerte.values.domain import Domain1D
 from nerte.values.linalg import AbstractVector
-from nerte.values.manifolds.cartesian import Plane
+from nerte.values.interval import Interval
+from nerte.values.domains import CartesianProduct2D
+from nerte.values.submanifolds import Plane
 from nerte.world.camera import Camera
 from nerte.world.scene import Scene
-from nerte.geometry.carthesian_geometry import CarthesianGeometry
+from nerte.geometry import StandardGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_renderer import ImageRenderer
 
@@ -39,23 +40,23 @@ class ImageRendererTest(BaseTestCase):
     def setUp(self) -> None:
         # camera
         loc = Coordinates3D((0.0, 0.0, -1.0))
-        domain = Domain1D(-1.0, 1.0)
+        interval = Interval(-1.0, 1.0)
+        domain = CartesianProduct2D(interval, interval)
         manifold = Plane(
             AbstractVector((1.0, 0.0, 0.0)),
             AbstractVector((0.0, 1.0, 0.0)),
-            x0_domain=domain,
-            x1_domain=domain,
         )
         dim = 10
         cam = Camera(
             location=loc,
+            detector_domain=domain,
             detector_manifold=manifold,
             canvas_dimensions=(dim, dim),
         )
         # scene
         self.scene = Scene(camera=cam)
         # geometry
-        self.geometry = CarthesianGeometry()
+        self.geometry = StandardGeometry()
 
     def test_image_renderer_render(self) -> None:
         """Tests render."""
