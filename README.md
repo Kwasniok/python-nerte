@@ -59,14 +59,18 @@ mkdir -p images
 cd src
 python demo_1.py
 python demo_2.py
+python demo_3.py
+python demo_4.py
 ```
 
-A similar script was used to create the frames of this video:
+A similar script to `demo_4.py` was used to create the frames of this video:
 
-https://user-images.githubusercontent.com/7516208/131228594-f264acce-c461-4ec6-891b-0ef9b7262717.mp4
+https://user-images.githubusercontent.com/7516208/142043357-6c43a7a9-0b8a-492a-92d0-40de5174030c.mp4
 
-Here, the light rays are bend slightly towards a direction orthogonal to their position in space and their direction. The segments of the light rays are approximated with short straight lines.
-Throughout the video the strength of this bending is varied and in the beginning no bending takes place.
+In this demo video, the geodesics are bend into non-straight lines.
+Throughout the video the strength of this bending is varied and in the middle of the video the space is flat.
+The algorithm operates numerically and approximates a light ray with short striaght segments.
+All segments are obtained via the Runge-Kutta algorithm based on the previous segment.
 
 ## Run Tests
 The unittests are performed by this script:
