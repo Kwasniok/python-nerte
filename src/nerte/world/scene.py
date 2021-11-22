@@ -1,4 +1,4 @@
-"""Module for representing a scene"""
+"""Module for representing a scene."""
 
 from nerte.world.camera import Camera
 from nerte.world.object import Object
