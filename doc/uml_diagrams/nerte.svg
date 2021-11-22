@@ -85,6 +85,12 @@
   </g>
   <g>
     <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 8; stroke: #000000" points="692,812 692,812 692,916.142 605.499,916.142 "/>
-    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="618.146,911.142 602.146,916.142 618.146,921.142 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="618.147,911.142 602.147,916.142 618.147,921.142 "/>
   </g>
+  <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="486.922" y="713.713">
+    <tspan x="486.922" y="713.713">(mutable)</tspan>
+  </text>
+  <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="487.045" y="817.967">
+    <tspan x="487.045" y="817.967">(immutable)</tspan>
+  </text>
 </svg>
