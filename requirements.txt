@@ -1,2 +1,9 @@
+# linting
+pylint
+mypy
+
+# math
 numpy>=1.21.2
+
+# image
 Pillow>=8.3.1
