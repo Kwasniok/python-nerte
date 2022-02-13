@@ -4,7 +4,6 @@ coordinates and various filters.
 """
 
 import os
-import math
 from enum import IntEnum
 
 from nerte.values.coordinates import Coordinates3D
@@ -61,14 +60,13 @@ class Side(IntEnum):
 def make_camera(swirl: float, canvas_dimension: int) -> Camera:
     """Creates a camera with preset values."""
 
-    location = Coordinates3D((0.0, 2.5, 2.5))
+    location = Coordinates3D((0.0, 2.0, 2.5))
     interval = Interval(-1.0, +1.0)
     domain = CartesianProduct2D(interval, interval)
-    alpha = 0 * math.pi / 4
     cartesian_plane = Plane(
         direction0=AbstractVector((1.0, 0.0, 0.0)),
-        direction1=AbstractVector((0.0, math.cos(alpha), math.sin(alpha))),
-        offset=AbstractVector((0.0, 2.0, 2.0)),
+        direction1=AbstractVector((0.0, 1.0, 0.0)),
+        offset=AbstractVector((0.0, 2.0, 3.0)),
     )
     cartesian_to_cartesian_swirl = CartesianToCartesianSwirlTransition(
         swirl=swirl,
@@ -150,7 +148,7 @@ def render(
     perspective projection.
     """
 
-    projection_mode = ProjectionMode.PERSPECTIVE
+    projection_mode = ProjectionMode.OBSCURA
     print(f"rendering {projection_mode.name} projection ...")
     renderer = ImageFilterRenderer(
         projection_mode=projection_mode,
