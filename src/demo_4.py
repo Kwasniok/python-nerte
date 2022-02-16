@@ -60,24 +60,36 @@ class Side(IntEnum):
 def make_camera(swirl: float, canvas_dimension: int) -> Camera:
     """Creates a camera with preset values."""
 
-    location = Coordinates3D((0.0, 2.0, 2.5))
-    interval = Interval(-1.0, +1.0)
-    domain = CartesianProduct2D(interval, interval)
+    # obscura projection / pinhole projection:
+    #   Light ray start on the detector manifold and pass through the pinhole.
+    #   This flipps the image which is compensated by scanning the image in
+    #   reverse.
+
+    # first: camera geometry in cartesian/flat coordinates
+    # pinhole: location all light rays have to pass
+    cartesian_pinhole = Coordinates3D((0.0, 2.0, 2.5))
+    # plane as detector domain
     cartesian_plane = Plane(
-        direction0=AbstractVector((+1.0, 0.0, 0.0)),
-        # note: vertical direction flipped due to obscura projection
-        direction1=AbstractVector((0.0, -1.0, 0.0)),
+        # note: directions flipped due to obscura projection
+        direction0=AbstractVector((-1.0, 0.0, 0.0)),  # flipped
+        direction1=AbstractVector((0.0, -1.0, 0.0)),  # flipped
         offset=AbstractVector((0.0, 2.0, 3.0)),
     )
-    cartesian_to_cartesian_swirl = CartesianToCartesianSwirlTransition(
+    # select a rectangular region inside this plane
+    domain = CartesianProduct2D(Interval(-1.0, +1.0), Interval(-1.0, +1.0))
+
+    # second: translate camera geometry to swirled/curves coordinates
+    transition = CartesianToCartesianSwirlTransition(
         swirl=swirl,
     )
-    swirl_location = cartesian_to_cartesian_swirl.transform_coords(location)
-    swirl_plane = PushforwardSubmanifold2DIn3D(
-        cartesian_plane, cartesian_to_cartesian_swirl
-    )
+    # pinhole
+    swirl_pinhole = transition.transform_coords(cartesian_pinhole)
+    # plane
+    swirl_plane = PushforwardSubmanifold2DIn3D(cartesian_plane, transition)
+
+    # assemble camera
     camera = Camera(
-        location=swirl_location,
+        location=swirl_pinhole,
         detector_domain=domain,
         detector_manifold=swirl_plane,
         canvas_dimensions=(canvas_dimension, canvas_dimension),
@@ -95,10 +107,14 @@ def make_box_face(
 
     # intermediate matrix for coordinate coefficients
     coords = [[0.0 for _ in range(3)] for _ in range(3)]
+
     # create the coefficients based on the parameters
+    # scale
     for coord in coords:
         coord[fix.value] = 1.0 * distance.value
+    # select plane
     axis_u, axis_v = (axis for axis in (0, 1, 2) if axis != fix.value)
+    # set coefficients
     coords[0][axis_u] = -size
     coords[0][axis_v] = -size
     coords[1][axis_u] = -size * side.value
@@ -109,10 +125,12 @@ def make_box_face(
     point0 = Coordinates3D(coords[0])  # type: ignore[arg-type]
     point1 = Coordinates3D(coords[1])  # type: ignore[arg-type]
     point2 = Coordinates3D(coords[2])  # type: ignore[arg-type]
+
     # create the triangle as an object
     tri = Face(point0, point1, point2)
     obj = Object(color=next(COLOR))  # pseudo-random color
     obj.add_face(tri)
+
     return obj
 
 
@@ -146,19 +164,24 @@ def render(
     show: bool,
 ) -> None:
     """
-    Renders a preset scene with non-euclidean geometry in orthographic and
-    perspective projection.
+    Renders a preset scene with non-euclidean geometry via obscura/swirl_pinhole
+    projection.
     """
 
     projection_mode = ProjectionMode.OBSCURA
     print(f"rendering {projection_mode.name} projection ...")
+
+    # create renderer
     renderer = ImageFilterRenderer(
         projection_mode=projection_mode,
         filtr=filter_and_file_prefixes[0][0],
         auto_apply_filter=False,
         print_warings=False,
     )
+    # render data
     renderer.render(scene=scene, geometry=geometry)
+
+    # apply filters and save(+show) images
     for filtr, file_prefix in filter_and_file_prefixes:
         image_path = f"{output_path}/{file_prefix}_{projection_mode.name}.png"
         print(f"applying filter of type {type(filtr).__name__} ...")
@@ -178,33 +201,40 @@ def main() -> None:
 
     # NOTE: Increase the canvas dimension to improve the image quality.
     #       This will also increase rendering time!
-    swirl = 0.05
+
+    swirl = 0.5  # strength parameter of curvature
     scene = make_scene(swirl=swirl, canvas_dimension=100)
-    max_steps = 50
-    geo = RungeKuttaGeometry(
+    # propagate light rays in curved coordinates
+    geometry = RungeKuttaGeometry(
         CartesianSwirl(swirl),
         max_ray_depth=8.0,
-        step_size=0.125,
-        max_steps=max_steps,
+        step_size=0.1,
+        max_steps=80,
     )
 
+    # output options
     output_path = "../images"
     file_prefix = "demo4"
     show = True  # disable if images cannot be displayed
 
+    # define filtered render modes (e.g. to judge convergence)
     filter_and_file_prefixes = [
         (HitFilter(), file_prefix + "_hit_filter"),
         (RayDepthFilter(), file_prefix + "_ray_depth_filter"),
         (
             MetaInfoFilter(
-                meta_data_key="steps", min_value=0, max_value=max_steps
+                meta_data_key="steps",
+                min_value=0,
+                max_value=geometry.max_steps(),
             ),
             file_prefix + "_meta_info_steps_filter",
         ),
     ]
+
+    # render image(s)
     render(
         scene=scene,
-        geometry=geo,
+        geometry=geometry,
         filter_and_file_prefixes=filter_and_file_prefixes,
         output_path=output_path,
         show=show,
