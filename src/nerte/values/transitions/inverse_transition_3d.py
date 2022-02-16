@@ -2,7 +2,7 @@
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import AbstractMatrix, Rank3Tensor
-from nerte.values.transitions import Transition3D
+from nerte.values.transitions.transition_3d import Transition3D
 
 
 class InverseTransition3D(Transition3D):
