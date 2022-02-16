@@ -64,18 +64,20 @@ def make_camera(swirl: float, canvas_dimension: int) -> Camera:
     interval = Interval(-1.0, +1.0)
     domain = CartesianProduct2D(interval, interval)
     cartesian_plane = Plane(
-        direction0=AbstractVector((1.0, 0.0, 0.0)),
-        direction1=AbstractVector((0.0, 1.0, 0.0)),
+        direction0=AbstractVector((+1.0, 0.0, 0.0)),
+        # note: vertical direction flipped due to obscura projection
+        direction1=AbstractVector((0.0, -1.0, 0.0)),
         offset=AbstractVector((0.0, 2.0, 3.0)),
     )
     cartesian_to_cartesian_swirl = CartesianToCartesianSwirlTransition(
         swirl=swirl,
     )
+    swirl_location = cartesian_to_cartesian_swirl.transform_coords(location)
     swirl_plane = PushforwardSubmanifold2DIn3D(
         cartesian_plane, cartesian_to_cartesian_swirl
     )
     camera = Camera(
-        location=location,
+        location=swirl_location,
         detector_domain=domain,
         detector_manifold=swirl_plane,
         canvas_dimensions=(canvas_dimension, canvas_dimension),
