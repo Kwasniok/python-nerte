@@ -360,7 +360,7 @@ def length(
     """
     if metric is None:
         # POSSIBLE-OPTIMIZATION: hard code
-        return np.linalg.norm(vec._v)  # type: ignore[no-untyped-call]
+        return np.linalg.norm(vec._v)  # type: ignore
     return dot(vec, vec, metric) ** 0.5
 
 
