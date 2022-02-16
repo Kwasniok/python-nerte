@@ -6,7 +6,7 @@ from nerte.values.coordinates import Coordinates3D
 
 
 class Face:
-    """"Represenation of a face as a triple of coordinates."""
+    """ "Represenation of a face as a triple of coordinates."""
 
     def __init__(
         self,
@@ -14,6 +14,7 @@ class Face:
         c1: Coordinates3D,
         c2: Coordinates3D,
     ) -> None:
+        # pylint: disable=C0103
         self._coords: tuple[Coordinates3D, Coordinates3D, Coordinates3D] = (
             c0,
             c1,

@@ -6,6 +6,7 @@ class Color:
     """Represenation of a color."""
 
     def __init__(self, r: int, g: int, b: int) -> None:
+        # pylint: disable=C0103
         self.rgb: tuple[int, int, int] = (r, g, b)
 
     def __repr__(self) -> str:
