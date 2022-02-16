@@ -1,6 +1,8 @@
 """
 This demo script renders a test scene using cylindrical coordinates and
 Runge-Kutta rays.
+
+note: Be prepared for long rendering times.
 """
 
 import os

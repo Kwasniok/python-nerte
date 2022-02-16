@@ -1,6 +1,8 @@
 """
 Demonstartes the image filter renderer with an example scene in cartesian swirl
 coordinates and various filters.
+
+note: Be prepared for long rendering times.
 """
 
 import os
