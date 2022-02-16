@@ -44,7 +44,7 @@ class ImageRenderer(Renderer):
         Returns a ray if it can be created and may print details about the
         failure otherwise.
 
-        Note: Failed ray creation must be benoted with a pixel colored in
+        Note: Failed ray creation must be denoted with a pixel colored in
               self.color_failure()!
         """
         try:
