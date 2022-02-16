@@ -67,7 +67,9 @@ class ImageRenderer(Renderer):
                 )
         return None
 
-    def render(self, scene: Scene, geometry: Geometry) -> None:
+    def render(
+        self, scene: Scene, geometry: Geometry, show_progress: bool = False
+    ) -> None:
         raise NotImplementedError(
             "The ImageRenderer is considered abstract and an implementation of"
             " the render method is missing."

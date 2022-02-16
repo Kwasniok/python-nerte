@@ -216,7 +216,7 @@ class ImageFilterRenderer(ImageRenderer):
         return current_info
 
     def render_intersection_info(
-        self, scene: Scene, geometry: Geometry
+        self, scene: Scene, geometry: Geometry, show_progress: bool = False
     ) -> GenericMatrix[IntersectionInfo]:
         """
         Returns matrix with intersection infos per pixel.
@@ -232,6 +232,8 @@ class ImageFilterRenderer(ImageRenderer):
         )
         # obtain pixel ray info
         for pixel_x in range(width):
+            if show_progress:
+                print(f"{int(pixel_x/width*100)}%")
             for pixel_y in range(height):
                 pixel_location = (pixel_x, pixel_y)
                 pixel_info = self.render_pixel_intersection_info(
@@ -243,7 +245,9 @@ class ImageFilterRenderer(ImageRenderer):
                 info_matrix[pixel_x, pixel_y] = pixel_info
         return info_matrix
 
-    def render(self, scene: Scene, geometry: Geometry) -> None:
+    def render(
+        self, scene: Scene, geometry: Geometry, show_progress: bool = False
+    ) -> None:
         """
         Renders ray intersection information.
 
@@ -254,7 +258,7 @@ class ImageFilterRenderer(ImageRenderer):
         """
         # obtain ray depth information and normalize it
         info_matrix = self.render_intersection_info(
-            scene=scene, geometry=geometry
+            scene=scene, geometry=geometry, show_progress=show_progress
         )
         self._last_info_matrix = info_matrix
 

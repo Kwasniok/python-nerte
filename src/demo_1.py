@@ -160,7 +160,9 @@ def render(
     ):
         print(f"rendering {projection_mode.name} projection ...")
         image_renderer = ImageColorRenderer(projection_mode=projection_mode)
-        image_renderer.render(scene=scene, geometry=geometry)
+        image_renderer.render(
+            scene=scene, geometry=geometry, show_progress=show
+        )
         os.makedirs("../images", exist_ok=True)
         image = image_renderer.last_image()
         if image is not None:

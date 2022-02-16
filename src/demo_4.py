@@ -179,7 +179,7 @@ def render(
         print_warings=False,
     )
     # render data
-    renderer.render(scene=scene, geometry=geometry)
+    renderer.render(scene=scene, geometry=geometry, show_progress=show)
 
     # apply filters and save(+show) images
     for filtr, file_prefix in filter_and_file_prefixes:

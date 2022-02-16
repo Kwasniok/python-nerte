@@ -12,6 +12,8 @@ class Renderer(ABC):
 
     # pylint: disable=W0107
     @abstractmethod
-    def render(self, scene: Scene, geometry: Geometry) -> None:
+    def render(
+        self, scene: Scene, geometry: Geometry, show_progress: bool = False
+    ) -> None:
         """Renders a scene with the given geometry."""
         pass

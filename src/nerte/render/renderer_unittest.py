@@ -57,7 +57,12 @@ class RendererTest(BaseTestCase):
 
         class DummyRenderer(Renderer):
             # pylint: disable=R0903
-            def render(self, scene: Scene, geometry: Geometry) -> None:
+            def render(
+                self,
+                scene: Scene,
+                geometry: Geometry,
+                show_progress: bool = False,
+            ) -> None:
                 pass
 
         r = DummyRenderer()

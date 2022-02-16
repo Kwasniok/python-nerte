@@ -145,7 +145,7 @@ def render(  # pylint: disable=R0913
         auto_apply_filter=False,
         print_warings=False,
     )
-    renderer.render(scene=scene, geometry=geometry)
+    renderer.render(scene=scene, geometry=geometry, show_progress=show)
     for filtr, file_prefix in filter_and_file_prefixes:
         image_path = f"{output_path}/{file_prefix}_{projection_mode.name}.png"
         print(f"applying filter of type {type(filtr).__name__} ...")

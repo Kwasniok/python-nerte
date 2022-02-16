@@ -62,7 +62,9 @@ class ImageColorRenderer(ImageRenderer):
                         current_color = obj.color
         return current_color
 
-    def render(self, scene: Scene, geometry: Geometry) -> None:
+    def render(
+        self, scene: Scene, geometry: Geometry, show_progress: bool = False
+    ) -> None:
         """Renders image in color mode."""
 
         width, height = scene.camera.canvas_dimensions
@@ -72,6 +74,8 @@ class ImageColorRenderer(ImageRenderer):
         )
         # paint in pixels
         for pixel_x in range(width):
+            if show_progress:
+                print(f"{int(pixel_x/width*100)}%")
             for pixel_y in range(height):
                 pixel_location = (pixel_x, pixel_y)
                 pixel_color = self.render_pixel(
