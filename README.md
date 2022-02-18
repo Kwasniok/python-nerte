@@ -65,7 +65,7 @@ python demo_4.py
 
 A similar script to `demo_4.py` was used to create the frames of this video:
 
-https://user-images.githubusercontent.com/7516208/142043357-6c43a7a9-0b8a-492a-92d0-40de5174030c.mp4
+https://user-images.githubusercontent.com/7516208/154743965-9d12a15c-f5ca-44ed-961c-6f2476496145.mp4
 
 In this demo video, the geodesics are bend into non-straight lines.
 Throughout the video the strength of this bending is varied and in the middle of the video the space is flat.
