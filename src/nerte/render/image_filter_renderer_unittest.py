@@ -28,6 +28,7 @@ from nerte.geometry.runge_kutta_geometry import RungeKuttaGeometry
 from nerte.render.projection import ProjectionMode
 from nerte.render.image_filter_renderer import (
     Filter,
+    ColorFilter,
     HitFilter,
     ImageFilterRenderer,
     color_for_miss_reason,
@@ -103,6 +104,7 @@ class FilterImplentationTest(BaseTestCase):
             # pylint: disable=R0903
             def apply(
                 self,
+                color_matrix: GenericMatrix[Color],
                 info_matrix: GenericMatrix[IntersectionInfo],
             ) -> Image:
                 return Image.new(
@@ -110,6 +112,74 @@ class FilterImplentationTest(BaseTestCase):
                 )
 
         DummyFilter()
+
+
+class ColorFilterConstructorTest(BaseTestCase):
+    def test_constructor(self) -> None:
+        # pylint: disable=R0201
+        """Tests the constructor."""
+        ColorFilter()
+
+
+class ColorFilterColorsTest(BaseTestCase):
+    def setUp(self) -> None:
+        self.filter = ColorFilter()
+        self.color = Color(123, 321, 123)
+        self.info_hit = IntersectionInfo(ray_depth=1.0)
+        self.info_miss_reasons = tuple(
+            IntersectionInfo(miss_reason=mr)
+            for mr in IntersectionInfo.MissReason
+        )
+
+    def test_color(self) -> None:
+        """Tests color for intersection info."""
+
+        self.assertTupleEqual(
+            self.filter.color_for_info(self.color, self.info_hit).rgb,
+            self.color.rgb,
+        )
+        for info_miss_reason in self.info_miss_reasons:
+            self.assertTupleEqual(
+                self.filter.color_for_info(self.color, info_miss_reason).rgb,
+                self.filter.color_miss().rgb,
+            )
+
+
+class ColorFilterApplyTest(BaseTestCase):
+    def setUp(self) -> None:
+        self.colors = (
+            Color(1, 1, 1),
+            Color(2, 1, 1),
+            Color(3, 1, 1),
+            Color(4, 1, 1),
+            Color(5, 1, 1),
+        )
+        self.infos = (
+            IntersectionInfo(ray_depth=1.0),
+            IntersectionInfos.UNINIALIZED,
+            IntersectionInfos.NO_INTERSECTION,
+            IntersectionInfos.RAY_LEFT_MANIFOLD,
+            IntersectionInfos.RAY_INITIALIZED_OUTSIDE_MANIFOLD,
+        )
+
+        self.color_matrices = tuple(
+            GenericMatrix[Color]([[color]]) for color in self.colors
+        )
+        self.info_matrices = tuple(
+            GenericMatrix[IntersectionInfo]([[info]]) for info in self.infos
+        )
+        self.filter = ColorFilter()
+
+    def test_apply(self) -> None:
+        """Test filter application."""
+        for color, color_mat, info, info_mat in zip(
+            self.colors, self.color_matrices, self.infos, self.info_matrices
+        ):
+            pixel_color = self.filter.color_for_info(color, info)
+            image = self.filter.apply(
+                color_matrix=color_mat, info_matrix=info_mat
+            )
+            self.assertTrue(image.getpixel((0, 0)) == pixel_color.rgb)
 
 
 class HitFilterConstructorTest(BaseTestCase):
@@ -177,6 +247,7 @@ class HitFilterApplyTest(BaseTestCase):
             IntersectionInfos.RAY_LEFT_MANIFOLD,
             IntersectionInfos.RAY_INITIALIZED_OUTSIDE_MANIFOLD,
         )
+        self.color_matrix = GenericMatrix[Color]([[Colors.BLACK]])
         self.info_matrices = tuple(
             GenericMatrix[IntersectionInfo]([[info]]) for info in self.infos
         )
@@ -186,7 +257,9 @@ class HitFilterApplyTest(BaseTestCase):
         """Test filter application."""
         for info, info_mat in zip(self.infos, self.info_matrices):
             pixel_color = self.filter.color_for_info(info)
-            image = self.filter.apply(info_matrix=info_mat)
+            image = self.filter.apply(
+                color_matrix=self.color_matrix, info_matrix=info_mat
+            )
             self.assertTrue(image.getpixel((0, 0)) == pixel_color.rgb)
 
 

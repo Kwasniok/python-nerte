@@ -146,11 +146,15 @@ class RayDepthFilter(Filter):
             return self.color_for_normalized_ray_depth_value(pixel_value)
         return color_for_miss_reason(info)
 
-    def apply(self, info_matrix: GenericMatrix[IntersectionInfo]) -> Image:
+    def apply(
+        self,
+        color_matrix: GenericMatrix[Color],
+        info_matrix: GenericMatrix[IntersectionInfo],
+    ) -> Image:
         width, height = info_matrix.dimensions()
         if width == 0 or height == 0:
             raise ValueError(
-                "Cannot apply hit filter. Intersection info matrix is empty."
+                "Cannot apply ray depth filter. Intersection info matrix is empty."
             )
 
         # initialize image with pink background

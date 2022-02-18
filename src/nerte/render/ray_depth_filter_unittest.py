@@ -10,7 +10,7 @@ import math
 
 from nerte.base_test_case import BaseTestCase
 
-from nerte.values.color import Color
+from nerte.values.color import Color, Colors
 from nerte.values.intersection_info import IntersectionInfo
 from nerte.render.image_filter_renderer import color_for_miss_reason
 from nerte.render.ray_depth_filter import RayDepthFilter
@@ -139,15 +139,18 @@ class RayDepthFilterApplyTest(BaseTestCase):
         self.info_matrix = GenericMatrix[IntersectionInfo](
             [
                 [
-                    IntersectionInfo(ray_depth=math.e ** 0),
-                    IntersectionInfo(ray_depth=math.e ** 1),
-                    IntersectionInfo(ray_depth=math.e ** 2),
+                    IntersectionInfo(ray_depth=math.e**0),
+                    IntersectionInfo(ray_depth=math.e**1),
+                    IntersectionInfo(ray_depth=math.e**2),
                 ]
                 + list(
                     IntersectionInfo(miss_reason=mr)
                     for mr in IntersectionInfo.MissReason
                 )
             ]
+        )
+        self.color_matrix = GenericMatrix[Color](
+            [[Colors.BLACK for i in range(self.info_matrix.dimensions()[1])]]
         )
         self.filter = RayDepthFilter(max_color_value=1.0)
         info_miss_reason = tuple(
@@ -162,7 +165,9 @@ class RayDepthFilterApplyTest(BaseTestCase):
 
     def test_apply(self) -> None:
         """Test filter application."""
-        image = self.filter.apply(info_matrix=self.info_matrix)
+        image = self.filter.apply(
+            color_matrix=self.color_matrix, info_matrix=self.info_matrix
+        )
         for pixel_y, pixel_color in enumerate(self.pixel_colors):
             self.assertTupleEqual(image.getpixel((0, pixel_y)), pixel_color.rgb)
 

@@ -10,7 +10,7 @@ import math
 
 from nerte.base_test_case import BaseTestCase
 
-from nerte.values.color import Color
+from nerte.values.color import Color, Colors
 from nerte.values.intersection_info import IntersectionInfo
 from nerte.values.extended_intersection_info import ExtendedIntersectionInfo
 from nerte.render.meta_info_filter import MetaInfoFilter
@@ -125,13 +125,18 @@ class MetaInfoFilterApplyTest(BaseTestCase):
             ExtendedIntersectionInfo(ray_depth=0.3, meta_data={"key": 1.0}),
         )
         self.info_matrix = GenericMatrix[IntersectionInfo]([list(self.infos)])
+        self.color_matrix = GenericMatrix[Color](
+            [[Colors.BLACK for i in range(self.info_matrix.dimensions()[1])]]
+        )
         self.filter = MetaInfoFilter(
             meta_data_key="key", min_value=0.0, max_value=1.0
         )
 
     def test_apply(self) -> None:
         """Test filter application."""
-        image = self.filter.apply(info_matrix=self.info_matrix)
+        image = self.filter.apply(
+            color_matrix=self.color_matrix, info_matrix=self.info_matrix
+        )
         for pixel_y, info in enumerate(self.infos):
             self.assertTupleEqual(
                 image.getpixel((0, pixel_y)),

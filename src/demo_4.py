@@ -27,6 +27,7 @@ from nerte.render.projection import ProjectionMode
 from nerte.render.image_filter_renderer import (
     ImageFilterRenderer,
     Filter,
+    ColorFilter,
     HitFilter,
 )
 from nerte.render.ray_depth_filter import RayDepthFilter
@@ -221,6 +222,7 @@ def main() -> None:
 
     # define filtered render modes (e.g. to judge convergence)
     filter_and_file_prefixes = [
+        (ColorFilter(), file_prefix + "_color"),
         (HitFilter(), file_prefix + "_hit_filter"),
         (RayDepthFilter(), file_prefix + "_ray_depth_filter"),
         (

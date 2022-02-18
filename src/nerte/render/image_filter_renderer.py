@@ -74,6 +74,7 @@ class Filter(ABC):
     @abstractmethod
     def apply(
         self,
+        color_matrix: GenericMatrix[Color],
         info_matrix: GenericMatrix[IntersectionInfo],
     ) -> Image:
         """
@@ -83,6 +84,55 @@ class Filter(ABC):
         """
         # pylint: disable=W0107
         pass
+
+
+class ColorFilter(Filter):
+    """
+    Color filter for displaying rays based on thier color.
+    """
+
+    def color_miss(self) -> Color:
+        """Returns a color for a pixel to denote a ray missing all surfaces."""
+        # pylint: disable=R0201
+        return Colors.BLACK
+
+    def color_for_info(
+        self,
+        color: Color,
+        info: IntersectionInfo,
+    ) -> Color:
+        """Returns color associated with the intersection info."""
+
+        if info.hits():
+            return color
+        return self.color_miss()
+
+    def apply(
+        self,
+        color_matrix: GenericMatrix[Color],
+        info_matrix: GenericMatrix[IntersectionInfo],
+    ) -> Image:
+        width, height = info_matrix.dimensions()
+        if width == 0 or height == 0:
+            raise ValueError(
+                "Cannot apply hit filter. Intersection info matrix is empty."
+            )
+
+        # initialize image with pink background
+        image = Image.new(
+            mode="RGB", size=(width, height), color=Colors.BLACK.rgb
+        )
+
+        # paint-in pixels
+        for pixel_x in range(width):
+            for pixel_y in range(height):
+                pixel_location = (pixel_x, pixel_y)
+                color = color_matrix[pixel_x, pixel_y]
+                info = info_matrix[pixel_x, pixel_y]
+                pixel_color = self.color_for_info(color, info)
+                image.putpixel(pixel_location, pixel_color.rgb)
+
+        return image
 
 
 class HitFilter(Filter):
@@ -108,7 +158,11 @@ class HitFilter(Filter):
             return self.color_hit()
         return color_for_miss_reason(info)
 
-    def apply(self, info_matrix: GenericMatrix[IntersectionInfo]) -> Image:
+    def apply(
+        self,
+        color_matrix: GenericMatrix[Color],
+        info_matrix: GenericMatrix[IntersectionInfo],
+    ) -> Image:
         width, height = info_matrix.dimensions()
         if width == 0 or height == 0:
             raise ValueError(
@@ -153,12 +207,16 @@ class ImageFilterRenderer(ImageRenderer):
 
         self._filter = filtr
         self.auto_apply_filter = auto_apply_filter
+        self._last_color_matrix: Optional[GenericMatrix[Color]] = None
         self._last_info_matrix: Optional[GenericMatrix[IntersectionInfo]] = None
 
     def has_render_data(self) -> bool:
         """Returns True, iff render was called previously."""
 
-        return self._last_info_matrix is not None
+        return (
+            self._last_color_matrix is not None
+            and self._last_info_matrix is not None
+        )
 
     def filter(self) -> Filter:
         """Returns the filter currently used."""
@@ -183,18 +241,22 @@ class ImageFilterRenderer(ImageRenderer):
         geometry: Geometry,
         objects: Iterable[Object],
         pixel_location: tuple[int, int],
-    ) -> IntersectionInfo:
+    ) -> tuple[Color, IntersectionInfo]:
         """
-        Returns the intersection info of the ray cast for the pixel.
+        Returns the color and intersection info of the ray cast for the pixel.
         """
 
         ray = self.ray_for_pixel(camera, geometry, pixel_location)
         if ray is None:
-            return IntersectionInfos.RAY_INITIALIZED_OUTSIDE_MANIFOLD
+            return (
+                Colors.MAGENTA,
+                IntersectionInfos.RAY_INITIALIZED_OUTSIDE_MANIFOLD,
+            )
 
         # detect intersections with objects
         current_depth = np.inf
         current_info = IntersectionInfos.NO_INTERSECTION
+        current_color = Colors.BLACK
         for obj in objects:
             for face in obj.faces():
                 intersection_info = ray.intersection_info(face)
@@ -203,6 +265,7 @@ class ImageFilterRenderer(ImageRenderer):
                     if intersection_info.ray_depth() < current_depth:
                         current_depth = intersection_info.ray_depth()
                         current_info = intersection_info
+                        current_color = obj.color
                 else:
                     # update intersection info to ray left manifold
                     # if no face was intersected yet and ray left manifold
@@ -213,16 +276,20 @@ class ImageFilterRenderer(ImageRenderer):
                         )
                     ):
                         current_info = IntersectionInfos.RAY_LEFT_MANIFOLD
-        return current_info
+        return current_color, current_info
 
-    def render_intersection_info(
+    def render_data(
         self, scene: Scene, geometry: Geometry, show_progress: bool = False
-    ) -> GenericMatrix[IntersectionInfo]:
+    ) -> tuple[GenericMatrix[Color], GenericMatrix[IntersectionInfo]]:
         """
-        Returns matrix with intersection infos per pixel.
+        Returns matricies with colors and intersection infos per pixel.
         """
 
         width, height = scene.camera.canvas_dimensions
+        # initialize background with black
+        color_matrix = GenericMatrix[Color](
+            [[Colors.BLACK for _ in range(height)] for _ in range(width)]
+        )
         # initialize background with nan
         info_matrix = GenericMatrix[IntersectionInfo](
             [
@@ -236,14 +303,15 @@ class ImageFilterRenderer(ImageRenderer):
                 print(f"{int(pixel_x/width*100)}%")
             for pixel_y in range(height):
                 pixel_location = (pixel_x, pixel_y)
-                pixel_info = self.render_pixel_intersection_info(
+                pixel_color, pixel_info = self.render_pixel_intersection_info(
                     scene.camera,
                     geometry,
                     scene.objects(),
                     pixel_location,
                 )
+                color_matrix[pixel_x, pixel_y] = pixel_color
                 info_matrix[pixel_x, pixel_y] = pixel_info
-        return info_matrix
+        return color_matrix, info_matrix
 
     def render(
         self, scene: Scene, geometry: Geometry, show_progress: bool = False
@@ -257,9 +325,10 @@ class ImageFilterRenderer(ImageRenderer):
               Else apply_filter must be called manually.
         """
         # obtain ray depth information and normalize it
-        info_matrix = self.render_intersection_info(
+        color_matrix, info_matrix = self.render_data(
             scene=scene, geometry=geometry, show_progress=show_progress
         )
+        self._last_color_matrix = color_matrix
         self._last_info_matrix = info_matrix
 
         if self.auto_apply_filter:
@@ -274,13 +343,12 @@ class ImageFilterRenderer(ImageRenderer):
         Note: This method may be called automatically depending on
               auto_apply_filter. If not apply_filter must be called manually.
         """
-        if self._last_info_matrix is None:
-            print(
-                "WARNING: Cannot apply filter without rendering first."
-                " No intersection info matrix found."
-            )
+        if self._last_color_matrix is None or self._last_info_matrix is None:
+            print("WARNING: Cannot apply filter without rendering first.")
             return
-        self._last_image = self._filter.apply(self._last_info_matrix)
+        self._last_image = self._filter.apply(
+            self._last_color_matrix, self._last_info_matrix
+        )
 
     def last_image(self) -> Optional[Image.Image]:
         """Returns the last image rendered iff it exists or else None."""
