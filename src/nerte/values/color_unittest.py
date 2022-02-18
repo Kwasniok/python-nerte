@@ -24,6 +24,7 @@ class ColorsTest(BaseTestCase):
         self.assertTrue(Colors.BLACK.rgb == (0, 0, 0))
         self.assertTrue(Colors.GRAY.rgb == (128, 128, 128))
         self.assertTrue(Colors.WHITE.rgb == (255, 255, 255))
+        self.assertTrue(Colors.MAGENTA.rgb == (255, 0, 255))
 
 
 if __name__ == "__main__":

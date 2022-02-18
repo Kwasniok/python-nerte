@@ -20,3 +20,4 @@ class Colors:
     BLACK = Color(0, 0, 0)
     GRAY = Color(128, 128, 128)
     WHITE = Color(255, 255, 255)
+    MAGENTA = Color(255, 0, 255)
