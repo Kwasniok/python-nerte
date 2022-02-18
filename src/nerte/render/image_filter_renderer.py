@@ -196,7 +196,7 @@ class ImageFilterRenderer(ImageRenderer):
     def __init__(
         self,
         projection_mode: ProjectionMode,
-        filtr: Filter,
+        filtr: Optional[Filter] = None,
         print_warings: bool = True,
         auto_apply_filter: bool = True,
     ):
@@ -204,6 +204,9 @@ class ImageFilterRenderer(ImageRenderer):
         ImageRenderer.__init__(
             self, projection_mode, print_warings=print_warings
         )
+
+        if filtr is None:
+            filtr = ColorFilter()
 
         self._filter = filtr
         self.auto_apply_filter = auto_apply_filter

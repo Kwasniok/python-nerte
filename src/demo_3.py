@@ -144,7 +144,6 @@ def render(  # pylint: disable=R0913
     print(f"rendering {projection_mode.name} projection ...")
     renderer = ImageFilterRenderer(
         projection_mode=projection_mode,
-        filtr=filter_and_file_prefixes[0][0],
         auto_apply_filter=False,
         print_warings=False,
     )

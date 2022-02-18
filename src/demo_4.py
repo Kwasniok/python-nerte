@@ -177,7 +177,6 @@ def render(
     # create renderer
     renderer = ImageFilterRenderer(
         projection_mode=projection_mode,
-        filtr=filter_and_file_prefixes[0][0],
         auto_apply_filter=False,
         print_warings=False,
     )
