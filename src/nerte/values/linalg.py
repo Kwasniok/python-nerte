@@ -38,6 +38,12 @@ class AbstractVector:
     def __getitem__(self, i: int) -> float:
         return self._v[i]
 
+    def get_np_ndarray(self) -> np.ndarray:
+        """
+        Returns internal representation of the vecctor as a numpy.ndarray.
+        """
+        return self._v
+
 
 def _abstract_vector_from_numpy(np_array: np.ndarray) -> AbstractVector:
     """

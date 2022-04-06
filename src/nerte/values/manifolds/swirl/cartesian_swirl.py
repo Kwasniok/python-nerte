@@ -1,11 +1,13 @@
 """Base module for representing manifolds in cartesian coordinates."""
 
 import math
+import numpy as np
 
 from nerte.values.coordinates import Coordinates3D
 from nerte.values.linalg import (
     AbstractVector,
     AbstractMatrix,
+    _abstract_matrix_from_numpy,
     ZERO_MATRIX,
     Rank3Tensor,
     mat_vec_mult,
@@ -16,6 +18,13 @@ from nerte.values.tangential_vector_delta import TangentialVectorDelta
 from nerte.values.domains import Domain3D
 from nerte.values.domains.cartesian_swirl import CARTESIAN_SWIRL_DOMAIN
 from nerte.values.manifolds.manifold_3d import Manifold3D
+
+
+from nerte.nerte_cpp import (
+    christoffel_1 as cpp_christoffel_1,
+    metric_inverted as cpp_metric_inverted,
+    christoffel_2 as cpp_christoffel_2,
+)
 
 
 class CartesianSwirl(Manifold3D):
@@ -148,145 +157,170 @@ class CartesianSwirl(Manifold3D):
         )
 
     def _metric_inverted(self, coords: Coordinates3D) -> AbstractMatrix:
-        # pylint: disable=C0103
-        a = self.swirl
-        u, v, z = coords
-        # frequent factors
-        r = math.sqrt(u ** 2 + v ** 2)
-        s = u ** 2 - v ** 2
-        aur = a * u * r
-        avr = a * v * r
-        u2v2z2 = u ** 2 + v ** 2 + z ** 2
-        return AbstractMatrix(
-            AbstractVector(
-                (
-                    1 + a * v * ((2 * u * z) / r + a * v * (r ** 2 + z ** 2)),
-                    a * ((-s * z) / r - a * u * v * u2v2z2),
-                    avr,
-                )
-            ),
-            AbstractVector(
-                (
-                    a * ((-s * z) / r - a * u * v * u2v2z2),
-                    1 + a * u * ((-2 * v * z) / r + a * u * u2v2z2),
-                    -aur,
-                )
-            ),
-            AbstractVector((avr, -aur, 1)),
+
+        return _abstract_matrix_from_numpy(
+            cpp_metric_inverted(self.swirl, np.array(coords))
         )
+
+        # # pylint: disable=C0103
+        # a = self.swirl
+        # u, v, z = coords
+        # # frequent factors
+        # r = math.sqrt(u**2 + v**2)
+        # s = u**2 - v**2
+        # aur = a * u * r
+        # avr = a * v * r
+        # u2v2z2 = u**2 + v**2 + z**2
+        # return AbstractMatrix(
+        #     AbstractVector(
+        #         (
+        #             1 + a * v * ((2 * u * z) / r + a * v * (r**2 + z**2)),
+        #             a * ((-s * z) / r - a * u * v * u2v2z2),
+        #             avr,
+        #         )
+        #     ),
+        #     AbstractVector(
+        #         (
+        #             a * ((-s * z) / r - a * u * v * u2v2z2),
+        #             1 + a * u * ((-2 * v * z) / r + a * u * u2v2z2),
+        #             -aur,
+        #         )
+        #     ),
+        #     AbstractVector((avr, -aur, 1)),
+        # )
 
     def _christoffel_1(
         self, coords: Coordinates3D
     ) -> tuple[AbstractMatrix, AbstractMatrix, AbstractMatrix]:
-        # pylint: disable=C0103
-        a = self.swirl
-        u, v, z = coords
-        # frequent factors
-        r = math.sqrt(u ** 2 + v ** 2)
-        arz = a * r * z
-        alpha = math.atan2(v, u)
-        cos_alpha = math.cos(alpha)
-        sin_alpha = math.sin(alpha)
-        cos_2alpha = math.cos(2 * alpha)
-        sin_2alpha = math.sin(2 * alpha)
-        cos_3alpha = math.cos(3 * alpha)
-        sin_3alpha = math.sin(3 * alpha)
-        # POSSIBLE-OPTIMIZATION: symmetric matrices
-        return (
-            AbstractMatrix(
-                AbstractVector(
-                    (
-                        a * z * (arz * cos_alpha - sin_alpha ** 3),
-                        -a * z * cos_alpha ** 3,
-                        a * r * cos_alpha * (arz * cos_alpha - sin_alpha),
-                    )
-                ),
-                AbstractVector(
-                    (
-                        -a * z * cos_alpha ** 3,
-                        -0.25
-                        * a
-                        * z
-                        * (-4 * arz * cos_alpha + 9 * sin_alpha + sin_3alpha),
-                        0.5 * a * r * (-3 + cos_2alpha + arz * sin_2alpha),
-                    )
-                ),
-                AbstractVector(
-                    (
-                        a * r * cos_alpha * (arz * cos_alpha - sin_alpha),
-                        0.5 * a * r * (-3 + cos_2alpha + arz * sin_2alpha),
-                        -(a ** 2) * r ** 3 * cos_alpha,
-                    )
-                ),
-            ),
-            AbstractMatrix(
-                AbstractVector(
-                    (
-                        1
-                        / 4
-                        * a
-                        * z
-                        * (9 * cos_alpha - cos_3alpha + 4 * arz * sin_alpha),
-                        a * z * sin_alpha ** 3,
-                        1 / 2 * a * r * (3 + cos_2alpha + arz * sin_2alpha),
-                    )
-                ),
-                AbstractVector(
-                    (
-                        a * z * sin_alpha ** 3,
-                        a * z * (cos_alpha ** 3 + arz * sin_alpha),
-                        a * r * sin_alpha * (cos_alpha + arz * sin_alpha),
-                    )
-                ),
-                AbstractVector(
-                    (
-                        1 / 2 * a * r * (3 + cos_2alpha + arz * sin_2alpha),
-                        a * r * sin_alpha * (cos_alpha + arz * sin_alpha),
-                        -(a ** 2) * r ** 3 * sin_alpha,
-                    )
-                ),
-            ),
-            AbstractMatrix(
-                AbstractVector(
-                    (
-                        1 / 2 * a ** 2 * r ** 2 * z * (3 + cos_2alpha),
-                        a ** 2 * r ** 2 * z * cos_alpha * sin_alpha,
-                        2 * a ** 2 * r ** 3 * cos_alpha,
-                    )
-                ),
-                AbstractVector(
-                    (
-                        a ** 2 * r ** 2 * z * cos_alpha * sin_alpha,
-                        -(1 / 2) * a ** 2 * r ** 2 * z * (-3 + cos_2alpha),
-                        2 * a ** 2 * r ** 3 * sin_alpha,
-                    )
-                ),
-                AbstractVector(
-                    (
-                        2 * a ** 2 * r ** 3 * cos_alpha,
-                        2 * a ** 2 * r ** 3 * sin_alpha,
-                        0,
-                    )
-                ),
-            ),
+
+        cs = np.array(coords)
+        chris_1_0, chris_1_1, chris_1_2 = cpp_christoffel_1(self.swirl, cs)
+
+        x = (
+            _abstract_matrix_from_numpy(chris_1_0),
+            _abstract_matrix_from_numpy(chris_1_1),
+            _abstract_matrix_from_numpy(chris_1_2),
         )
+        return x
+
+        # # pylint: disable=C0103
+        # a = self.swirl
+        # u, v, z = coords
+        # # frequent factors
+        # r = math.sqrt(u**2 + v**2)
+        # arz = a * r * z
+        # alpha = math.atan2(v, u)
+        # cos_alpha = math.cos(alpha)
+        # sin_alpha = math.sin(alpha)
+        # cos_2alpha = math.cos(2 * alpha)
+        # sin_2alpha = math.sin(2 * alpha)
+        # cos_3alpha = math.cos(3 * alpha)
+        # sin_3alpha = math.sin(3 * alpha)
+        # # POSSIBLE-OPTIMIZATION: symmetric matrices
+        # return (
+        #     AbstractMatrix(
+        #         AbstractVector(
+        #             (
+        #                 a * z * (arz * cos_alpha - sin_alpha**3),
+        #                 -a * z * cos_alpha**3,
+        #                 a * r * cos_alpha * (arz * cos_alpha - sin_alpha),
+        #             )
+        #         ),
+        #         AbstractVector(
+        #             (
+        #                 -a * z * cos_alpha**3,
+        #                 -0.25
+        #                 * a
+        #                 * z
+        #                 * (-4 * arz * cos_alpha + 9 * sin_alpha + sin_3alpha),
+        #                 0.5 * a * r * (-3 + cos_2alpha + arz * sin_2alpha),
+        #             )
+        #         ),
+        #         AbstractVector(
+        #             (
+        #                 a * r * cos_alpha * (arz * cos_alpha - sin_alpha),
+        #                 0.5 * a * r * (-3 + cos_2alpha + arz * sin_2alpha),
+        #                 -(a**2) * r**3 * cos_alpha,
+        #             )
+        #         ),
+        #     ),
+        #     AbstractMatrix(
+        #         AbstractVector(
+        #             (
+        #                 1
+        #                 / 4
+        #                 * a
+        #                 * z
+        #                 * (9 * cos_alpha - cos_3alpha + 4 * arz * sin_alpha),
+        #                 a * z * sin_alpha**3,
+        #                 1 / 2 * a * r * (3 + cos_2alpha + arz * sin_2alpha),
+        #             )
+        #         ),
+        #         AbstractVector(
+        #             (
+        #                 a * z * sin_alpha**3,
+        #                 a * z * (cos_alpha**3 + arz * sin_alpha),
+        #                 a * r * sin_alpha * (cos_alpha + arz * sin_alpha),
+        #             )
+        #         ),
+        #         AbstractVector(
+        #             (
+        #                 1 / 2 * a * r * (3 + cos_2alpha + arz * sin_2alpha),
+        #                 a * r * sin_alpha * (cos_alpha + arz * sin_alpha),
+        #                 -(a**2) * r**3 * sin_alpha,
+        #             )
+        #         ),
+        #     ),
+        #     AbstractMatrix(
+        #         AbstractVector(
+        #             (
+        #                 1 / 2 * a**2 * r**2 * z * (3 + cos_2alpha),
+        #                 a**2 * r**2 * z * cos_alpha * sin_alpha,
+        #                 2 * a**2 * r**3 * cos_alpha,
+        #             )
+        #         ),
+        #         AbstractVector(
+        #             (
+        #                 a**2 * r**2 * z * cos_alpha * sin_alpha,
+        #                 -(1 / 2) * a**2 * r**2 * z * (-3 + cos_2alpha),
+        #                 2 * a**2 * r**3 * sin_alpha,
+        #             )
+        #         ),
+        #         AbstractVector(
+        #             (
+        #                 2 * a**2 * r**3 * cos_alpha,
+        #                 2 * a**2 * r**3 * sin_alpha,
+        #                 0,
+        #             )
+        #         ),
+        #     ),
+        # )
 
     def _christoffel_2(
         self, coords: Coordinates3D
     ) -> tuple[AbstractMatrix, AbstractMatrix, AbstractMatrix]:
-        chris_1 = self._christoffel_1(coords)
-        metric_inv = self._metric_inverted(coords)
+        cs = np.array(coords)
+        chris_2_0, chris_2_1, chris_2_2 = cpp_christoffel_2(self.swirl, cs)
         return (
-            chris_1[0] * metric_inv[0][0]
-            + chris_1[1] * metric_inv[0][1]
-            + chris_1[2] * metric_inv[0][2],
-            chris_1[0] * metric_inv[1][0]
-            + chris_1[1] * metric_inv[1][1]
-            + chris_1[2] * metric_inv[1][2],
-            chris_1[0] * metric_inv[2][0]
-            + chris_1[1] * metric_inv[2][1]
-            + chris_1[2] * metric_inv[2][2],
+            _abstract_matrix_from_numpy(chris_2_0),
+            _abstract_matrix_from_numpy(chris_2_1),
+            _abstract_matrix_from_numpy(chris_2_2),
         )
+
+        # chris_1 = self._christoffel_1(coords)
+        # metric_inv = self._metric_inverted(coords)
+        # x = (
+        #     chris_1[0] * metric_inv[0][0]
+        #     + chris_1[1] * metric_inv[0][1]
+        #     + chris_1[2] * metric_inv[0][2],
+        #     chris_1[0] * metric_inv[1][0]
+        #     + chris_1[1] * metric_inv[1][1]
+        #     + chris_1[2] * metric_inv[1][2],
+        #     chris_1[0] * metric_inv[2][0]
+        #     + chris_1[1] * metric_inv[2][1]
+        #     + chris_1[2] * metric_inv[2][2],
+        # )
+        # return x
 
     def internal_hook_geodesics_equation(
         self, tangent: TangentialVector

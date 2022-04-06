@@ -1,0 +1,3 @@
+This binary was compiled with
+- Linux version 5.16.16-arch1-1
+- Intel(R) Core(TM) i5-4590 CPU @ 3.30GHz
